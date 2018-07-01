@@ -11,11 +11,12 @@ class BaseSerializer(serializers.ModelSerializer):
 
     @classmethod
     def get_results(cls, instance):
+        # pylint: disable=no-member
         return [
             cls.RESULT_SERIALIZER(result).data
             for result in cls.RESULT_MODEL.objects
-                .filter(draw_id=instance.id)
-                .order_by("-created_at")
+            .filter(draw_id=instance.id)
+            .order_by("-created_at")
         ]
 
 

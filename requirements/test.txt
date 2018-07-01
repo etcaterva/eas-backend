@@ -3,3 +3,4 @@ factory-boy
 python-dateutil
 coverage
 django-coverage-plugin
+pylint

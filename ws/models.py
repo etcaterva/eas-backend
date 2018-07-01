@@ -11,7 +11,7 @@ def create_id():
 
 class BaseDraw(models.Model):
     """Base Model for all the draws"""
-    _RESULT_LIMIT = 50  # Max number of results to keep
+    RESULTS_LIMIT = 50  # Max number of results to keep
 
     id = models.CharField(max_length=64, default=create_id,
                           primary_key=True, null=False, editable=False)
@@ -24,7 +24,7 @@ class BaseDraw(models.Model):
 
     def toss(self):
         """Generates and saves a result"""
-        if self.results.count() >= self._RESULT_LIMIT:
+        if self.results.count() >= self.RESULTS_LIMIT:
             self.results.order_by("created_at").first().delete()
         result = self.generate_result()
         result_obj = RandomNumberResult(

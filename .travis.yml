@@ -16,5 +16,7 @@ script:
   - coverage run --source='eas' --source='ws' manage.py test
   - coverage report -m --fail-under=100
 
+  - pylint ws
+
 after_success:
   - coveralls

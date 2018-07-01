@@ -1,16 +1,16 @@
 from django.test import TestCase
-from .factories import RandomNumberFactory
 
 from ws.serializers import RandomNumberSerializer
+from .factories import RandomNumberFactory
 
 
 class TestSerializers(TestCase):
 
     def setUp(self):
-        self.rn = RandomNumberFactory()
+        self.draw = RandomNumberFactory()
 
     def test_serialize_draw(self):
-        res = RandomNumberSerializer(self.rn).data
+        res = RandomNumberSerializer(self.draw).data
 
         self.assertEqual(sorted(res), sorted([
             'id', 'created_at', 'updated_at', 'title',
@@ -18,18 +18,18 @@ class TestSerializers(TestCase):
             'range_min', 'range_max',
         ]))
 
-        self.assertEqual(res["title"], self.rn.title)
+        self.assertEqual(res["title"], self.draw.title)
         self.assertEqual(res["results"], [])
 
-    def test_serialize_draw_with_results(self):
+    def test_serialize_draw_with_results(self):  # pylint: disable=invalid-name
         num_results = 3
         for _ in range(num_results):
-            self.rn.toss()
-        res = RandomNumberSerializer(self.rn).data
+            self.draw.toss()
+        res = RandomNumberSerializer(self.draw).data
 
         self.assertEqual(len(res["results"]), 3)
         for draw_result, serialized_result in zip(
-                self.rn.results.order_by("-created_at"),
+                self.draw.results.order_by("-created_at"),
                 res["results"],
         ):
             self.assertEqual(draw_result.value, serialized_result["value"])

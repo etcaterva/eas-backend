@@ -1,9 +1,9 @@
-import factory as fb
 import random
 from functools import partial
 
+import factory as fb
 
-Faker = partial(fb.Faker, locale="es_ES")
+Faker = partial(fb.Faker, locale="es_ES")  # pylint: disable=invalid-name
 
 
 class BaseDrawFactory(fb.django.DjangoModelFactory):

@@ -1,6 +1,6 @@
 from django.apps import apps
 from django.contrib import admin
 
-app_models = apps.get_app_config('ws').get_models()
-for model in app_models:
+
+for model in apps.get_app_config('ws').get_models():
     admin.site.register(model)
