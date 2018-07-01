@@ -1,0 +1,20 @@
+sudo: false
+
+before_install:
+  - pip install --quiet coveralls
+  - pip install codecov
+
+language: python
+
+python:
+  - "3.6"
+
+install:
+  - pip install -r requirements/test.txt
+
+script:
+  - coverage run --source='eas' --source='ws' manage.py test
+  - coverage report -m --fail-under=100
+
+after_success:
+  - coveralls
