@@ -5,11 +5,17 @@ import uuid
 from django.db import models
 
 
+def create_id():
+    return str(uuid.uuid4())
+
+
 class BaseDraw(models.Model):
     """Base Model for all the draws"""
     _RESULT_LIMIT = 50  # Max number of results to keep
 
-    private_id = models.CharField(max_length=64, default=uuid.uuid4,
+    id = models.CharField(max_length=64, default=create_id,
+                          primary_key=True, null=False, editable=False)
+    private_id = models.CharField(max_length=64, default=create_id,
                                   unique=True, null=False, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)

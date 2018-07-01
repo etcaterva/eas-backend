@@ -13,8 +13,13 @@ class StrDatetimeMatcher:
     def __eq__(self, other):
         return self.expected == dateutil.parser.parse(other)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.expected})"
+
 
 class TestRandomNumber(APITestCase):
+    maxDiff = None
+
     def setUp(self):
         self.draws = RandomNumberFactory.create_batch(size=50)
         self.draw = RandomNumberFactory()
@@ -60,6 +65,16 @@ class TestRandomNumber(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         expected_result = self.as_expected_result(self.draw)
+        self.assertEqual(response.data.keys(), expected_result.keys())
+        self.assertEqual(response.data, expected_result)
+
+    def test_retrieve_with_private_id(self):
+        self.draw.toss()
+        url = reverse('random_number-detail',
+                      kwargs=dict(pk=self.draw.private_id))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        expected_result = self.as_expected_result(self.draw, write_access=True)
         self.assertEqual(response.data.keys(), expected_result.keys())
         self.assertEqual(response.data, expected_result)
 
