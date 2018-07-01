@@ -36,3 +36,7 @@ class TestModels(TestCase):
         self.rn.toss()
         self.assertEqual(self.rn.results.count(), 50)
         self.assertNotIn(res1, self.rn.results.all())
+
+    def test_repr(self):
+        repr(self.rn)
+        repr(self.rn.toss())

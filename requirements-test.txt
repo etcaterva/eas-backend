@@ -1,0 +1,4 @@
+-r requirements.txt
+python-dateutil
+coverage
+django-coverage-plugin
