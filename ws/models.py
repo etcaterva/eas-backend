@@ -5,27 +5,16 @@ import uuid
 from django.db import models
 
 
-class BaseModel(models.Model):
-    """The base model for all tables, provides a basic metadata"""
-    class Meta:
-        abstract = True
-
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True, editable=False)
-
-    def __repr__(self):  # pragma: nocover
-        return "<%s  %r>" % (self.__class__.__name__, self.id)
-
-
-class RandomNumber(BaseModel):
+class BaseDraw(models.Model):
+    """Base Model for all the draws"""
     _RESULT_LIMIT = 50  # Max number of results to keep
 
     private_id = models.CharField(max_length=64, default=uuid.uuid4,
                                   unique=True, null=False, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
     title = models.TextField(null=True)
     description = models.TextField(null=True)
-    range_min = models.IntegerField()
-    range_max = models.IntegerField()
 
     def toss(self):
         """Generates and saves a result"""
@@ -39,16 +28,33 @@ class RandomNumber(BaseModel):
         result_obj.save()  # Should we really save here???
         return result_obj
 
-    def generate_result(self):  # pragma: nocover
-        return random.randint(self.range_min, self.range_max)
+    def __repr__(self):  # pragma: nocover
+        return "<%s  %r>" % (self.__class__.__name__, self.id)
 
 
-class RandomNumberResult(BaseModel):
+class BaseResult(models.Model):
+    class Meta:
+        abstract = True
 
-    value = models.IntegerField()
-    draw = models.ForeignKey(RandomNumber, on_delete=models.CASCADE,
+    created_at = models.DateTimeField(auto_now_add=True, editable=False,
+                                      null=False)
+    draw = models.ForeignKey(BaseDraw, on_delete=models.CASCADE,
                              related_name="results")
+    value = None  # To be set by child
 
     def __repr__(self):
         return "<%s  %r>" % (self.__class__.__name__, self.value)
 
+
+class RandomNumberResult(BaseResult):
+    value = models.IntegerField()
+
+
+class RandomNumber(BaseDraw):
+    RESULT_CLASS = RandomNumberResult
+
+    range_min = models.IntegerField()
+    range_max = models.IntegerField()
+
+    def generate_result(self):  # pragma: nocover
+        return random.randint(self.range_min, self.range_max)
