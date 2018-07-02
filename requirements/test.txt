@@ -4,3 +4,4 @@ python-dateutil
 coverage
 django-coverage-plugin
 pylint
+pylint-django
