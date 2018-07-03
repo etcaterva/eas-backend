@@ -43,7 +43,7 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
     def toss(self, _, pk):
         draw = get_object_or_404(self.MODEL, private_id=pk)
         result = draw.toss()
-        result_serializer = self.serializer_class.RESULT_SERIALIZER(result)
+        result_serializer = serializers.ResultSerializer(result)
         return Response(result_serializer.data)
 
 

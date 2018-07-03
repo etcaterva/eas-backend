@@ -11,19 +11,20 @@ class BaseSerializer(serializers.ModelSerializer):
 
     @classmethod
     def get_results(cls, instance):
-        # pylint: disable=no-member
         return [
-            cls.RESULT_SERIALIZER(result).data
-            for result in cls.RESULT_MODEL.objects
+            ResultSerializer(result).data
+            for result in models.Result.objects
             .filter(draw_id=instance.id)
             .order_by("-created_at")
         ]
 
 
-class RandomNumberResultSerializer(serializers.ModelSerializer):
+class ResultSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.RandomNumberResult
+        model = models.Result
         fields = ('created_at', 'value',)
+
+    value = serializers.JSONField()
 
 
 class RandomNumberSerializer(BaseSerializer):
@@ -35,6 +36,3 @@ class RandomNumberSerializer(BaseSerializer):
         if data["range_min"] > data["range_max"]:
             raise serializers.ValidationError('invalid_range')
         return data
-
-    RESULT_MODEL = models.RandomNumberResult
-    RESULT_SERIALIZER = RandomNumberResultSerializer

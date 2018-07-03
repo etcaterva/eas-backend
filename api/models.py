@@ -3,6 +3,7 @@ import random
 import uuid
 
 from django.db import models
+from jsonfield import JSONField
 
 
 def create_id():
@@ -11,7 +12,6 @@ def create_id():
 
 class BaseDraw(models.Model):
     """Base Model for all the draws"""
-    RESULT_CLASS = None  # set on child
     RESULTS_LIMIT = 50  # Max number of results to keep
 
     id = models.CharField(max_length=64, default=create_id,
@@ -28,41 +28,32 @@ class BaseDraw(models.Model):
         if self.results.count() >= self.RESULTS_LIMIT:
             self.results.order_by("created_at").first().delete()
         result = self.generate_result()
-        result_obj = self.RESULT_CLASS(  # pylint: disable=not-callable
+        result_obj = Result(
             value=result,
             draw=self,
         )
         result_obj.save()  # Should we really save here???
         return result_obj
 
-    @property
-    def results(self):
-        return self.RESULT_CLASS.objects.filter(draw__id=self.id)
+    def generate_result(self):
+        raise NotImplementedError()
 
     def __repr__(self):  # pragma: nocover
         return "<%s  %r>" % (self.__class__.__name__, self.id)
 
 
-class BaseResult(models.Model):
-    class Meta:
-        abstract = True
-
+class Result(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False,
                                       null=False)
-    draw = models.ForeignKey(BaseDraw, on_delete=models.CASCADE)
-    value = None  # To be set by child
+    draw = models.ForeignKey(BaseDraw, on_delete=models.CASCADE,
+                             related_name="results")
+    value = JSONField()
 
     def __repr__(self):
         return "<%s  %r>" % (self.__class__.__name__, self.value)
 
 
-class RandomNumberResult(BaseResult):
-    value = models.IntegerField()
-
-
 class RandomNumber(BaseDraw):
-    RESULT_CLASS = RandomNumberResult
-
     range_min = models.IntegerField()
     range_max = models.IntegerField()
 
