@@ -31,5 +31,10 @@ class RandomNumberSerializer(BaseSerializer):
         model = models.RandomNumber
         fields = BaseSerializer.BASE_FIELDS + ('range_min', 'range_max',)
 
+    def validate(self, data):
+        if data["range_min"] > data["range_max"]:
+            raise serializers.ValidationError('invalid_range')
+        return data
+
     RESULT_MODEL = models.RandomNumberResult
     RESULT_SERIALIZER = RandomNumberResultSerializer

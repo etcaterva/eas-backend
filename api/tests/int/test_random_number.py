@@ -60,6 +60,12 @@ class TestRandomNumber(APITestCase):
         self.assertEqual(response.data.keys(), expected_result.keys())
         self.assertEqual(response.data, expected_result)
 
+    def test_creation_invalid(self):
+        url = reverse('random_number-list')
+        data = RandomNumberFactory.dict(range_min=5, range_max=4)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_retrieve(self):
         self.draw.toss()
         url = reverse('random_number-detail', kwargs=dict(pk=self.draw.id))
