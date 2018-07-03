@@ -11,6 +11,7 @@ def create_id():
 
 class BaseDraw(models.Model):
     """Base Model for all the draws"""
+    RESULT_CLASS = None  # set on child
     RESULTS_LIMIT = 50  # Max number of results to keep
 
     id = models.CharField(max_length=64, default=create_id,
@@ -27,12 +28,16 @@ class BaseDraw(models.Model):
         if self.results.count() >= self.RESULTS_LIMIT:
             self.results.order_by("created_at").first().delete()
         result = self.generate_result()
-        result_obj = RandomNumberResult(
+        result_obj = self.RESULT_CLASS(  # pylint: disable=not-callable
             value=result,
             draw=self,
         )
         result_obj.save()  # Should we really save here???
         return result_obj
+
+    @property
+    def results(self):
+        return self.RESULT_CLASS.objects.filter(draw__id=self.id)
 
     def __repr__(self):  # pragma: nocover
         return "<%s  %r>" % (self.__class__.__name__, self.id)
@@ -44,8 +49,7 @@ class BaseResult(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True, editable=False,
                                       null=False)
-    draw = models.ForeignKey(BaseDraw, on_delete=models.CASCADE,
-                             related_name="results")
+    draw = models.ForeignKey(BaseDraw, on_delete=models.CASCADE)
     value = None  # To be set by child
 
     def __repr__(self):
@@ -62,5 +66,5 @@ class RandomNumber(BaseDraw):
     range_min = models.IntegerField()
     range_max = models.IntegerField()
 
-    def generate_result(self):  # pragma: nocover
+    def generate_result(self):
         return random.randint(self.range_min, self.range_max)
