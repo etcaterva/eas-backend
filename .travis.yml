@@ -13,10 +13,10 @@ install:
   - pip install -r requirements/test.txt
 
 script:
-  - coverage run --source='eas' --source='ws' manage.py test
+  - coverage run --source='eas' --source='api' manage.py test
   - coverage report -m --fail-under=100
 
-  - pylint ws
+  - pylint api
 
 after_success:
   - coveralls

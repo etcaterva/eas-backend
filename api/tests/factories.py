@@ -18,7 +18,7 @@ class BaseDrawFactory(fb.django.DjangoModelFactory):
 
 class RandomNumberFactory(BaseDrawFactory):
     class Meta:
-        model = "ws.RandomNumber"
+        model = "api.RandomNumber"
 
     range_min = random.randint(0, 49)
     range_max = random.randint(50, 100)
