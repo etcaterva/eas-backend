@@ -47,7 +47,7 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         return Response(result_serializer.data)
 
 
-class RandomNumber(BaseDrawViewSet):
+class RandomNumberViewSet(BaseDrawViewSet):
     MODEL = models.RandomNumber
     serializer_class = serializers.RandomNumberSerializer
 
