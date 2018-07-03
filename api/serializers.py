@@ -32,7 +32,7 @@ class RandomNumberSerializer(BaseSerializer):
         model = models.RandomNumber
         fields = BaseSerializer.BASE_FIELDS + ('range_min', 'range_max',)
 
-    def validate(self, data):
+    def validate(self, data):  # pylint: disable=arguments-differ
         if data["range_min"] > data["range_max"]:
             raise serializers.ValidationError('invalid_range')
         return data
