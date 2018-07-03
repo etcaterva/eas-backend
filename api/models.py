@@ -35,7 +35,7 @@ class BaseDraw(models.Model):
         result_obj.save()  # Should we really save here???
         return result_obj
 
-    def generate_result(self):
+    def generate_result(self):  # pragma: no cover
         raise NotImplementedError()
 
     def __repr__(self):  # pragma: nocover
