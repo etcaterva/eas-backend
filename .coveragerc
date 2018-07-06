@@ -1,0 +1,13 @@
+[run]
+branch = False
+
+source =
+    eas
+
+omit =
+    eas/wsgi.py
+
+[report]
+show_missing = True
+
+fail_under = 100
