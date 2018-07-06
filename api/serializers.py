@@ -2,6 +2,12 @@ from rest_framework import serializers
 
 from . import models
 
+# pylint: disable=abstract-method
+
+
+class DrawTossPayloadSerializer(serializers.Serializer):
+    pass
+
 
 class DrawMetadataSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,12 +20,12 @@ class BaseSerializer(serializers.ModelSerializer):
                    'results', 'metadata',)
 
     results = serializers.SerializerMethodField()
-    metadata = DrawMetadataSerializer(many=True, default=[])
+    metadata = DrawMetadataSerializer(many=True, required=False)
 
     def create(self, validated_data):
         data_copy = dict(validated_data)
-        metadata_list = data_copy.pop('metadata')
-        draw = self.__class__.Meta.model.objects.create(**data_copy) # pylint: disable=no-member
+        metadata_list = data_copy.pop('metadata', [])
+        draw = self.__class__.Meta.model.objects.create(**data_copy)  # pylint: disable=no-member
         for metadata in metadata_list:
             models.ClientDrawMetaData.objects.create(draw=draw, **metadata)
         return draw

@@ -39,6 +39,7 @@ DJANGO_APPS = [
 
 INSTALLED_APPS = [
     *DJANGO_APPS,
+    'drf_yasg',
     'rest_framework',
     'api.apps.WsConfig',
 ]

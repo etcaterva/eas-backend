@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
 
 from . import models, serializers
 
@@ -39,6 +40,8 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
             result_data = self.enrich_for_owner(result_data, instance)
         return Response(result_data)
 
+    @swagger_auto_schema(methods=['post'],
+                         request_body=serializers.DrawTossPayloadSerializer)
     @action(methods=['post'], detail=True)
     def toss(self, _, pk):
         draw = get_object_or_404(self.MODEL, private_id=pk)
