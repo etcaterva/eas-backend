@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class WsConfig(AppConfig):
-    name = 'api'
+    name = 'eas.api'

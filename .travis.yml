@@ -14,10 +14,10 @@ install:
 
 script:
   - python manage.py makemigrations
-  - coverage run --source='eas' --source='api' manage.py test
+  - coverage run --source='eas' manage.py test
   - coverage report -m --fail-under=100
 
-  - pylint api
+  - pylint eas
 
 after_success:
   - coveralls

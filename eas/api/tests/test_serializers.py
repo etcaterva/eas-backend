@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from api.serializers import RandomNumberSerializer
+from eas.api.serializers import RandomNumberSerializer
 from .factories import RandomNumberFactory
 
 

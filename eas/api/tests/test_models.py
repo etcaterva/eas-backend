@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from api.models import RandomNumber
+from eas.api.models import RandomNumber
 from .factories import RandomNumberFactory
 
 
