@@ -3,11 +3,26 @@ from rest_framework import serializers
 from . import models
 
 
+class DrawMetadataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ClientDrawMetaData
+        fields = ('client', 'key', 'value',)
+
+
 class BaseSerializer(serializers.ModelSerializer):
     BASE_FIELDS = ('id', 'created_at', 'updated_at', 'title', 'description',
-                   'results',)
+                   'results', 'metadata',)
 
     results = serializers.SerializerMethodField()
+    metadata = DrawMetadataSerializer(many=True, default=[])
+
+    def create(self, validated_data):
+        data_copy = dict(validated_data)
+        metadata_list = data_copy.pop('metadata')
+        draw = self.__class__.Meta.model.objects.create(**data_copy) # pylint: disable=no-member
+        for metadata in metadata_list:
+            models.ClientDrawMetaData.objects.create(draw=draw, **metadata)
+        return draw
 
     @classmethod
     def get_results(cls, instance):

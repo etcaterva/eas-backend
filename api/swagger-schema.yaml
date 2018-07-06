@@ -98,6 +98,8 @@ definitions:
     RandomNumber:
       type: "object"
       properties:
+        metadata:
+          $ref: "#/definitions/RandomNumberResult"
         id:
           type: "string"
         private_id:

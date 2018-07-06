@@ -42,6 +42,14 @@ class BaseDraw(models.Model):
         return "<%s  %r>" % (self.__class__.__name__, self.id)
 
 
+class ClientDrawMetaData(models.Model):
+    """Opaque Meta data about an object that clients can store"""
+    draw = models.ForeignKey(BaseDraw, on_delete=models.CASCADE, related_name="metadata")
+    client = models.CharField(max_length=100)
+    key = models.CharField(max_length=100, null=False, unique=False)
+    value = models.TextField()
+
+
 class Result(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False,
                                       null=False)

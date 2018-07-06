@@ -129,6 +129,7 @@ disable=print-statement,
         dict-keys-not-iterating,
         dict-values-not-iterating,
         missing-docstring,
+        invalid-name,
         too-many-ancestors
 
 # Enable the message, report, category or checker with the given id(s). You can

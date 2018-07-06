@@ -14,7 +14,7 @@ class TestSerializers(TestCase):
 
         self.assertEqual(sorted(res), sorted([
             'id', 'created_at', 'updated_at', 'title',
-            'description', 'results',
+            'description', 'results', 'metadata',
             'range_min', 'range_max',
         ]))
 
@@ -41,3 +41,14 @@ class TestSerializers(TestCase):
         assert 'private_id' not in serializer.validated_data
         assert 'title' in serializer.validated_data
         assert 'range_min' in serializer.validated_data
+
+    def test_serialize_success_metadata(self):
+        rn_data = RandomNumberFactory.dict()
+        rn_data["metadata"] = [
+            dict(client="web", key="chat_enabled", value="false"),
+            dict(client="web", key="premium_customer", value="true"),
+        ]
+        serializer = RandomNumberSerializer(data=rn_data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+        self.assertEqual(serializer.data["metadata"], rn_data["metadata"])

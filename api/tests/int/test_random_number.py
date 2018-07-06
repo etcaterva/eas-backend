@@ -1,7 +1,7 @@
 import dateutil.parser
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APILiveServerTestCase
 
 from api.models import RandomNumber
 from ..factories import RandomNumberFactory
@@ -18,12 +18,13 @@ class StrDatetimeMatcher:
         return f"{self.__class__.__name__}({self.expected})"
 
 
-class TestRandomNumber(APITestCase):
+class TestRandomNumber(APILiveServerTestCase):
     maxDiff = None
 
     def setUp(self):
         self.draws = RandomNumberFactory.create_batch(size=50)
         self.draw = RandomNumberFactory()
+        self.client.default_format = 'json'
 
     @staticmethod
     def get_draw(id_):
@@ -39,6 +40,7 @@ class TestRandomNumber(APITestCase):
             'description': draw.description,
             'range_min': draw.range_min,
             'range_max': draw.range_max,
+            'metadata': [],
             'results': [dict(
                 created_at=StrDatetimeMatcher(r.created_at),
                 value=r.value
@@ -100,3 +102,18 @@ class TestRandomNumber(APITestCase):
         self.assertEqual(response.data.keys(), expected_result.keys())
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(response.data, expected_result)
+
+    def test_create_and_retrieve_metadata(self):
+        url = reverse('random_number-list')
+        data = RandomNumberFactory.dict()
+        data["metadata"] = [
+            dict(client="web", key="chat_enabled", value="false"),
+            dict(client="web", key="premium_customer", value="true"),
+        ]
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        chat_enabled_data, = [i for i in response.data["metadata"]
+                              if i["key"] == "chat_enabled"]
+        self.assertEqual(chat_enabled_data, dict(
+            client="web", key="chat_enabled", value="false"
+        ))

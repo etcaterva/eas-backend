@@ -16,6 +16,16 @@ class BaseDrawFactory(fb.django.DjangoModelFactory):
     description = Faker("text")
 
 
+class MetadataFactory(fb.django.DjangoModelFactory):
+    class Meta:
+        model = "api.ClientDrawMetadata"
+
+    client = "webapp"
+    key = Faker("sentence")
+    value = Faker("sentence")
+    draw = fb.SubFactory(BaseDrawFactory)
+
+
 class RandomNumberFactory(BaseDrawFactory):
     class Meta:
         model = "api.RandomNumber"
