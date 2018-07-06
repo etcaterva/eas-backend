@@ -13,7 +13,7 @@ install:
   - pip install -r requirements/test.txt
 
 script:
-  - ./manage.py makemigrations
+  - python manage.py makemigrations
   - coverage run --source='eas' --source='api' manage.py test
   - coverage report -m --fail-under=100
 
