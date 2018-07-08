@@ -3,6 +3,36 @@
 
 EAS Backend services
 
+## Working locally
+#### Set up local environment
 
+```bash
+python3.6 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements/test.txt
 
+./manage.py makemigrations
+```
 
+#### Validate Changes
+
+```bash
+coverage run manage.py test
+coverage report
+
+pylint eas
+```
+
+#### Run a local version
+
+```bash
+./manage.py migrate
+./manage.py runserver
+```
+
+Check `/api/swagger` or `/api/redoc`.
+
+Swagger file available in `/api/swagger.yaml` or by running
+```bash
+./manage.py generate_swagger
+```

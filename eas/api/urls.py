@@ -17,16 +17,13 @@ router.register(r'raffle', views.RaffleViewSet,
 urlpatterns = router.urls
 
 # schema definition
+api_info = openapi.Info(
+    title="EAS API",
+    default_version="v1",
+)
 
 schema_view = get_schema_view(
-    openapi.Info(
-        title="Snippets API",
-        default_version='v1',
-        description="Test description",
-        terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="contact@snippets.local"),
-        license=openapi.License(name="BSD License"),
-    ),
+    api_info,
     validators=['flex', 'ssv'],
     public=True,
 )
