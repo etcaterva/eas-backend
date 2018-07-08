@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from drf_yasg.utils import swagger_auto_schema
 
 from . import models, serializers
@@ -45,9 +46,12 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
     @action(methods=['post'], detail=True)
     def toss(self, _, pk):
         draw = get_object_or_404(self.MODEL, private_id=pk)
-        result = draw.toss()
+        result = self._toss_draw(draw)
         result_serializer = serializers.ResultSerializer(result)
         return Response(result_serializer.data)
+
+    def _toss_draw(self, draw):  # pylint: disable=no-self-use
+        return draw.toss()
 
 
 class RandomNumberViewSet(BaseDrawViewSet):
@@ -55,3 +59,17 @@ class RandomNumberViewSet(BaseDrawViewSet):
     serializer_class = serializers.RandomNumberSerializer
 
     queryset = MODEL.objects.all()
+
+
+class RaffleViewSet(BaseDrawViewSet):
+    MODEL = models.Raffle
+    serializer_class = serializers.RaffleSerializer
+
+    queryset = MODEL.objects.all()
+
+    def _toss_draw(self, draw):
+        if draw.participants.count() < draw.prizes.count():
+            raise ValidationError(
+                f"The draw needs to have at least {draw.participants.count()}"
+                " participants.")
+        return draw.toss()

@@ -3,6 +3,8 @@ from functools import partial
 
 import factory as fb
 
+from .. import models
+
 Faker = partial(fb.Faker, locale="es_ES")  # pylint: disable=invalid-name
 
 
@@ -32,3 +34,36 @@ class RandomNumberFactory(BaseDrawFactory):
 
     range_min = random.randint(0, 49)
     range_max = random.randint(50, 100)
+
+
+class PrizeFactory(fb.django.DjangoModelFactory):
+    class Meta:
+        model = "api.Prize"
+
+    name = fb.Faker("sentence")
+
+
+class RaffleFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Raffle"
+
+    prizes = fb.List([dict(name="cupcake"), dict(name="laptop")])
+    participants = fb.List([dict(name="raul"), dict(name="juian")])
+
+    @classmethod
+    def dict(cls, **kwargs):
+        """Returns a dict rather than an object"""
+        return fb.build(dict, FACTORY_CLASS=cls, **kwargs)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        prizes = kwargs.pop('prizes')
+        participants = kwargs.pop('participants')
+        manager = cls._get_manager(model_class)
+        draw = manager.create(*args, **kwargs)
+        for prize in prizes:
+            models.Prize.objects.create(**prize, draw=draw)
+        for participant in participants:
+            models.Participant.objects.create(**participant, draw=draw)
+
+        return draw

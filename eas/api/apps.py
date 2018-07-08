@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class WsConfig(AppConfig):
+class APIConfig(AppConfig):
     name = 'eas.api'
