@@ -5,6 +5,9 @@ from . import models
 # pylint: disable=abstract-method
 
 
+COMMON_FIELDS = ('id', 'created_at',)
+
+
 class DrawTossPayloadSerializer(serializers.Serializer):
     pass
 
@@ -16,7 +19,7 @@ class DrawMetadataSerializer(serializers.ModelSerializer):
 
 
 class BaseSerializer(serializers.ModelSerializer):
-    BASE_FIELDS = ('id', 'created_at', 'updated_at', 'title', 'description',
+    BASE_FIELDS = (*COMMON_FIELDS, 'updated_at', 'title', 'description',
                    'results', 'metadata',)
 
     results = serializers.SerializerMethodField()
@@ -57,3 +60,37 @@ class RandomNumberSerializer(BaseSerializer):
         if data["range_min"] > data["range_max"]:
             raise serializers.ValidationError('invalid_range')
         return data
+
+
+class PrizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Prize
+        fields = COMMON_FIELDS + ('name', 'url', )
+
+
+class ParticipantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Participant
+        fields = COMMON_FIELDS + ('name', 'facebook_id', )
+
+
+class RaffleSerializer(BaseSerializer):
+    class Meta:
+        model = models.Raffle
+        fields = BaseSerializer.BASE_FIELDS + ('prizes', 'participants',)
+
+    prizes = PrizeSerializer(many=True, required=True)
+    participants = ParticipantSerializer(many=True, required=True)
+
+    def create(self, validated_data):
+        data = dict(validated_data)
+        prizes = data.pop('prizes')
+        if not prizes:
+            raise serializers.ValidationError("Prizes cannot be empty")
+        participants = data.pop('participants')
+        draw = super().create(data)
+        for prize in prizes:
+            models.Prize.objects.create(draw=draw, **prize)
+        for participant in participants:
+            models.Participant.objects.create(draw=draw, **participant)
+        return draw

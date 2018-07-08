@@ -12,6 +12,8 @@ from . import views
 router = DefaultRouter()
 router.register(r'random_number', views.RandomNumberViewSet,
                 base_name='random_number')
+router.register(r'raffle', views.RaffleViewSet,
+                base_name='raffle')
 urlpatterns = router.urls
 
 # schema definition

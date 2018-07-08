@@ -37,12 +37,18 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
-INSTALLED_APPS = [
-    *DJANGO_APPS,
+
+THIRD_PRATY_APPS = [
     'drf_yasg',
     'rest_framework',
-    'eas.api.apps.WsConfig',
 ]
+
+LOCAL_APPS = [
+    'eas',
+    'eas.api.apps.APIConfig'
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PRATY_APPS + LOCAL_APPS
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
