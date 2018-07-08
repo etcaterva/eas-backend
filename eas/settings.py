@@ -41,6 +41,7 @@ DJANGO_APPS = [
 THIRD_PRATY_APPS = [
     'drf_yasg',
     'rest_framework',
+    'corsheaders',
 ]
 
 LOCAL_APPS = [
@@ -56,6 +57,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -131,6 +133,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Generation of swagger file from command line in manage.py
+
 SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'eas.api.urls.api_info',
 }
+
+
+# Allow all hosts to do cross-site requests
+# https://github.com/ottoyiu/django-cors-headers
+CORS_ORIGIN_ALLOW_ALL = True
