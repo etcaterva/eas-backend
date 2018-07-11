@@ -13,7 +13,7 @@ class TestSerializers(TestCase):
         res = RandomNumberSerializer(self.draw).data
 
         self.assertEqual(sorted(res), sorted([
-            'id', 'created_at', 'updated_at', 'title',
+            'id', 'private_id', 'created_at', 'updated_at', 'title',
             'description', 'results', 'metadata',
             'range_min', 'range_max',
         ]))
