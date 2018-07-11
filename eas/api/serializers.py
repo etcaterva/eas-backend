@@ -20,7 +20,7 @@ class DrawMetadataSerializer(serializers.ModelSerializer):
 
 class BaseSerializer(serializers.ModelSerializer):
     BASE_FIELDS = (*COMMON_FIELDS, 'updated_at', 'title', 'description',
-                   'results', 'metadata',)
+                   'results', 'metadata', 'private_id')
 
     results = serializers.SerializerMethodField()
     metadata = DrawMetadataSerializer(many=True, required=False)

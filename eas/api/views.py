@@ -12,33 +12,32 @@ from . import models, serializers
 class BaseDrawViewSet(mixins.CreateModelMixin,
                       mixins.RetrieveModelMixin,
                       viewsets.GenericViewSet):
+
+    PRIVATE_FIELDS = ['private_id']  # Fields to show only to the owner
+
     @classmethod
-    def enrich_for_owner(cls, data, draw):
-        return {
-            **data,
-            "private_id": draw.private_id,
-        }
+    def remove_private_fields(cls, data):
+        for attr in cls.PRIVATE_FIELDS:
+            data.pop(attr)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        draw = serializer.save()
+        serializer.save()
         headers = self.get_success_headers(serializer.data)
-        return Response(self.enrich_for_owner(serializer.data, draw),
-                        status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED,
+                        headers=headers)
 
     def retrieve(self, request, *args, **kwargs):
-        is_owner = False  # Horrible flag to know if the user is the owner
         try:
             instance = self.get_object()
         except Http404:
             instance = get_object_or_404(self.MODEL,
                                          private_id=self.kwargs['pk'])
-            is_owner = True
         serializer = self.get_serializer(instance)
         result_data = serializer.data
-        if is_owner:
-            result_data = self.enrich_for_owner(result_data, instance)
+        if kwargs["pk"] != result_data["private_id"]:
+            self.remove_private_fields(result_data)
         return Response(result_data)
 
     @swagger_auto_schema(methods=['post'],
