@@ -19,6 +19,7 @@ paths:
             $ref: '#/definitions/Raffle'
       responses:
         '201':
+          description: Raffle successfully created
           schema:
             $ref: '#/definitions/Raffle'
       tags:
@@ -30,6 +31,7 @@ paths:
       parameters: []
       responses:
         '200':
+          description: The details of the requested raffle
           schema:
             $ref: '#/definitions/Raffle'
       tags:
@@ -50,6 +52,7 @@ paths:
             $ref: '#/definitions/DrawTossPayload'
       responses:
         '201':
+          description: A result of the raffle
           schema:
             $ref: '#/definitions/RaffleResult'
       tags:
@@ -70,6 +73,7 @@ paths:
             $ref: '#/definitions/RandomNumber'
       responses:
         '201':
+          description: The RandomNumber draw was successfully created
           schema:
             $ref: '#/definitions/RandomNumber'
       tags:
@@ -81,6 +85,7 @@ paths:
       parameters: []
       responses:
         '200':
+          description: The details of the requested draw
           schema:
             $ref: '#/definitions/RandomNumber'
       tags:
@@ -101,6 +106,7 @@ paths:
             $ref: '#/definitions/DrawTossPayload'
       responses:
         '201':
+          description: A result of the raffle
           schema:
             $ref: '#/definitions/RandomNumberResult'
       tags:
