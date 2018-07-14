@@ -9,7 +9,7 @@ EAS Backend services
 ```bash
 python3.6 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements/test.txt
+pip install -r requirements/local.txt
 
 ./manage.py makemigrations
 ```

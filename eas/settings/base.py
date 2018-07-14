@@ -10,19 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
-import os
+import string
+import pathlib
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = pathlib.Path(__file__).absolute().parent.parent.parent
+APP_DIR = ROOT_DIR / 'eas'
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '^4m+@w&q!%nl6+80^=od&%*+h85+b9mu1suj!q)_g3t(k%^f8v'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -41,7 +35,6 @@ DJANGO_APPS = [
 THIRD_PRATY_APPS = [
     'drf_yasg',
     'rest_framework',
-    'corsheaders',
 ]
 
 LOCAL_APPS = [
@@ -57,7 +50,6 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -93,7 +85,7 @@ WSGI_APPLICATION = 'eas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': str(ROOT_DIR / 'db.sqlite3'),
     }
 }
 
@@ -139,7 +131,12 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'eas.api.urls.api_info',
 }
 
-
-# Allow all hosts to do cross-site requests
-# https://github.com/ottoyiu/django-cors-headers
-CORS_ORIGIN_ALLOW_ALL = True
+# Secret key generation
+SECRET_FILE = str(APP_DIR / '.secret.txt')
+try:
+    SECRET_KEY = open(SECRET_FILE).read().strip()
+except EnvironmentError:
+    from random import choice
+    SECRET_KEY = ''.join([choice(string.ascii_letters) for _ in range(50)])
+    with open(SECRET_FILE, 'w') as secret:
+        secret.write(SECRET_KEY)

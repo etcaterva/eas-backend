@@ -10,7 +10,7 @@ python:
   - "3.6"
 
 install:
-  - pip install -r requirements/test.txt
+  - pip install -r requirements/local.txt
 
 script:
   - python manage.py makemigrations
