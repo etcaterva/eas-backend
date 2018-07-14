@@ -71,7 +71,7 @@ class RandomNumber(BaseDraw):
     range_max = models.IntegerField()
 
     def generate_result(self):
-        return random.randint(self.range_min, self.range_max)
+        return [random.randint(self.range_min, self.range_max)]
 
 
 class Participant(BaseModel):

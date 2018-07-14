@@ -22,7 +22,7 @@ class TestModels(TestCase):
         draw.toss()
 
         self.assertEqual(
-            1,
+            [1],
             self.get_random_number(draw.id).results.first().value
         )
 
