@@ -1,0 +1,2 @@
+swagger:
+	npm run swagger

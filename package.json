@@ -1,0 +1,19 @@
+{
+  "name": "eas-backend",
+  "version": "1.0.0",
+  "description": "EchaloASuerte backend",
+  "main": "none",
+  "scripts": {
+    "swagger": "swagger_swagger_fileName=swagger.yaml swagger project edit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etcaterva/eas-backend.git"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {},
+  "devDependencies": {
+    "swagger": "^0.7.5",
+    "swagger-editor": "^3.6.3"
+  }
+}
