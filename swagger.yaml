@@ -300,6 +300,4 @@ definitions:
         format: date-time
         readOnly: true
       value:
-        type: array
-        items:
-          type: integer
+        type: integer
