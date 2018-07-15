@@ -1,6 +1,7 @@
 """Models of the objects used in EAS"""
 import random
 import uuid
+import datetime as dt
 
 from django.db import models
 from jsonfield import JSONField
@@ -32,15 +33,33 @@ class BaseDraw(BaseModel):
 
     def toss(self):
         """Generates and saves a result"""
+        return self._generate_result(
+            value=self.generate_result(),
+            draw=self,
+        )
+
+    def schedule_toss(self, target_date):
+        return self._generate_result(
+            schedule_date=target_date,
+            draw=self,
+        )
+
+    def _generate_result(self, **kwargs):
         if self.results.count() >= self.RESULTS_LIMIT:
             self.results.order_by("created_at").first().delete()
-        result = self.generate_result()
         result_obj = Result(
-            value=result,
-            draw=self,
+            **kwargs
         )
         result_obj.save()  # Should we really save here???
         return result_obj
+
+    def resolve_scheduled_results(self):
+        """Resolves all scheduled results in the past"""
+        for result in self.results.filter(
+                schedule_date__lte=dt.datetime.now(dt.timezone.utc)):
+            if result.value is None:
+                result.value = self.generate_result()
+                result.save()
 
     def generate_result(self):  # pragma: no cover
         raise NotImplementedError()
@@ -58,9 +77,16 @@ class ClientDrawMetaData(BaseModel):
 
 
 class Result(BaseModel):
+    """Represents a result of tossing a draw.
+
+    The value of the result is stored in the value column as JSON. If
+    the toss is scheduled for a future date, schedule_date will be set
+    to that date and value will be null.
+    """
     draw = models.ForeignKey(BaseDraw, on_delete=models.CASCADE,
                              related_name="results")
-    value = JSONField()
+    value = JSONField(null=True)
+    schedule_date = models.DateTimeField(null=True)
 
     def __repr__(self):
         return "<%s  %r>" % (self.__class__.__name__, self.value)

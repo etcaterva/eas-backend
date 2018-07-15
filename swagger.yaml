@@ -223,7 +223,10 @@ definitions:
           $ref: '#/definitions/Participant'
   DrawTossPayload:
     type: object
-    properties: {}
+    properties:
+      schedule_date:
+        type: string
+        format: date-time
   RandomNumber:
     required:
       - range_min
@@ -276,6 +279,9 @@ definitions:
         type: string
         format: date-time
         readOnly: true
+      schedule_date:
+        type: string
+        format: date-time
       value:
         type: object
         properties:
@@ -299,6 +305,9 @@ definitions:
         type: string
         format: date-time
         readOnly: true
+      schedule_date:
+        type: string
+        format: date-time
       value:
         type: array
         items:

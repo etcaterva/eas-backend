@@ -9,7 +9,7 @@ COMMON_FIELDS = ('id', 'created_at',)
 
 
 class DrawTossPayloadSerializer(serializers.Serializer):
-    pass
+    schedule_date = serializers.DateTimeField(allow_null=True, required=False)
 
 
 class DrawMetadataSerializer(serializers.ModelSerializer):
@@ -46,9 +46,9 @@ class BaseSerializer(serializers.ModelSerializer):
 class ResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Result
-        fields = ('created_at', 'value',)
+        fields = ('created_at', 'value', 'schedule_date',)
 
-    value = serializers.JSONField()
+    value = serializers.JSONField(allow_null=True)
 
 
 class RandomNumberSerializer(BaseSerializer):

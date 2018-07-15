@@ -34,6 +34,7 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         except Http404:
             instance = get_object_or_404(self.MODEL,
                                          private_id=self.kwargs['pk'])
+        instance.resolve_scheduled_results()
         serializer = self.get_serializer(instance)
         result_data = serializer.data
         if kwargs["pk"] != result_data["private_id"]:
@@ -43,9 +44,15 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
     @swagger_auto_schema(methods=['post'],
                          request_body=serializers.DrawTossPayloadSerializer)
     @action(methods=['post'], detail=True)
-    def toss(self, _, pk):
+    def toss(self, request, pk):
         draw = get_object_or_404(self.MODEL, private_id=pk)
-        result = self._toss_draw(draw)
+        serializer = serializers.DrawTossPayloadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        schedule_date = serializer.validated_data.get("schedule_date")
+        if schedule_date:
+            result = draw.schedule_toss(schedule_date)
+        else:
+            result = self._toss_draw(draw)
         result_serializer = serializers.ResultSerializer(result)
         return Response(result_serializer.data)
 

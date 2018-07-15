@@ -1,3 +1,5 @@
+import datetime as dt
+
 import dateutil.parser
 from django.urls import reverse
 from rest_framework import status
@@ -8,6 +10,8 @@ class StrDatetimeMatcher:
         self.expected = expected
 
     def __eq__(self, other):
+        if other is None:
+            return self.expected is None
         return self.expected == dateutil.parser.parse(other)
 
     def __repr__(self):  # pragma: no cover
@@ -38,7 +42,8 @@ class DrawAPITestMixin:
             'metadata': [],
             'results': [dict(
                 created_at=StrDatetimeMatcher(r.created_at),
-                value=r.value
+                value=r.value,
+                schedule_date=StrDatetimeMatcher(r.schedule_date),
             ) for r in draw.results.order_by("-created_at")],
         }
 
@@ -95,6 +100,60 @@ class DrawAPITestMixin:
         self.assertEqual(response.data.keys(), expected_result.keys())
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(response.data, expected_result)
+
+    def test_schedule_future_toss(self):
+        url = reverse(f'{self.base_url}-toss',
+                      kwargs=dict(pk=str(self.draw.private_id)))
+        target_date = dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=1)
+        toss_response = self.client.post(url, {
+            "schedule_date": target_date,
+        })
+
+        self.assertEqual(toss_response.status_code, status.HTTP_200_OK,
+                         toss_response.content)
+        self.assertEqual(toss_response.data["value"],
+                         self.draw.results.first().value)
+
+        url = reverse(f'{self.base_url}-detail', kwargs=dict(pk=self.draw.id))
+        response = self.client.get(url)
+        expected_result = self.as_expected_result(self.draw)
+        self.assertEqual(response.data.keys(), expected_result.keys())
+        self.assertEqual(1, len(response.data["results"]))
+        self.assertEqual(response.data, expected_result)
+
+        result = response.data["results"][0]
+        self.assertEqual(
+            StrDatetimeMatcher(target_date),
+            result["schedule_date"]
+        )
+        self.assertIsNone(result["value"])
+
+    def test_schedule_past_toss(self):
+        url = reverse(f'{self.base_url}-toss',
+                      kwargs=dict(pk=str(self.draw.private_id)))
+        target_date = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=1)
+        toss_response = self.client.post(url, {
+            "schedule_date": target_date,
+        })
+
+        self.assertEqual(toss_response.status_code, status.HTTP_200_OK,
+                         toss_response.content)
+        self.assertEqual(toss_response.data["value"],
+                         self.draw.results.first().value)
+
+        url = reverse(f'{self.base_url}-detail', kwargs=dict(pk=self.draw.id))
+        response = self.client.get(url)
+        expected_result = self.as_expected_result(self.draw)
+        self.assertEqual(response.data.keys(), expected_result.keys())
+        self.assertEqual(1, len(response.data["results"]))
+        self.assertEqual(response.data, expected_result)
+
+        result = response.data["results"][0]
+        self.assertEqual(
+            StrDatetimeMatcher(target_date),
+            result["schedule_date"]
+        )
+        self.assertIsNotNone(result["value"])
 
     def test_create_and_retrieve_metadata(self):
         url = reverse(f'{self.base_url}-list')
