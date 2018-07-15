@@ -3,6 +3,7 @@ factory-boy
 python-dateutil
 coverage
 django-coverage-plugin
-pylint
+pylint==1.9.2
+astroid==1.6.5
 pylint-django
 django-cors-headers
