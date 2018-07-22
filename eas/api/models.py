@@ -57,7 +57,7 @@ class BaseDraw(BaseModel):
         """Resolves all scheduled results in the past"""
         for result in self.results.filter(
                 schedule_date__lte=dt.datetime.now(dt.timezone.utc)):
-            if result.value is None:
+            if not result.value:
                 result.value = self.generate_result()
                 result.save()
 
@@ -85,7 +85,7 @@ class Result(BaseModel):
     """
     draw = models.ForeignKey(BaseDraw, on_delete=models.CASCADE,
                              related_name="results")
-    value = JSONField(null=True)
+    value = JSONField(null=True, default=list)
     schedule_date = models.DateTimeField(null=True)
 
     def __repr__(self):
