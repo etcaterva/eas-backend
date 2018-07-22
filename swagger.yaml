@@ -302,6 +302,7 @@ definitions:
         type: string
         format: date-time
       value:
+        nullable: true
         type: array
         items:
           type: object
@@ -340,5 +341,6 @@ definitions:
         format: date-time
       value:
         type: array
+        nullable: true
         items:
           type: integer
