@@ -28,16 +28,18 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=headers)
 
-    def retrieve(self, request, *args, **kwargs):
+    def _get_draw(self, pk):
         try:
-            instance = self.get_object()
+            return get_object_or_404(self.MODEL, id=pk)
         except Http404:
-            instance = get_object_or_404(self.MODEL,
-                                         private_id=self.kwargs['pk'])
+            return get_object_or_404(self.MODEL, private_id=pk)
+
+    def retrieve(self, request, *args, pk=None, **kwargs):  # pylint: disable=arguments-differ
+        instance = self._get_draw(pk)
         instance.resolve_scheduled_results()
         serializer = self.get_serializer(instance)
         result_data = serializer.data
-        if kwargs["pk"] != result_data["private_id"]:
+        if pk != result_data["private_id"]:
             self.remove_private_fields(result_data)
         return Response(result_data)
 
@@ -72,6 +74,14 @@ class RaffleViewSet(BaseDrawViewSet):
     serializer_class = serializers.RaffleSerializer
 
     queryset = MODEL.objects.all()
+
+    @action(methods=['post'], detail=True)
+    def participants(self, request, pk):
+        draw = self._get_draw(pk)
+        serializer = serializers.ParticipantSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(draw=draw)
+        return Response({}, status.HTTP_201_CREATED)
 
     def _toss_draw(self, draw):
         if draw.participants.count() < draw.prizes.count():

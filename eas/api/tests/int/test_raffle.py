@@ -54,3 +54,29 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          response.content)
+
+    def test_add_participants(self):
+        draw = self.Factory(participants=[])
+        assert not draw.participants
+
+        url = reverse(f'{self.base_url}-participants',
+                      kwargs=dict(pk=draw.id))
+        response = self.client.post(url, {
+            "name": "paco",
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED,
+                         response.content)
+        draw = self.get_draw(draw.id)
+        assert len(draw.participants) == 1
+        assert draw.participants[0].name == "paco"
+
+        response = self.client.post(url, {
+            "name": "ramon",
+            "facebook_id": "this_is_an_id"
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED,
+                         response.content)
+        draw = self.get_draw(draw.id)
+        assert len(draw.participants) == 2
+        assert draw.participants[1].name == "ramon"
+        assert draw.participants[1].facebook_id == "this_is_an_id"

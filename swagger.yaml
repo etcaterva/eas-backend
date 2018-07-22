@@ -62,6 +62,25 @@ paths:
         in: path
         required: true
         type: string
+  '/raffle/{id}/participants/':
+    post:
+      operationId: raffle_participants_add
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Participant'
+      responses:
+        '201':
+          description: Object created
+      tags:
+        - raffle
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
   /random_number/:
     post:
       operationId: random_number_create
@@ -284,7 +303,7 @@ definitions:
         format: date-time
       value:
         type: array
-        items: 
+        items:
           type: object
           properties:
             participant:
