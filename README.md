@@ -36,3 +36,12 @@ Swagger file available in `/api/swagger.yaml` or by running
 ```bash
 ./manage.py generate_swagger
 ```
+
+#### Run dev version
+
+```bash
+docker-componse build
+docker-compose run web python manage.py makemigrrations
+docker-compose run web python manage.py migrate
+docker-compose up
+```

@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  db:
+    image: postgres
+  web:
+    build: .
+    environment:
+      - DJANGO_SETTINGS_MODULE=eas.settings.dev
+    command: gunicorn eas.wsgi:application -w 2 -b :8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
