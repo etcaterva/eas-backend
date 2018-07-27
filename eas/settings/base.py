@@ -33,7 +33,6 @@ DJANGO_APPS = [
 
 
 THIRD_PRATY_APPS = [
-    'drf_yasg',
     'rest_framework',
 ]
 
