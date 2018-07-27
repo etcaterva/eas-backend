@@ -30,11 +30,11 @@ pylint eas
 ./manage.py runserver
 ```
 
-Check `/api/swagger` or `/api/redoc`.
+#### Working on the swagger file
 
-Swagger file available in `/api/swagger.yaml` or by running
 ```bash
-./manage.py generate_swagger
+docker pull swaggerapi/swagger-editor
+docker run -d -p 8080:8080 swaggerapi/swagger-editor
 ```
 
 #### Run dev version

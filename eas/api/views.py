@@ -6,7 +6,6 @@ from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from drf_yasg.utils import swagger_auto_schema
 
 from . import models, serializers
 
@@ -53,8 +52,6 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         LOG.info("Returning draw %s", instance)
         return Response(result_data)
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=serializers.DrawTossPayloadSerializer)
     @action(methods=['post'], detail=True)
     def toss(self, request, pk):
         LOG.info("Tossing draw with id: %s", pk)
