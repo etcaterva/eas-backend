@@ -38,7 +38,7 @@ THIRD_PRATY_APPS = [
 
 LOCAL_APPS = [
     'eas',
-    'eas.api.apps.APIConfig'
+    'eas.api',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PRATY_APPS + LOCAL_APPS
