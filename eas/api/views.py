@@ -18,6 +18,7 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
                       mixins.RetrieveModelMixin,
                       viewsets.GenericViewSet):
 
+    MODEL = None  # To be set by concrete implementations
     PRIVATE_FIELDS = ['private_id']  # Fields to show only to the owner
 
     @classmethod
