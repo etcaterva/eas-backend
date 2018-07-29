@@ -93,21 +93,34 @@ class Result(BaseModel):
         return "<%s  %r>" % (self.__class__.__name__, self.value)
 
 
-class RandomNumber(BaseDraw):
-    range_min = models.IntegerField()
-    range_max = models.IntegerField()
+class MultiResultMixin(models.Model):
+    """Allows to generate multiple results in a single toss"""
+    class Meta:
+        abstract = True
+
     number_of_results = models.PositiveIntegerField(default=1)
     allow_repeated_results = models.BooleanField(default=True)
+
+    def generate_result_item(self):
+        raise NotImplementedError()
 
     def generate_result(self):
         result = []
         for _ in range(self.number_of_results):
             while True:
-                random_value = random.randint(self.range_min, self.range_max)
-                if self.allow_repeated_results or random_value not in result:
-                    result.append(random_value)
+                item = self.generate_result_item()
+                if self.allow_repeated_results or item not in result:
+                    result.append(item)
                     break
         return result
+
+
+class RandomNumber(MultiResultMixin, BaseDraw):
+    range_min = models.IntegerField()
+    range_max = models.IntegerField()
+
+    def generate_result_item(self):
+        return random.randint(self.range_min, self.range_max)
 
 
 class Participant(BaseModel):
