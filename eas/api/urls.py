@@ -11,4 +11,6 @@ router.register(r'random_number', views.RandomNumberViewSet,
                 base_name='random_number')
 router.register(r'raffle', views.RaffleViewSet,
                 base_name='raffle')
+router.register(r'lottery', views.LotteryViewSet,
+                base_name='lottery')
 urlpatterns = router.urls

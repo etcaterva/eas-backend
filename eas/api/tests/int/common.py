@@ -6,35 +6,18 @@ from django.urls import reverse
 from rest_framework import status
 
 
-class StrDatetimeMatcher:
-    def __init__(self, expected):
-        self.expected = expected
-
-    def __eq__(self, other):
-        if other is None:
-            return self.expected is None
-        return self.expected == dateutil.parser.parse(other)
-
-    def __repr__(self):  # pragma: no cover
-        return f"{self.__class__.__name__}({self.expected})"
-
-
 class CustomJsonEncoder(json.JSONEncoder):
     """
     JSONEncoder subclass that knows how to encode date/time, decimal types, and
     UUIDs.
     """
-    def default(self, o):
-        # See "Date Time String Format" in the ECMA-262 specification.
+    def default(self, o):  # pylint: disable=method-hidden
         if isinstance(o, dt.datetime):
             r = o.isoformat()
             if r.endswith('+00:00'):
                 r = r[:-6] + 'Z'
             return r
-        elif isinstance(o, dt.date):
-            return o.isoformat()
-        else:
-            return super().default(o)
+        return super().default(o)  # pragma: no cover
 
 
 def to_plain_dict(in_dict):
@@ -152,8 +135,8 @@ class DrawAPITestMixin:
 
         result = response.data["results"][0]
         self.assertEqual(
-            StrDatetimeMatcher(target_date),
-            result["schedule_date"]
+            target_date,
+            dateutil.parser.parse(result["schedule_date"])
         )
         self.assertIsNone(result["value"])
 
@@ -179,8 +162,8 @@ class DrawAPITestMixin:
 
         result = response.data["results"][0]
         self.assertEqual(
-            StrDatetimeMatcher(target_date),
-            result["schedule_date"]
+            target_date,
+            dateutil.parser.parse(result["schedule_date"])
         )
         self.assertIsNotNone(result["value"])
 

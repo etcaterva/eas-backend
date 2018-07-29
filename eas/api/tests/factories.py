@@ -67,3 +67,25 @@ class RaffleFactory(BaseDrawFactory):
             models.Participant.objects.create(**participant, draw=draw)
 
         return draw
+
+
+class LotteryFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Lottery"
+
+    participants = fb.List([dict(name="raul"), dict(name="juian")])
+
+    @classmethod
+    def dict(cls, **kwargs):
+        """Returns a dict rather than an object"""
+        return fb.build(dict, FACTORY_CLASS=cls, **kwargs)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        participants = kwargs.pop('participants')
+        manager = cls._get_manager(model_class)
+        draw = manager.create(*args, **kwargs)
+        for participant in participants:
+            models.Participant.objects.create(**participant, draw=draw)
+
+        return draw

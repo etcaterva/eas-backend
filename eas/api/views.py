@@ -78,12 +78,8 @@ class RandomNumberViewSet(BaseDrawViewSet):
     queryset = MODEL.objects.all()
 
 
-class RaffleViewSet(BaseDrawViewSet):
-    MODEL = models.Raffle
-    serializer_class = serializers.RaffleSerializer
-
-    queryset = MODEL.objects.all()
-
+class ParticipantsMixin:
+    """Adds the participant related endpoints"""
     @action(methods=['post'], detail=True)
     def participants(self, request, pk):
         LOG.info("Adding participant to draw %s", pk)
@@ -94,9 +90,30 @@ class RaffleViewSet(BaseDrawViewSet):
         LOG.info("Participant %s added", request.data)
         return Response({}, status.HTTP_201_CREATED)
 
+
+class RaffleViewSet(BaseDrawViewSet, ParticipantsMixin):
+    MODEL = models.Raffle
+    serializer_class = serializers.RaffleSerializer
+
+    queryset = MODEL.objects.all()
+
     def _toss_draw(self, draw):
         if draw.participants.count() < draw.prizes.count():
             raise ValidationError(
                 f"The draw needs to have at least {draw.prizes.count()}"
+                " participants.")
+        return draw.toss()
+
+
+class LotteryViewSet(BaseDrawViewSet, ParticipantsMixin):
+    MODEL = models.Lottery
+    serializer_class = serializers.LotterySerializer
+
+    queryset = MODEL.objects.all()
+
+    def _toss_draw(self, draw):
+        if not draw.participants.count():
+            raise ValidationError(
+                f"The draw needs to have at least {draw.participants.count()}"
                 " participants.")
         return draw.toss()

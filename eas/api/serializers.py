@@ -94,3 +94,19 @@ class RaffleSerializer(BaseSerializer):
         for participant in participants:
             models.Participant.objects.create(draw=draw, **participant)
         return draw
+
+
+class LotterySerializer(BaseSerializer):
+    class Meta:
+        model = models.Lottery
+        fields = BaseSerializer.BASE_FIELDS + ('participants',)
+
+    participants = ParticipantSerializer(many=True, required=True)
+
+    def create(self, validated_data):
+        data = dict(validated_data)
+        participants = data.pop('participants')
+        draw = super().create(data)
+        for participant in participants:
+            models.Participant.objects.create(draw=draw, **participant)
+        return draw

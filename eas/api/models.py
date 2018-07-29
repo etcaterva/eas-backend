@@ -164,3 +164,11 @@ class Raffle(BaseDraw, PrizesMixin, ParticipantsMixin):
                 "participant": winner,
             })
         return result
+
+
+class Lottery(BaseDraw, ParticipantsMixin):
+    def generate_result(self):
+        participants = list(
+            self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS))
+        winner = random.choice(participants)
+        return [winner]

@@ -5,6 +5,83 @@ info:
 servers:
   - url: 'http://127.0.0.1:8000/api/'
 paths:
+  /lottery/:
+    post:
+      operationId: lottery_create
+      responses:
+        '201':
+          description: Lottery successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lottery'
+      tags:
+        - lottery
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lottery'
+        required: true
+    parameters: []
+  '/lottery/{id}/':
+    get:
+      operationId: lottery_read
+      responses:
+        '200':
+          description: The details of the requested lottery
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lottery'
+      tags:
+        - lottery
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/lottery/{id}/toss/':
+    post:
+      operationId: lottery_toss
+      responses:
+        '201':
+          description: A result of the lottery
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotteryResult'
+      tags:
+        - lottery
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/lottery/{id}/participants/':
+    post:
+      operationId: lottery_participants_add
+      responses:
+        '201':
+          description: Object created
+      tags:
+        - lottery
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Participant'
+        required: true
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
   /raffle/:
     post:
       operationId: raffle_create
@@ -206,6 +283,12 @@ components:
               type: string
               maxLength: 100
               minLength: 1
+    DrawTossPayload:
+      type: object
+      properties:
+        schedule_date:
+          type: string
+          format: date-time
     BaseDraw:
       allOf:
         - $ref: '#/components/schemas/BaseObject'
@@ -250,12 +333,22 @@ components:
               items:
                 $ref: '#/components/schemas/RaffleResult'
               readOnly: true
-    DrawTossPayload:
-      type: object
-      properties:
-        schedule_date:
-          type: string
-          format: date-time
+    Lottery:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - participants
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/Participant'
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/LotteryResult'
+              readOnly: true
     RandomNumber:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -296,6 +389,19 @@ components:
                     $ref: '#/components/schemas/Participant'
                   prize:
                     $ref: '#/components/schemas/Prize'
+    LotteryResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  participant:
+                    $ref: '#/components/schemas/Participant'
     RandomNumberResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
@@ -309,3 +415,4 @@ components:
                 nullable: true
                 items:
                   type: integer
+
