@@ -97,6 +97,6 @@ class RaffleViewSet(BaseDrawViewSet):
     def _toss_draw(self, draw):
         if draw.participants.count() < draw.prizes.count():
             raise ValidationError(
-                f"The draw needs to have at least {draw.participants.count()}"
+                f"The draw needs to have at least {draw.prizes.count()}"
                 " participants.")
         return draw.toss()
