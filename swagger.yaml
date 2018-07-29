@@ -398,10 +398,7 @@ components:
               nullable: true
               type: array
               items:
-                type: object
-                properties:
-                  participant:
-                    $ref: '#/components/schemas/Participant'
+                $ref: '#/components/schemas/Participant'
     RandomNumberResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
