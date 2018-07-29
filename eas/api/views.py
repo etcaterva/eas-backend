@@ -129,3 +129,11 @@ class GroupsViewSet(BaseDrawViewSet, ParticipantsMixin):
             raise ValidationError(
                 f"The draw needs to have at least {draw.number_of_groups}"
                 " participants.")
+
+
+class SpinnerViewSet(BaseDrawViewSet):
+    MODEL = models.Spinner
+    serializer_class = serializers.SpinnerSerializer
+
+    queryset = MODEL.objects.all()
+

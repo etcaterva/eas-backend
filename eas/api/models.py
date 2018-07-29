@@ -195,3 +195,8 @@ class Groups(BaseDraw, ParticipantsMixin):
         for group, participant in zip(itertools.cycle(groups), participants):
             group.append(participant)
         return groups
+
+
+class Spinner(BaseDraw):
+    def generate_result(self):
+        return random.randint(0, 259)

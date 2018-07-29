@@ -201,7 +201,7 @@ paths:
       operationId: raffle_toss
       responses:
         '201':
-          description: A result of the raffle
+          description: A result of the draw
           content:
             application/json:
               schema:
@@ -278,13 +278,70 @@ paths:
       operationId: random_number_toss
       responses:
         '201':
-          description: A result of the raffle
+          description: A result of the draw
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RandomNumberResult'
       tags:
         - random_number
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  /spinner/:
+    post:
+      operationId: spinner_create
+      responses:
+        '201':
+          description: The Spinner draw was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spinner'
+      tags:
+        - spinner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Spinner'
+        required: true
+    parameters: []
+  '/spinner/{id}/':
+    get:
+      operationId: spinner_read
+      responses:
+        '200':
+          description: The details of the requested draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spinner'
+      tags:
+        - spinner
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/spinner/{id}/toss/':
+    post:
+      operationId: spinner_toss
+      responses:
+        '201':
+          description: A result of the draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpinnerResult'
+      tags:
+        - spinner
       requestBody:
         $ref: '#/components/requestBodies/DrawTossPayload'
     parameters:
@@ -468,6 +525,16 @@ components:
               items:
                 $ref: '#/components/schemas/RandomNumberResult'
               readOnly: true
+    Spinner:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/SpinnerResult'
+              readOnly: true
     BaseResult:
       allOf:
         - $ref: '#/components/schemas/BaseObject'
@@ -526,4 +593,12 @@ components:
                 nullable: true
                 items:
                   type: integer
+    SpinnerResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: integer
 
