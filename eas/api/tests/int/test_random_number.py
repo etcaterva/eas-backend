@@ -25,4 +25,5 @@ class TestRandomNumber(DrawAPITestMixin, APILiveServerTestCase):
             **super().as_expected_result(draw, write_access),
             'range_min': draw.range_min,
             'range_max': draw.range_max,
+            'number_of_results': draw.number_of_results,
         }

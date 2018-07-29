@@ -457,6 +457,9 @@ components:
               type: integer
             range_max:
               type: integer
+            number_of_results:
+              type: integer
+              default: 1
             results:
               type: array
               items:

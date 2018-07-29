@@ -15,7 +15,7 @@ class TestSerializers(TestCase):
         self.assertEqual(sorted(res), sorted([
             'id', 'private_id', 'created_at', 'updated_at', 'title',
             'description', 'results', 'metadata',
-            'range_min', 'range_max',
+            'range_min', 'range_max', 'number_of_results',
         ]))
 
         self.assertEqual(res["title"], self.draw.title)

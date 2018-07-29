@@ -96,9 +96,11 @@ class Result(BaseModel):
 class RandomNumber(BaseDraw):
     range_min = models.IntegerField()
     range_max = models.IntegerField()
+    number_of_results = models.PositiveIntegerField(default=1)
 
     def generate_result(self):
-        return [random.randint(self.range_min, self.range_max)]
+        return [random.randint(self.range_min, self.range_max)
+                for _ in range(self.number_of_results)]
 
 
 class Participant(BaseModel):
