@@ -1,4 +1,5 @@
 import datetime as dt
+import json
 
 import dateutil.parser
 from django.urls import reverse
@@ -18,6 +19,32 @@ class StrDatetimeMatcher:
         return f"{self.__class__.__name__}({self.expected})"
 
 
+class CustomJsonEncoder(json.JSONEncoder):
+    """
+    JSONEncoder subclass that knows how to encode date/time, decimal types, and
+    UUIDs.
+    """
+    def default(self, o):
+        # See "Date Time String Format" in the ECMA-262 specification.
+        if isinstance(o, dt.datetime):
+            r = o.isoformat()
+            if r.endswith('+00:00'):
+                r = r[:-6] + 'Z'
+            return r
+        elif isinstance(o, dt.date):
+            return o.isoformat()
+        else:
+            return super().default(o)
+
+
+def to_plain_dict(in_dict):
+    """Converts all values to a plain dict.
+
+    Swaps datetime by str
+    """
+    return json.loads(json.dumps(in_dict, cls=CustomJsonEncoder))
+
+
 class DrawAPITestMixin:
     maxDiff = None
     base_url = None
@@ -32,25 +59,27 @@ class DrawAPITestMixin:
     def get_draw(self, id_):
         return self.Model.objects.get(id=id_)
 
-    def as_expected_result(self, draw, write_access=False):  # pylint: disable=no-self-use
+    def _transform_draw(self, draw, write_access):  # pylint: disable=no-self-use
         result = {
             'id': draw.id,
-            'created_at': StrDatetimeMatcher(draw.created_at),
-            'updated_at': StrDatetimeMatcher(draw.updated_at),
+            'created_at': draw.created_at,
+            'updated_at': draw.updated_at,
             'title': draw.title,
             'description': draw.description,
             'metadata': [],
             'results': [dict(
-                created_at=StrDatetimeMatcher(r.created_at),
+                created_at=r.created_at,
                 value=r.value,
-                schedule_date=StrDatetimeMatcher(r.schedule_date),
+                schedule_date=r.schedule_date,
             ) for r in draw.results.order_by("-created_at")],
         }
 
         if write_access:
             result["private_id"] = draw.private_id
-
         return result
+
+    def as_expected_result(self, draw, write_access=False):
+        return to_plain_dict(self._transform_draw(draw, write_access))
 
     def test_creation(self):
         url = reverse(f'{self.base_url}-list')

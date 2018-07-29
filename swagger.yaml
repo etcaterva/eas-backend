@@ -3,7 +3,7 @@ info:
   title: EAS API
   version: v1
 servers:
-  - url: http://127.0.0.1:8000/api/
+  - url: 'http://127.0.0.1:8000/api/'
 paths:
   /raffle/:
     post:
@@ -166,92 +166,90 @@ components:
         value:
           type: string
           minLength: 1
+    BaseObject:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+          minLength: 1
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
     Prize:
-      required:
-        - name
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          minLength: 1
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        name:
-          type: string
-          minLength: 1
-        url:
-          type: string
-          format: uri
-          maxLength: 200
-          minLength: 1
+      allOf:
+        - $ref: '#/components/schemas/BaseObject'
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              minLength: 1
+            url:
+              type: string
+              format: uri
+              maxLength: 200
+              minLength: 1
     Participant:
-      required:
-        - name
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          minLength: 1
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        name:
-          type: string
-          minLength: 1
-        facebook_id:
-          type: string
-          maxLength: 100
-          minLength: 1
+      allOf:
+        - $ref: '#/components/schemas/BaseObject'
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              minLength: 1
+            facebook_id:
+              type: string
+              maxLength: 100
+              minLength: 1
+    BaseDraw:
+      allOf:
+        - $ref: '#/components/schemas/BaseObject'
+        - type: object
+          properties:
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+            title:
+              type: string
+              minLength: 1
+            description:
+              type: string
+              minLength: 1
+            private_id:
+              type: string
+              readOnly: true
+              minLength: 1
+            metadata:
+              type: array
+              items:
+                $ref: '#/components/schemas/DrawMetadata'
     Raffle:
-      required:
-        - prizes
-        - participants
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          minLength: 1
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-        title:
-          type: string
-          minLength: 1
-        description:
-          type: string
-          minLength: 1
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/RaffleResult'
-          readOnly: true
-        metadata:
-          type: array
-          items:
-            $ref: '#/components/schemas/DrawMetadata'
-        private_id:
-          type: string
-          readOnly: true
-          minLength: 1
-        prizes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Prize'
-        participants:
-          type: array
-          items:
-            $ref: '#/components/schemas/Participant'
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - prizes
+            - participants
+          properties:
+            prizes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Prize'
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/Participant'
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/RaffleResult'
+              readOnly: true
     DrawTossPayload:
       type: object
       properties:
@@ -259,100 +257,55 @@ components:
           type: string
           format: date-time
     RandomNumber:
-      required:
-        - range_min
-        - range_max
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          minLength: 1
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-        title:
-          type: string
-          minLength: 1
-        description:
-          type: string
-          minLength: 1
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/RandomNumberResult'
-          readOnly: true
-        metadata:
-          type: array
-          items:
-            $ref: '#/components/schemas/DrawMetadata'
-        private_id:
-          type: string
-          readOnly: true
-          minLength: 1
-        range_min:
-          type: integer
-        range_max:
-          type: integer
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - range_min
+            - range_max
+          properties:
+            range_min:
+              type: integer
+            range_max:
+              type: integer
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/RandomNumberResult'
+              readOnly: true
+    BaseResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseObject'
+        - type: object
+          properties:
+            schedule_date:
+              type: string
+              format: date-time
     RaffleResult:
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          minLength: 1
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        schedule_date:
-          type: string
-          format: date-time
-        value:
-          nullable: true
-          type: array
-          items:
-            type: object
-            properties:
-              participant:
-                $ref: '#/components/schemas/RaffleResultParticipant'
-              prize:
-                $ref: '#/components/schemas/RaffleResultPrize'
-    RaffleResultParticipant:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-    RaffleResultPrize:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  participant:
+                    $ref: '#/components/schemas/Participant'
+                  prize:
+                    $ref: '#/components/schemas/Prize'
     RandomNumberResult:
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          minLength: 1
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        schedule_date:
-          type: string
-          format: date-time
-        value:
-          type: array
-          nullable: true
-          items:
-            type: integer
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: array
+                nullable: true
+                items:
+                  type: integer

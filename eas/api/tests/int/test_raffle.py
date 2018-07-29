@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.test import APILiveServerTestCase
 
 from eas.api.models import Raffle
-from .common import DrawAPITestMixin, StrDatetimeMatcher
+from .common import DrawAPITestMixin
 from ..factories import RaffleFactory
 
 
@@ -13,18 +13,18 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
     Model = Raffle
     Factory = RaffleFactory
 
-    def as_expected_result(self, draw, write_access=False):
+    def _transform_draw(self, draw, write_access):
         return {
-            **super().as_expected_result(draw, write_access),
+            **super()._transform_draw(draw, write_access),
             'participants': [dict(
                 id=p.id,
-                created_at=StrDatetimeMatcher(p.created_at),
+                created_at=p.created_at,
                 name=p.name,
                 facebook_id=p.facebook_id,
             ) for p in draw.participants],
             'prizes': [dict(
                 id=p.id,
-                created_at=StrDatetimeMatcher(p.created_at),
+                created_at=p.created_at,
                 name=p.name,
                 url=p.url,
             ) for p in draw.prizes],

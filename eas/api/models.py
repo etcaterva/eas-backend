@@ -130,8 +130,11 @@ class Prize(BaseModel):
         return "<%s  %r(%r)>" % (self.__class__.__name__, self.name, self.id)
 
 
-class PricesMixin:
+class PrizesMixin:
     """Mixin to add a prizes attribute and retrieve prizes related to a draw"""
+
+    SERIALIZE_FIELDS = ['id', 'name', 'url']  # Fields to serialize in a result
+
     @property
     def prizes(self):
         return Prize.objects.filter(draw=self)
@@ -139,19 +142,25 @@ class PricesMixin:
 
 class ParticipantsMixin:
     """Mixin to add an attribute to retrieve participants"""
+
+    SERIALIZE_FIELDS = ['id', 'name', 'facebook_id']  # Fields to serialize in a result
+
     @property
     def participants(self):
         return Participant.objects.filter(draw=self)
 
 
-class Raffle(BaseDraw, PricesMixin, ParticipantsMixin):
+class Raffle(BaseDraw, PrizesMixin, ParticipantsMixin):
     def generate_result(self):
         result = []
-        participants = list(self.participants.all())
+        participants = list(
+            self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS))
         random.shuffle(participants)
-        for prize, winner in zip(self.prizes, participants):
+        for prize, winner in zip(
+                self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS),
+                participants):
             result.append({
-                "prize": {"id": prize.id, "name": prize.name},
-                "participant": {"id": winner.id, "name": winner.name}
+                "prize": prize,
+                "participant": winner,
             })
         return result
