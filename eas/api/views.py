@@ -59,16 +59,17 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         serializer = serializers.DrawTossPayloadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         schedule_date = serializer.validated_data.get("schedule_date")
+        self._ready_to_toss_check(draw)
         if schedule_date:
             result = draw.schedule_toss(schedule_date)
         else:
-            result = self._toss_draw(draw)
+            result = draw.toss()
         result_serializer = serializers.ResultSerializer(result)
         LOG.info("Generated result: %s", result)
         return Response(result_serializer.data)
 
-    def _toss_draw(self, draw):  # pylint: disable=no-self-use
-        return draw.toss()
+    def _ready_to_toss_check(self, _):  # pylint: disable=no-self-use
+        pass
 
 
 class RandomNumberViewSet(BaseDrawViewSet):
@@ -97,12 +98,11 @@ class RaffleViewSet(BaseDrawViewSet, ParticipantsMixin):
 
     queryset = MODEL.objects.all()
 
-    def _toss_draw(self, draw):
+    def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
         if draw.participants.count() < draw.prizes.count():
             raise ValidationError(
                 f"The draw needs to have at least {draw.prizes.count()}"
                 " participants.")
-        return draw.toss()
 
 
 class LotteryViewSet(BaseDrawViewSet, ParticipantsMixin):
@@ -111,9 +111,21 @@ class LotteryViewSet(BaseDrawViewSet, ParticipantsMixin):
 
     queryset = MODEL.objects.all()
 
-    def _toss_draw(self, draw):
+    def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
         if not draw.participants.count():
             raise ValidationError(
                 f"The draw needs to have at least {draw.participants.count()}"
                 " participants.")
-        return draw.toss()
+
+
+class GroupsViewSet(BaseDrawViewSet, ParticipantsMixin):
+    MODEL = models.Groups
+    serializer_class = serializers.GroupsSerializer
+
+    queryset = MODEL.objects.all()
+
+    def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
+        if draw.participants.count() < draw.number_of_groups:
+            raise ValidationError(
+                f"The draw needs to have at least {draw.number_of_groups}"
+                " participants.")

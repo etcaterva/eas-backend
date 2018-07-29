@@ -2,6 +2,7 @@
 import random
 import uuid
 import datetime as dt
+import itertools
 
 from django.db import models
 from jsonfield import JSONField
@@ -172,3 +173,16 @@ class Lottery(BaseDraw, ParticipantsMixin):
             self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS))
         winner = random.choice(participants)
         return [winner]
+
+
+class Groups(BaseDraw, ParticipantsMixin):
+    number_of_groups = models.PositiveIntegerField(null=False)
+
+    def generate_result(self):
+        participants = list(
+            self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS))
+        random.shuffle(participants)
+        groups = [list() for _ in range(self.number_of_groups)]
+        for group, participant in zip(itertools.cycle(groups), participants):
+            group.append(participant)
+        return groups

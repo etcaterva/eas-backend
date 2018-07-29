@@ -110,3 +110,21 @@ class LotterySerializer(BaseSerializer):
         for participant in participants:
             models.Participant.objects.create(draw=draw, **participant)
         return draw
+
+
+class GroupsSerializer(BaseSerializer):
+    class Meta:
+        model = models.Groups
+        fields = BaseSerializer.BASE_FIELDS + ('number_of_groups',
+                                               'participants',)
+
+    participants = ParticipantSerializer(many=True, required=True)
+    number_of_groups = serializers.IntegerField(min_value=2)
+
+    def create(self, validated_data):
+        data = dict(validated_data)
+        participants = data.pop('participants')
+        draw = super().create(data)
+        for participant in participants:
+            models.Participant.objects.create(draw=draw, **participant)
+        return draw

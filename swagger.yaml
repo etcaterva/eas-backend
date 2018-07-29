@@ -5,6 +5,83 @@ info:
 servers:
   - url: 'http://127.0.0.1:8000/api/'
 paths:
+  /groups/:
+    post:
+      operationId: groups_create
+      responses:
+        '201':
+          description: Groups successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Groups'
+      tags:
+        - groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Groups'
+        required: true
+    parameters: []
+  '/groups/{id}/':
+    get:
+      operationId: groups_read
+      responses:
+        '200':
+          description: The details of the requested groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Groups'
+      tags:
+        - groups
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/groups/{id}/toss/':
+    post:
+      operationId: groups_toss
+      responses:
+        '201':
+          description: A result of the groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupsResult'
+      tags:
+        - groups
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/groups/{id}/participants/':
+    post:
+      operationId: groups_participants_add
+      responses:
+        '201':
+          description: Object created
+      tags:
+        - groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Participant'
+        required: true
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
   /lottery/:
     post:
       operationId: lottery_create
@@ -349,6 +426,25 @@ components:
               items:
                 $ref: '#/components/schemas/LotteryResult'
               readOnly: true
+    Groups:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - participants
+            - number_of_groups
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/Participant'
+            number_of_groups:
+              type: integer
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/GroupsResult'
+              readOnly: true
     RandomNumber:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -399,6 +495,18 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Participant'
+    GroupsResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
     RandomNumberResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
