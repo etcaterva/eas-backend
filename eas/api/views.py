@@ -136,3 +136,10 @@ class SpinnerViewSet(BaseDrawViewSet):
     serializer_class = serializers.SpinnerSerializer
 
     queryset = MODEL.objects.all()
+
+
+class LetterViewSet(BaseDrawViewSet):
+    MODEL = models.Letter
+    serializer_class = serializers.LetterSerializer
+
+    queryset = MODEL.objects.all()

@@ -17,4 +17,6 @@ router.register(r'groups', views.GroupsViewSet,
                 base_name='groups')
 router.register(r'spinner', views.SpinnerViewSet,
                 base_name='spinner')
+router.register(r'letter', views.LetterViewSet,
+                base_name='letter')
 urlpatterns = router.urls

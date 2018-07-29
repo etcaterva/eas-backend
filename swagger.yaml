@@ -236,6 +236,63 @@ paths:
         required: true
         schema:
           type: string
+  /letter/:
+    post:
+      operationId: letter_create
+      responses:
+        '201':
+          description: The Letter draw was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Letter'
+      tags:
+        - letter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Letter'
+        required: true
+    parameters: []
+  '/letter/{id}/':
+    get:
+      operationId: letter_read
+      responses:
+        '200':
+          description: The details of the requested draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Letter'
+      tags:
+        - letter
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/letter/{id}/toss/':
+    post:
+      operationId: letter_toss
+      responses:
+        '201':
+          description: A result of the draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LetterResult'
+      tags:
+        - letter
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
   /random_number/:
     post:
       operationId: random_number_create
@@ -525,6 +582,22 @@ components:
               items:
                 $ref: '#/components/schemas/RandomNumberResult'
               readOnly: true
+    Letter:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          properties:
+            number_of_results:
+              type: integer
+              default: 1
+            allow_repeated_results:
+              type: boolean
+              default: true
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/LetterResult'
+              readOnly: true
     Spinner:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -593,6 +666,19 @@ components:
                 nullable: true
                 items:
                   type: integer
+    LetterResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: array
+                nullable: true
+                items:
+                  type: string
     SpinnerResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'

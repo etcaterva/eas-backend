@@ -122,3 +122,10 @@ class GroupsFactory(BaseDrawFactory):
 class SpinnerFactory(BaseDrawFactory):
     class Meta:
         model = "api.Spinner"
+
+
+class LetterFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Letter"
+    number_of_results = 1
+    allow_repeated_results = False

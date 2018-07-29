@@ -71,6 +71,16 @@ class RandomNumberSerializer(BaseSerializer):
         return data
 
 
+class LetterSerializer(BaseSerializer):
+    class Meta:
+        model = models.Letter
+        fields = BaseSerializer.BASE_FIELDS + (
+            'number_of_results', 'allow_repeated_results',
+        )
+
+    number_of_results = serializers.IntegerField(min_value=1, max_value=26)
+
+
 class PrizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Prize

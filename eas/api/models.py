@@ -3,6 +3,7 @@ import random
 import uuid
 import datetime as dt
 import itertools
+import string
 
 from django.db import models
 from jsonfield import JSONField
@@ -101,7 +102,7 @@ class MultiResultMixin(models.Model):
     number_of_results = models.PositiveIntegerField(default=1)
     allow_repeated_results = models.BooleanField(default=True)
 
-    def generate_result_item(self):
+    def generate_result_item(self):  # pragma: nocover
         raise NotImplementedError()
 
     def generate_result(self):
@@ -121,6 +122,11 @@ class RandomNumber(MultiResultMixin, BaseDraw):
 
     def generate_result_item(self):
         return random.randint(self.range_min, self.range_max)
+
+
+class Letter(MultiResultMixin, BaseDraw):
+    def generate_result_item(self):
+        return random.choice(string.ascii_uppercase)
 
 
 class Participant(BaseModel):
