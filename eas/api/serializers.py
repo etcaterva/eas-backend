@@ -54,13 +54,19 @@ class ResultSerializer(serializers.ModelSerializer):
 class RandomNumberSerializer(BaseSerializer):
     class Meta:
         model = models.RandomNumber
-        fields = BaseSerializer.BASE_FIELDS + ('range_min', 'range_max',
-                                               'number_of_results', )
+        fields = BaseSerializer.BASE_FIELDS + (
+            'range_min', 'range_max', 'number_of_results',
+            'allow_repeated_results',
+        )
 
     number_of_results = serializers.IntegerField(min_value=1, max_value=50)
 
     def validate(self, data):  # pylint: disable=arguments-differ
-        if data["range_min"] > data["range_max"]:
+        num_values_in_range = data["range_max"] - data["range_min"]
+        if num_values_in_range < 1:
+            raise serializers.ValidationError('invalid_range')
+        if not data["allow_repeated_results"] and (
+                data["number_of_results"] > num_values_in_range):
             raise serializers.ValidationError('invalid_range')
         return data
 

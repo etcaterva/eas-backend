@@ -35,6 +35,7 @@ class RandomNumberFactory(BaseDrawFactory):
     range_min = random.randint(0, 49)
     range_max = random.randint(50, 100)
     number_of_results = 1
+    allow_repeated_results = False
 
 
 class PrizeFactory(fb.django.DjangoModelFactory):

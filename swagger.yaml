@@ -460,6 +460,9 @@ components:
             number_of_results:
               type: integer
               default: 1
+            allow_repeated_results:
+              type: boolean
+              default: true
             results:
               type: array
               items:

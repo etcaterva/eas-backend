@@ -97,10 +97,17 @@ class RandomNumber(BaseDraw):
     range_min = models.IntegerField()
     range_max = models.IntegerField()
     number_of_results = models.PositiveIntegerField(default=1)
+    allow_repeated_results = models.BooleanField(default=True)
 
     def generate_result(self):
-        return [random.randint(self.range_min, self.range_max)
-                for _ in range(self.number_of_results)]
+        result = []
+        for _ in range(self.number_of_results):
+            while True:
+                random_value = random.randint(self.range_min, self.range_max)
+                if self.allow_repeated_results or random_value not in result:
+                    result.append(random_value)
+                    break
+        return result
 
 
 class Participant(BaseModel):

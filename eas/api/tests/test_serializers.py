@@ -16,6 +16,7 @@ class TestSerializers(TestCase):
             'id', 'private_id', 'created_at', 'updated_at', 'title',
             'description', 'results', 'metadata',
             'range_min', 'range_max', 'number_of_results',
+            'allow_repeated_results',
         ]))
 
         self.assertEqual(res["title"], self.draw.title)
