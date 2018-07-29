@@ -117,3 +117,8 @@ class GroupsFactory(BaseDrawFactory):
             models.Participant.objects.create(**participant, draw=draw)
 
         return draw
+
+
+class SpinnerFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Spinner"

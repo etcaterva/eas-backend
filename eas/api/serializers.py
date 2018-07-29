@@ -137,3 +137,9 @@ class GroupsSerializer(BaseSerializer):
         for participant in participants:
             models.Participant.objects.create(draw=draw, **participant)
         return draw
+
+
+class SpinnerSerializer(BaseSerializer):
+    class Meta:
+        model = models.Spinner
+        fields = BaseSerializer.BASE_FIELDS

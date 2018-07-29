@@ -15,4 +15,6 @@ router.register(r'lottery', views.LotteryViewSet,
                 base_name='lottery')
 router.register(r'groups', views.GroupsViewSet,
                 base_name='groups')
+router.register(r'spinner', views.SpinnerViewSet,
+                base_name='spinner')
 urlpatterns = router.urls
