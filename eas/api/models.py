@@ -219,3 +219,10 @@ class Groups(BaseDraw, ParticipantsMixin):
 class Spinner(BaseDraw):
     def generate_result(self):
         return random.randint(0, 259)
+
+
+class Coin(BaseDraw):
+    OPTIONS = ['HEAD', 'TAIL']
+
+    def generate_result(self):
+        return [random.choice(self.OPTIONS)]

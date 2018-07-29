@@ -407,6 +407,63 @@ paths:
         required: true
         schema:
           type: string
+  /coin/:
+    post:
+      operationId: coin_create
+      responses:
+        '201':
+          description: The Coin draw was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coin'
+      tags:
+        - coin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Coin'
+        required: true
+    parameters: []
+  '/coin/{id}/':
+    get:
+      operationId: coin_read
+      responses:
+        '200':
+          description: The details of the requested draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coin'
+      tags:
+        - coin
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/coin/{id}/toss/':
+    post:
+      operationId: coin_toss
+      responses:
+        '201':
+          description: A result of the draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoinResult'
+      tags:
+        - coin
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
 components:
   requestBodies:
     DrawTossPayload:
@@ -598,6 +655,16 @@ components:
               items:
                 $ref: '#/components/schemas/LetterResult'
               readOnly: true
+    Coin:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/CoinResult'
+              readOnly: true
     Spinner:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -687,4 +754,19 @@ components:
             value:
               nullable: true
               type: integer
+    CoinResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                maxLength: 1
+                minLength: 1
+                type: string
+                enum:
+                  - HEAD
+                  - TAIL
 

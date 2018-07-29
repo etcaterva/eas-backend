@@ -19,4 +19,6 @@ router.register(r'spinner', views.SpinnerViewSet,
                 base_name='spinner')
 router.register(r'letter', views.LetterViewSet,
                 base_name='letter')
+router.register(r'coin', views.CoinViewSet,
+                base_name='coin')
 urlpatterns = router.urls

@@ -129,3 +129,8 @@ class LetterFactory(BaseDrawFactory):
         model = "api.Letter"
     number_of_results = 1
     allow_repeated_results = False
+
+
+class CoinFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Coin"

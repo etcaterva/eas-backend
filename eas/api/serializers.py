@@ -153,3 +153,9 @@ class SpinnerSerializer(BaseSerializer):
     class Meta:
         model = models.Spinner
         fields = BaseSerializer.BASE_FIELDS
+
+
+class CoinSerializer(BaseSerializer):
+    class Meta:
+        model = models.Coin
+        fields = BaseSerializer.BASE_FIELDS

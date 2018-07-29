@@ -143,3 +143,10 @@ class LetterViewSet(BaseDrawViewSet):
     serializer_class = serializers.LetterSerializer
 
     queryset = MODEL.objects.all()
+
+
+class CoinViewSet(BaseDrawViewSet):
+    MODEL = models.Coin
+    serializer_class = serializers.CoinSerializer
+
+    queryset = MODEL.objects.all()
