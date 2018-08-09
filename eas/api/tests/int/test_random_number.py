@@ -29,6 +29,14 @@ class TestRandomNumber(DrawAPITestMixin, APILiveServerTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          response.content)
 
+    def test_creation_miss_optional_fields(self):
+        url = reverse(f'{self.base_url}-list')
+        data = self.Factory.dict(range_min=1, range_max=4)
+        data.pop("allow_repeated_results")
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
     def test_creation_invalid_repeated(self):
         url = reverse(f'{self.base_url}-list')
         data = self.Factory.dict(range_min=1, range_max=10,

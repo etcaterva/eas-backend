@@ -65,8 +65,8 @@ class RandomNumberSerializer(BaseSerializer):
         num_values_in_range = data["range_max"] - data["range_min"]
         if num_values_in_range < 1:
             raise serializers.ValidationError('invalid_range')
-        if not data["allow_repeated_results"] and (
-                data["number_of_results"] > num_values_in_range):
+        if not data.get("allow_repeated_results", True) and (
+                data.get("number_of_results", 1) > num_values_in_range):
             raise serializers.ValidationError('invalid_range')
         return data
 
