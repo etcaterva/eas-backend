@@ -183,3 +183,12 @@ except EnvironmentError:
     SECRET_KEY = ''.join([choice(string.ascii_letters) for _ in range(50)])
     with open(SECRET_FILE, 'w') as secret:
         secret.write(SECRET_KEY)
+
+# List the renders for DRF. Developer UI added can be added on other files
+DEFAULT_RENDERER_CLASSES = [
+    'rest_framework.renderers.JSONRenderer',
+]  # use append, dont just override this varible
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES
+}

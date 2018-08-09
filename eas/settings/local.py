@@ -20,3 +20,9 @@ MIDDLEWARE = [
     *MIDDLEWARE,
 ]
 CORS_ORIGIN_ALLOW_ALL = True
+
+
+# Add browsable UI for DRF
+DEFAULT_RENDERER_CLASSES.append(
+    'rest_framework.renderers.BrowsableAPIRenderer'
+)
