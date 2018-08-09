@@ -24,6 +24,7 @@ ALLOWED_HOSTS = [
     '.woreep.com',
     '.chooserandom.com',
     socket.gethostbyname(socket.gethostname()),  # IP
+    '127.0.0.1',
 ]
 
 # Application definition
