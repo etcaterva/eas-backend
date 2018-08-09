@@ -12,13 +12,19 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import string
 import pathlib
+import socket
 
 ROOT_DIR = pathlib.Path(__file__).absolute().parent.parent.parent
 APP_DIR = ROOT_DIR / 'eas'
 
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '.echaloasuerte.com',
+    '.woreep.com',
+    '.chooserandom.com',
+    socket.gethostbyname(socket.gethostname()),  # IP
+]
 
 # Application definition
 
