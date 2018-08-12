@@ -3,3 +3,4 @@ djangorestframework==3.8.2
 drf-yasg[validation]==1.9.1
 jsonfield==2.0.2
 pytz==2018.5
+raven==6.9.0
