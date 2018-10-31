@@ -3,7 +3,7 @@ info:
   title: EAS API
   version: 0.0.1
 servers:
-  - url: '/api'
+  - url: '/should-be-overriden'
 paths:
   /groups/:
     post:
