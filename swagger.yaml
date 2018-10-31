@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   title: EAS API
-  version: v1
+  version: 0.0.1
 servers:
-  - url: 'http://127.0.0.1:8000/api/'
+  - url: '/api'
 paths:
   /groups/:
     post:
