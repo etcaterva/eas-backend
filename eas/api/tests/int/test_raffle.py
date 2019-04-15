@@ -1,3 +1,5 @@
+import datetime as dt
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APILiveServerTestCase
@@ -53,6 +55,24 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
                       kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         response.content)
+
+    def test_insuficient_participants_ignored_on_schedule_toss(self):
+        draw = self.Factory(participants=[])
+        url = reverse(f'{self.base_url}-toss',
+                      kwargs=dict(pk=draw.private_id))
+        now = dt.datetime.now(dt.timezone.utc)
+        response = self.client.post(url, {
+            "schedule_date": now - dt.timedelta(hours=5),
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         response.content)
+        draw = self.get_draw(draw.id)
+        self.assertIsNone(draw.results.values()[0]['value'])
+
+        url = reverse(f'{self.base_url}-detail', kwargs=dict(pk=draw.id))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
                          response.content)
 
     def test_add_participants(self):

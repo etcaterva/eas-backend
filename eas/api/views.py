@@ -44,7 +44,12 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
     def retrieve(self, request, *args, pk=None, **kwargs):  # pylint: disable=arguments-differ
         LOG.info("Retrieving draw by id: %s", pk)
         instance = self._get_draw(pk)
-        instance.resolve_scheduled_results()
+        try:
+            self._ready_to_toss_check(instance)
+        except ValidationError:
+            pass
+        else:
+            instance.resolve_scheduled_results()
         serializer = self.get_serializer(instance)
         result_data = serializer.data
         if pk != result_data["private_id"]:
@@ -59,10 +64,10 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         serializer = serializers.DrawTossPayloadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         schedule_date = serializer.validated_data.get("schedule_date")
-        self._ready_to_toss_check(draw)
         if schedule_date:
             result = draw.schedule_toss(schedule_date)
         else:
+            self._ready_to_toss_check(draw)
             result = draw.toss()
         result_serializer = serializers.ResultSerializer(result)
         LOG.info("Generated result: %s", result)
