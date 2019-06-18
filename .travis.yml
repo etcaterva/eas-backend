@@ -1,5 +1,7 @@
 sudo: false
 
+dist: xenial
+
 before_install:
   - pip install --quiet coveralls
   - pip install codecov
