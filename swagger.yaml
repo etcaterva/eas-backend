@@ -68,6 +68,8 @@ paths:
       responses:
         '201':
           description: Object created
+        '304':
+          description: Not Modified
       tags:
         - groups
       requestBody:
@@ -145,6 +147,8 @@ paths:
       responses:
         '201':
           description: Object created
+        '304':
+          description: Not Modified
       tags:
         - lottery
       requestBody:
@@ -222,6 +226,8 @@ paths:
       responses:
         '201':
           description: Object created
+        '304':
+          description: Not Modified
       tags:
         - raffle
       requestBody:
