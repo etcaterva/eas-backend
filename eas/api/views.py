@@ -42,7 +42,7 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         except Http404:
             return get_object_or_404(self.MODEL, private_id=pk)
 
-    def retrieve(self, request, *args, pk=None, **kwargs):  # pylint: disable=arguments-differ
+    def retrieve(self, request, *args, pk=None, **kwargs):  # pylint: disable=unused-argument
         LOG.info("Retrieving draw by id: %s", pk)
         instance = self._get_draw(pk)
         try:
