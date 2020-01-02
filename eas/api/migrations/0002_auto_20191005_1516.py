@@ -12,6 +12,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='participant',
-            unique_together={('draw', 'name', 'facebook_id')},
+            unique_together={('draw', 'facebook_id')},
         ),
     ]
