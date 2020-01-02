@@ -15,7 +15,7 @@ install:
   - pip install -r requirements/local.txt
 
 script:
-  - python manage.py makemigrations
+  - python manage.py makemigrations --check --dry-run -v2
   - coverage run manage.py test
   - coverage report
 
