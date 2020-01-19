@@ -19,12 +19,22 @@ APP_DIR = ROOT_DIR / 'eas'
 
 DEBUG = False
 
+_local_ips = [
+    "127.0.0.1",
+]
+
+try:
+    _local_ips.append(
+        socket.gethostbyname(socket.gethostname()),  # IP
+    )
+except socket.gaierror:
+    pass
+
 ALLOWED_HOSTS = [
     '.echaloasuerte.com',
     '.woreep.com',
     '.chooserandom.com',
-    socket.gethostbyname(socket.gethostname()),  # IP
-    '127.0.0.1',
+    *_local_ips,
 ]
 
 # Application definition
