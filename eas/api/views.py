@@ -124,9 +124,9 @@ class LotteryViewSet(BaseDrawViewSet, ParticipantsMixin):
     queryset = MODEL.objects.all()
 
     def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
-        if not draw.participants.count():
+        if draw.participants.count() < draw.number_of_results:
             raise ValidationError(
-                f"The draw needs to have at least {draw.participants.count()}"
+                f"The draw needs to have at least {draw.number_of_results}"
                 " participants.")
 
 

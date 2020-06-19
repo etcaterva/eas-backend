@@ -199,11 +199,12 @@ class Raffle(BaseDraw, PrizesMixin, ParticipantsMixin):
 
 
 class Lottery(BaseDraw, ParticipantsMixin):
+    number_of_results = models.PositiveIntegerField(default=1)
     def generate_result(self):
         participants = list(
             self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS))
-        winner = random.choice(participants)
-        return [winner]
+        random.shuffle(participants)
+        return participants[0:self.number_of_results]
 
 
 class Groups(BaseDraw, ParticipantsMixin):

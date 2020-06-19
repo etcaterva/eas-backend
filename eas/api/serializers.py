@@ -118,9 +118,10 @@ class RaffleSerializer(BaseSerializer):
 class LotterySerializer(BaseSerializer):
     class Meta:
         model = models.Lottery
-        fields = BaseSerializer.BASE_FIELDS + ('participants',)
+        fields = BaseSerializer.BASE_FIELDS + ('participants', 'number_of_results')
 
     participants = ParticipantSerializer(many=True, required=True)
+    number_of_results = serializers.IntegerField(min_value=1, required=False)
 
     def create(self, validated_data):
         data = dict(validated_data)

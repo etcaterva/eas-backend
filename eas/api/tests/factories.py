@@ -76,6 +76,7 @@ class LotteryFactory(BaseDrawFactory):
         model = "api.Lottery"
 
     participants = fb.List([dict(name="raul"), dict(name="juian")])
+    number_of_results = 1
 
     @classmethod
     def dict(cls, **kwargs):

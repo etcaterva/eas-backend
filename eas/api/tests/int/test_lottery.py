@@ -16,6 +16,7 @@ class TestLottery(DrawAPITestMixin, APILiveServerTestCase):
     def _transform_draw(self, draw, write_access):
         return {
             **super()._transform_draw(draw, write_access),
+            'number_of_results': draw.number_of_results,
             'participants': [dict(
                 id=p.id,
                 created_at=p.created_at,
