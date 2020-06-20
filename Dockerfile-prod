@@ -1,3 +1,5 @@
+#https://www.caktusgroup.com/blog/2017/03/14/production-ready-dockerfile-your-python-django-app/
+
 FROM python:3.7-slim
 ENV PYTHONUNBUFFERED 1
 
