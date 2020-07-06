@@ -1,10 +1,13 @@
 -r base.txt
-factory-boy
-python-dateutil
-coverage
-django-coverage-plugin
-pylint
 astroid
-pylint-django
+black
+coverage
 django-cors-headers
+django-coverage-plugin
+factory-boy
+isort<5
+pylint
+pylint-django
+pytest-cov
 pytest-django
+python-dateutil

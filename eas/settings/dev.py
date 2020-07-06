@@ -1,4 +1,4 @@
 """Settings for deployment to the DEV/TEST server"""
 from .prod import *
 
-RAVEN_CONFIG['environment'] = 'dev'
+RAVEN_CONFIG["environment"] = "dev"

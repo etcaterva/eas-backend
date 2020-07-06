@@ -17,17 +17,14 @@ pip install -r requirements/local.txt
 #### Validate Changes
 
 ```bash
-coverage run manage.py test
-coverage report
-
-pylint eas
+make lint
+make test
 ```
 
 #### Run a local version
 
 ```bash
-./manage.py migrate
-./manage.py runserver
+make runlocal
 ```
 
 #### Working on the swagger file

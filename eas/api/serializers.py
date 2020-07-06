@@ -5,7 +5,10 @@ from . import models
 # pylint: disable=abstract-method
 
 
-COMMON_FIELDS = ('id', 'created_at',)
+COMMON_FIELDS = (
+    "id",
+    "created_at",
+)
 
 
 class DrawTossPayloadSerializer(serializers.Serializer):
@@ -15,20 +18,33 @@ class DrawTossPayloadSerializer(serializers.Serializer):
 class DrawMetadataSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ClientDrawMetaData
-        fields = ('client', 'key', 'value',)
+        fields = (
+            "client",
+            "key",
+            "value",
+        )
 
 
 class BaseSerializer(serializers.ModelSerializer):
-    BASE_FIELDS = (*COMMON_FIELDS, 'updated_at', 'title', 'description',
-                   'results', 'metadata', 'private_id')
+    BASE_FIELDS = (
+        *COMMON_FIELDS,
+        "updated_at",
+        "title",
+        "description",
+        "results",
+        "metadata",
+        "private_id",
+    )
 
     results = serializers.SerializerMethodField()
     metadata = DrawMetadataSerializer(many=True, required=False)
 
     def create(self, validated_data):
         data_copy = dict(validated_data)
-        metadata_list = data_copy.pop('metadata', [])
-        draw = self.__class__.Meta.model.objects.create(**data_copy)  # pylint: disable=no-member
+        metadata_list = data_copy.pop("metadata", [])
+        draw = self.__class__.Meta.model.objects.create(  # pylint: disable=no-member
+            **data_copy
+        )
         for metadata in metadata_list:
             models.ClientDrawMetaData.objects.create(draw=draw, **metadata)
         return draw
@@ -37,16 +53,20 @@ class BaseSerializer(serializers.ModelSerializer):
     def get_results(cls, instance):
         return [
             ResultSerializer(result).data
-            for result in models.Result.objects
-            .filter(draw_id=instance.id)
-            .order_by("-created_at")
+            for result in models.Result.objects.filter(draw_id=instance.id).order_by(
+                "-created_at"
+            )
         ]
 
 
 class ResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Result
-        fields = ('created_at', 'value', 'schedule_date',)
+        fields = (
+            "created_at",
+            "value",
+            "schedule_date",
+        )
 
     value = serializers.JSONField(allow_null=True)
 
@@ -55,8 +75,10 @@ class RandomNumberSerializer(BaseSerializer):
     class Meta:
         model = models.RandomNumber
         fields = BaseSerializer.BASE_FIELDS + (
-            'range_min', 'range_max', 'number_of_results',
-            'allow_repeated_results',
+            "range_min",
+            "range_max",
+            "number_of_results",
+            "allow_repeated_results",
         )
 
     number_of_results = serializers.IntegerField(min_value=1, max_value=50)
@@ -64,10 +86,11 @@ class RandomNumberSerializer(BaseSerializer):
     def validate(self, data):  # pylint: disable=arguments-differ
         num_values_in_range = data["range_max"] - data["range_min"]
         if num_values_in_range < 1:
-            raise serializers.ValidationError('invalid_range')
+            raise serializers.ValidationError("invalid_range")
         if not data.get("allow_repeated_results", True) and (
-                data.get("number_of_results", 1) > num_values_in_range):
-            raise serializers.ValidationError('invalid_range')
+            data.get("number_of_results", 1) > num_values_in_range
+        ):
+            raise serializers.ValidationError("invalid_range")
         return data
 
 
@@ -75,44 +98,46 @@ class LetterSerializer(BaseSerializer):
     class Meta:
         model = models.Letter
         fields = BaseSerializer.BASE_FIELDS + (
-            'number_of_results', 'allow_repeated_results',
+            "number_of_results",
+            "allow_repeated_results",
         )
 
     number_of_results = serializers.IntegerField(min_value=1)
 
     def validate(self, data):  # pylint: disable=arguments-differ
         if not data.get("allow_repeated_results", False) and (
-                data.get("number_of_results", 1) > 26):
-            raise serializers.ValidationError('invalid_number_of_results')
+            data.get("number_of_results", 1) > 26
+        ):
+            raise serializers.ValidationError("invalid_number_of_results")
         return data
 
 
 class PrizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Prize
-        fields = COMMON_FIELDS + ('name', 'url', )
+        fields = COMMON_FIELDS + ("name", "url",)
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Participant
-        fields = COMMON_FIELDS + ('name', 'facebook_id', )
+        fields = COMMON_FIELDS + ("name", "facebook_id",)
 
 
 class RaffleSerializer(BaseSerializer):
     class Meta:
         model = models.Raffle
-        fields = BaseSerializer.BASE_FIELDS + ('prizes', 'participants',)
+        fields = BaseSerializer.BASE_FIELDS + ("prizes", "participants",)
 
     prizes = PrizeSerializer(many=True, required=True)
     participants = ParticipantSerializer(many=True, required=True)
 
     def create(self, validated_data):
         data = dict(validated_data)
-        prizes = data.pop('prizes')
+        prizes = data.pop("prizes")
         if not prizes:
             raise serializers.ValidationError("Prizes cannot be empty")
-        participants = data.pop('participants')
+        participants = data.pop("participants")
         draw = super().create(data)
         for prize in prizes:
             models.Prize.objects.create(draw=draw, **prize)
@@ -124,14 +149,14 @@ class RaffleSerializer(BaseSerializer):
 class LotterySerializer(BaseSerializer):
     class Meta:
         model = models.Lottery
-        fields = BaseSerializer.BASE_FIELDS + ('participants', 'number_of_results')
+        fields = BaseSerializer.BASE_FIELDS + ("participants", "number_of_results")
 
     participants = ParticipantSerializer(many=True, required=True)
     number_of_results = serializers.IntegerField(min_value=1, required=False)
 
     def create(self, validated_data):
         data = dict(validated_data)
-        participants = data.pop('participants')
+        participants = data.pop("participants")
         draw = super().create(data)
         for participant in participants:
             models.Participant.objects.create(draw=draw, **participant)
@@ -141,15 +166,14 @@ class LotterySerializer(BaseSerializer):
 class GroupsSerializer(BaseSerializer):
     class Meta:
         model = models.Groups
-        fields = BaseSerializer.BASE_FIELDS + ('number_of_groups',
-                                               'participants',)
+        fields = BaseSerializer.BASE_FIELDS + ("number_of_groups", "participants",)
 
     participants = ParticipantSerializer(many=True, required=True)
     number_of_groups = serializers.IntegerField(min_value=2)
 
     def create(self, validated_data):
         data = dict(validated_data)
-        participants = data.pop('participants')
+        participants = data.pop("participants")
         draw = super().create(data)
         for participant in participants:
             models.Participant.objects.create(draw=draw, **participant)
