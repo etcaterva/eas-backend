@@ -78,7 +78,13 @@ class LetterSerializer(BaseSerializer):
             'number_of_results', 'allow_repeated_results',
         )
 
-    number_of_results = serializers.IntegerField(min_value=1, max_value=26)
+    number_of_results = serializers.IntegerField(min_value=1)
+
+    def validate(self, data):  # pylint: disable=arguments-differ
+        if not data.get("allow_repeated_results", False) and (
+                data.get("number_of_results", 1) > 26):
+            raise serializers.ValidationError('invalid_number_of_results')
+        return data
 
 
 class PrizeSerializer(serializers.ModelSerializer):
