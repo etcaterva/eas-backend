@@ -26,3 +26,11 @@ class TestLetter(DrawAPITestMixin, APILiveServerTestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          response.content)
+
+
+    def test_creation_valid(self):
+        url = reverse(f'{self.base_url}-list')
+        data = self.Factory.dict(number_of_results=27, allow_repeated_results=True)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED,
+                         response.content)
