@@ -2,10 +2,6 @@ sudo: false
 
 dist: xenial
 
-before_install:
-  - pip install --quiet coveralls
-  - pip install codecov
-
 language: python
 
 python:
@@ -16,13 +12,8 @@ install:
 
 script:
   - python manage.py makemigrations --check --dry-run -v2
-  - coverage run manage.py test
-  - coverage report
-
-  - pylint eas
-
-after_success:
-  - coveralls
+  - make lint
+  - make test
 
 before_deploy:
   # Decrypt secrets
