@@ -9,7 +9,7 @@ install-deps:
 
 .PHONY: test
 test:
-	$(PYTEST) eas
+	$(PYTEST) eas --cov=eas --cov-report=term-missing --cov-fail-under=100 -vv
 
 .PHONY: lint
 lint:

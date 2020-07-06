@@ -8,5 +8,6 @@ factory-boy
 isort<5
 pylint
 pylint-django
+pytest-cov
 pytest-django
 python-dateutil
