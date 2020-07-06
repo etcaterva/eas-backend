@@ -594,6 +594,9 @@ components:
           required:
             - participants
           properties:
+            number_of_results:
+              type: integer
+              default: 1
             participants:
               type: array
               items:
