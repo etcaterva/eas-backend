@@ -7,3 +7,4 @@ pylint
 astroid
 pylint-django
 django-cors-headers
+pytest-django
