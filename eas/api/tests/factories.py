@@ -59,8 +59,8 @@ class RaffleFactory(BaseDrawFactory):
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
-        prizes = kwargs.pop('prizes')
-        participants = kwargs.pop('participants')
+        prizes = kwargs.pop("prizes")
+        participants = kwargs.pop("participants")
         manager = cls._get_manager(model_class)
         draw = manager.create(*args, **kwargs)
         for prize in prizes:
@@ -85,7 +85,7 @@ class LotteryFactory(BaseDrawFactory):
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
-        participants = kwargs.pop('participants')
+        participants = kwargs.pop("participants")
         manager = cls._get_manager(model_class)
         draw = manager.create(*args, **kwargs)
         for participant in participants:
@@ -98,10 +98,12 @@ class GroupsFactory(BaseDrawFactory):
     class Meta:
         model = "api.Groups"
 
-    participants = fb.List([
-        dict(name=name) for name in
-        ["julian", "pepe", "rico", "maria", "susana", "clara"]
-    ])
+    participants = fb.List(
+        [
+            dict(name=name)
+            for name in ["julian", "pepe", "rico", "maria", "susana", "clara"]
+        ]
+    )
     number_of_groups = 2
 
     @classmethod
@@ -111,7 +113,7 @@ class GroupsFactory(BaseDrawFactory):
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
-        participants = kwargs.pop('participants')
+        participants = kwargs.pop("participants")
         manager = cls._get_manager(model_class)
         draw = manager.create(*args, **kwargs)
         for participant in participants:
@@ -128,6 +130,7 @@ class SpinnerFactory(BaseDrawFactory):
 class LetterFactory(BaseDrawFactory):
     class Meta:
         model = "api.Letter"
+
     number_of_results = 1
     allow_repeated_results = False
 

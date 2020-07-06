@@ -1,25 +1,24 @@
 import logging
 
-from django.http import Http404
 from django.db import IntegrityError
+from django.http import Http404
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, viewsets, status
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 
 from . import models, serializers
-
 
 LOG = logging.getLogger(__name__)
 
 
-class BaseDrawViewSet(mixins.CreateModelMixin,
-                      mixins.RetrieveModelMixin,
-                      viewsets.GenericViewSet):
+class BaseDrawViewSet(
+    mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
 
     MODEL = None  # To be set by concrete implementations
-    PRIVATE_FIELDS = ['private_id']  # Fields to show only to the owner
+    PRIVATE_FIELDS = ["private_id"]  # Fields to show only to the owner
 
     @classmethod
     def remove_private_fields(cls, data):
@@ -33,8 +32,9 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         draw = serializer.save()
         headers = self.get_success_headers(serializer.data)
         LOG.info("Created draw %s", draw)
-        return Response(serializer.data, status=status.HTTP_201_CREATED,
-                        headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def _get_draw(self, pk):
         try:
@@ -42,7 +42,9 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         except Http404:
             return get_object_or_404(self.MODEL, private_id=pk)
 
-    def retrieve(self, request, *args, pk=None, **kwargs):  # pylint: disable=unused-argument
+    def retrieve(
+        self, request, *args, pk=None, **kwargs
+    ):  # pylint: disable=unused-argument
         LOG.info("Retrieving draw by id: %s", pk)
         instance = self._get_draw(pk)
         try:
@@ -58,7 +60,7 @@ class BaseDrawViewSet(mixins.CreateModelMixin,
         LOG.info("Returning draw %s", instance)
         return Response(result_data)
 
-    @action(methods=['post'], detail=True)
+    @action(methods=["post"], detail=True)
     def toss(self, request, pk):
         LOG.info("Tossing draw with id: %s", pk)
         draw = get_object_or_404(self.MODEL, private_id=pk)
@@ -87,7 +89,8 @@ class RandomNumberViewSet(BaseDrawViewSet):
 
 class ParticipantsMixin:
     """Adds the participant related endpoints"""
-    @action(methods=['post'], detail=True)
+
+    @action(methods=["post"], detail=True)
     def participants(self, request, pk):
         LOG.info("Adding participant to draw %s", pk)
         draw = self._get_draw(pk)
@@ -114,7 +117,8 @@ class RaffleViewSet(BaseDrawViewSet, ParticipantsMixin):
         if draw.participants.count() < draw.prizes.count():
             raise ValidationError(
                 f"The draw needs to have at least {draw.prizes.count()}"
-                " participants.")
+                " participants."
+            )
 
 
 class LotteryViewSet(BaseDrawViewSet, ParticipantsMixin):
@@ -127,7 +131,8 @@ class LotteryViewSet(BaseDrawViewSet, ParticipantsMixin):
         if draw.participants.count() < draw.number_of_results:
             raise ValidationError(
                 f"The draw needs to have at least {draw.number_of_results}"
-                " participants.")
+                " participants."
+            )
 
 
 class GroupsViewSet(BaseDrawViewSet, ParticipantsMixin):
@@ -140,7 +145,8 @@ class GroupsViewSet(BaseDrawViewSet, ParticipantsMixin):
         if draw.participants.count() < draw.number_of_groups:
             raise ValidationError(
                 f"The draw needs to have at least {draw.number_of_groups}"
-                " participants.")
+                " participants."
+            )
 
 
 class SpinnerViewSet(BaseDrawViewSet):

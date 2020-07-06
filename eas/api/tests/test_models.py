@@ -1,11 +1,11 @@
 from django.test import TestCase
 
 from eas.api.models import RandomNumber
+
 from .factories import RandomNumberFactory
 
 
 class TestModels(TestCase):
-
     def setUp(self):
         self.draw = RandomNumberFactory()
 
@@ -14,17 +14,11 @@ class TestModels(TestCase):
         return RandomNumber.objects.get(id=id_)
 
     def test_creation_success(self):
-        draw = RandomNumberFactory(
-            range_min=1,
-            range_max=1,
-        )
+        draw = RandomNumberFactory(range_min=1, range_max=1,)
         draw.save()
         draw.toss()
 
-        self.assertEqual(
-            [1],
-            self.get_random_number(draw.id).results.first().value
-        )
+        self.assertEqual([1], self.get_random_number(draw.id).results.first().value)
 
     def test_limit_of_results(self):
         res1 = self.draw.toss()
