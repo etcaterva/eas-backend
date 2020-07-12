@@ -1,4 +1,3 @@
-from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APILiveServerTestCase
 
@@ -22,17 +21,13 @@ class TestLetter(DrawAPITestMixin, APILiveServerTestCase):
         }
 
     def test_creation_invalid(self):
-        url = reverse(f"{self.base_url}-list")
-        data = self.Factory.dict(number_of_results=27)
-        response = self.client.post(url, data)
+        response = self.create(number_of_results=27)
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
 
     def test_creation_valid(self):
-        url = reverse(f"{self.base_url}-list")
-        data = self.Factory.dict(number_of_results=27, allow_repeated_results=True)
-        response = self.client.post(url, data)
+        response = self.create(number_of_results=27, allow_repeated_results=True)
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.content
         )
