@@ -65,16 +65,23 @@ class DrawAPITestMixin:
             result["private_id"] = draw.private_id
         return result
 
+    def create(self, **data):
+        url = reverse(f"{self.base_url}-list")
+        data = self.Factory.dict(**data)
+        return self.client.post(url, data)
+
     def as_expected_result(self, draw, write_access=False):
         return to_plain_dict(self._transform_draw(draw, write_access))
 
-    def test_creation(self):
-        url = reverse(f"{self.base_url}-list")
-        data = self.Factory.dict()
-        response = self.client.post(url, data)
+    def success_create(self, **data):
+        response = self.create(**data)
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.content
         )
+        return response
+
+    def test_creation(self):
+        response = self.success_create()
         db_draw = self.get_draw(response.data["id"])
         expected_result = self.as_expected_result(db_draw, write_access=True)
         self.assertEqual(response.data.keys(), expected_result.keys())
@@ -163,14 +170,12 @@ class DrawAPITestMixin:
         self.assertIsNotNone(result["value"])
 
     def test_create_and_retrieve_metadata(self):
-        url = reverse(f"{self.base_url}-list")
-        data = self.Factory.dict()
-        data["metadata"] = [
-            dict(client="web", key="chat_enabled", value="false"),
-            dict(client="web", key="premium_customer", value="true"),
-        ]
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.success_create(
+            metadata=[
+                dict(client="web", key="chat_enabled", value="false"),
+                dict(client="web", key="premium_customer", value="true"),
+            ]
+        )
         (chat_enabled_data,) = [
             i for i in response.data["metadata"] if i["key"] == "chat_enabled"
         ]

@@ -35,9 +35,7 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         }
 
     def test_creation_invalid(self):
-        url = reverse(f"{self.base_url}-list")
-        data = self.Factory.dict(prizes=[])
-        response = self.client.post(url, data)
+        response = self.create(prizes=[])
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )

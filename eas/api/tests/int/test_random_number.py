@@ -24,9 +24,7 @@ class TestRandomNumber(DrawAPITestMixin, APILiveServerTestCase):
         }
 
     def test_creation_invalid(self):
-        url = reverse(f"{self.base_url}-list")
-        data = self.Factory.dict(range_min=5, range_max=4)
-        response = self.client.post(url, data)
+        response = self.create(range_min=5, range_max=4)
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
@@ -39,9 +37,7 @@ class TestRandomNumber(DrawAPITestMixin, APILiveServerTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_creation_invalid_repeated(self):
-        url = reverse(f"{self.base_url}-list")
-        data = self.Factory.dict(range_min=1, range_max=10, number_of_results=10)
-        response = self.client.post(url, data)
+        response = self.create(range_min=1, range_max=10, number_of_results=10)
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
