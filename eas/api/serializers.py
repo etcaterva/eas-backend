@@ -102,7 +102,7 @@ class LetterSerializer(BaseSerializer):
             "allow_repeated_results",
         )
 
-    number_of_results = serializers.IntegerField(min_value=1)
+    number_of_results = serializers.IntegerField(min_value=1, max_value=200)
 
     def validate(self, data):  # pylint: disable=arguments-differ
         if not data.get("allow_repeated_results", False) and (
