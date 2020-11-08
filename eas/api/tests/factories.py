@@ -138,3 +138,16 @@ class LetterFactory(BaseDrawFactory):
 class CoinFactory(BaseDrawFactory):
     class Meta:
         model = "api.Coin"
+
+
+class LinkFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Link"
+
+    items_set1 = fb.List(["paco1", "gloria1", "pepe1"])
+    items_set2 = fb.List(["david2", "pedro2", "jose2"])
+
+    @classmethod
+    def dict(cls, **kwargs):
+        """Returns a dict rather than an object"""
+        return fb.build(dict, FACTORY_CLASS=cls, **kwargs)

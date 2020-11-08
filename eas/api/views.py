@@ -168,3 +168,10 @@ class CoinViewSet(BaseDrawViewSet):
     serializer_class = serializers.CoinSerializer
 
     queryset = MODEL.objects.all()
+
+
+class LinkViewSet(BaseDrawViewSet):
+    MODEL = models.Link
+    serializer_class = serializers.LinkSerializer
+
+    queryset = MODEL.objects.all()
