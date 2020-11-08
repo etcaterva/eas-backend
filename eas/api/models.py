@@ -235,6 +235,18 @@ class Groups(BaseDraw, ParticipantsMixin):
         return groups
 
 
+class Link(BaseDraw):
+    items_set1 = JSONField(null=True)
+    items_set2 = JSONField(null=True)
+
+    def generate_result(self):
+        items1 = list(self.items_set1)
+        items2 = list(self.items_set2)
+        random.shuffle(items1)
+        random.shuffle(items2)
+        return [{"element1": x, "element2": y} for x, y in zip(items1, items2)]
+
+
 class Spinner(BaseDraw):
     def generate_result(self):
         return random.randint(0, 259)

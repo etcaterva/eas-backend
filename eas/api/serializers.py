@@ -5,6 +5,10 @@ from . import models
 # pylint: disable=abstract-method
 
 
+class StringListField(serializers.ListField):
+    child = serializers.CharField(min_length=1, max_length=200)
+
+
 COMMON_FIELDS = (
     "id",
     "created_at",
@@ -128,6 +132,18 @@ class ParticipantSerializer(serializers.ModelSerializer):
             "name",
             "facebook_id",
         )
+
+
+class LinkSerializer(BaseSerializer):
+    class Meta:
+        model = models.Link
+        fields = BaseSerializer.BASE_FIELDS + (
+            "items_set1",
+            "items_set2",
+        )
+
+    items_set1 = StringListField(min_length=1, max_length=200)
+    items_set2 = StringListField(min_length=1, max_length=200)
 
 
 class RaffleSerializer(BaseSerializer):

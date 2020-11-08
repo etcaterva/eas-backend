@@ -470,6 +470,63 @@ paths:
         required: true
         schema:
           type: string
+  /link/:
+    post:
+      operationId: link_create
+      responses:
+        '201':
+          description: Links successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+      tags:
+        - link
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Link'
+        required: true
+    parameters: []
+  '/link/{id}/':
+    get:
+      operationId: link_read
+      responses:
+        '200':
+          description: The details of the requested link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+      tags:
+        - link
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/link/{id}/toss/':
+    post:
+      operationId: link_toss
+      responses:
+        '201':
+          description: A result of the link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkResult'
+      tags:
+        - link
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
 components:
   requestBodies:
     DrawTossPayload:
@@ -606,6 +663,26 @@ components:
               items:
                 $ref: '#/components/schemas/LotteryResult'
               readOnly: true
+    Link:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - items
+          properties:
+            items_set1:
+              type: array
+              items:
+                type: string
+            items_set2:
+              type: array
+              items:
+                type: string
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/LinkResult'
+              readOnly: true
     Groups:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -707,6 +784,21 @@ components:
                     $ref: '#/components/schemas/Participant'
                   prize:
                     $ref: '#/components/schemas/Prize'
+    LinkResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  element1:
+                    type: string
+                  element2:
+                    type: string
     LotteryResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
