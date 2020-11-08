@@ -128,7 +128,12 @@ class DrawAPITestMixin:
             f"{self.base_url}-toss", kwargs=dict(pk=str(self.draw.private_id))
         )
         target_date = dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=1)
-        toss_response = self.client.post(url, {"schedule_date": target_date,})
+        toss_response = self.client.post(
+            url,
+            {
+                "schedule_date": target_date,
+            },
+        )
 
         self.assertEqual(
             toss_response.status_code, status.HTTP_200_OK, toss_response.content
@@ -151,7 +156,12 @@ class DrawAPITestMixin:
             f"{self.base_url}-toss", kwargs=dict(pk=str(self.draw.private_id))
         )
         target_date = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=1)
-        toss_response = self.client.post(url, {"schedule_date": target_date,})
+        toss_response = self.client.post(
+            url,
+            {
+                "schedule_date": target_date,
+            },
+        )
 
         self.assertEqual(
             toss_response.status_code, status.HTTP_200_OK, toss_response.content

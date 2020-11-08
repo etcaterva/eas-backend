@@ -50,7 +50,12 @@ class TestGroups(DrawAPITestMixin, APILiveServerTestCase):
         assert not draw.participants
 
         url = reverse(f"{self.base_url}-participants", kwargs=dict(pk=draw.id))
-        response = self.client.post(url, {"name": "paco",})
+        response = self.client.post(
+            url,
+            {
+                "name": "paco",
+            },
+        )
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.content
         )

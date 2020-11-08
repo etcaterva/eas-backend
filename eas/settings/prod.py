@@ -66,8 +66,17 @@ LOGGING = {
         },
     },
     "loggers": {
-        "django.request": {"handlers": ["debug_log_file"], "level": "DEBUG",},
-        "eas": {"handlers": ["debug_log_file"], "level": "DEBUG",},
-        "": {"handlers": ["log_file", "error_log_file"], "level": "DEBUG",},
+        "django.request": {
+            "handlers": ["debug_log_file"],
+            "level": "DEBUG",
+        },
+        "eas": {
+            "handlers": ["debug_log_file"],
+            "level": "DEBUG",
+        },
+        "": {
+            "handlers": ["log_file", "error_log_file"],
+            "level": "DEBUG",
+        },
     },
 }
