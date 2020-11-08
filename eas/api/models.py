@@ -39,10 +39,16 @@ class BaseDraw(BaseModel):
 
     def toss(self):
         """Generates and saves a result"""
-        return self._generate_result(value=self.generate_result(), draw=self,)
+        return self._generate_result(
+            value=self.generate_result(),
+            draw=self,
+        )
 
     def schedule_toss(self, target_date):
-        return self._generate_result(schedule_date=target_date, draw=self,)
+        return self._generate_result(
+            schedule_date=target_date,
+            draw=self,
+        )
 
     def _generate_result(self, **kwargs):
         if self.results.count() >= self.RESULTS_LIMIT:
@@ -196,7 +202,10 @@ class Raffle(BaseDraw, PrizesMixin, ParticipantsMixin):
             self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS), participants
         ):
             result.append(
-                {"prize": prize, "participant": winner,}
+                {
+                    "prize": prize,
+                    "participant": winner,
+                }
             )
         return result
 

@@ -14,7 +14,10 @@ class TestModels(TestCase):
         return RandomNumber.objects.get(id=id_)
 
     def test_creation_success(self):
-        draw = RandomNumberFactory(range_min=1, range_max=1,)
+        draw = RandomNumberFactory(
+            range_min=1,
+            range_max=1,
+        )
         draw.save()
         draw.toss()
 

@@ -43,7 +43,8 @@ class TestSerializers(TestCase):
 
         self.assertEqual(len(res["results"]), 3)
         for draw_result, serialized_result in zip(
-            self.draw.results.order_by("-created_at"), res["results"],
+            self.draw.results.order_by("-created_at"),
+            res["results"],
         ):
             self.assertEqual(draw_result.value, serialized_result["value"])
 

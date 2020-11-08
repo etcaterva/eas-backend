@@ -29,7 +29,12 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
                 for p in draw.participants
             ],
             "prizes": [
-                dict(id=p.id, created_at=p.created_at, name=p.name, url=p.url,)
+                dict(
+                    id=p.id,
+                    created_at=p.created_at,
+                    name=p.name,
+                    url=p.url,
+                )
                 for p in draw.prizes
             ],
         }
@@ -62,7 +67,10 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         now = dt.datetime.now(dt.timezone.utc)
         response = self.client.post(
-            url, {"schedule_date": now - dt.timedelta(hours=5),}
+            url,
+            {
+                "schedule_date": now - dt.timedelta(hours=5),
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         draw = self.get_draw(draw.id)
@@ -77,7 +85,12 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         assert not draw.participants
 
         url = reverse(f"{self.base_url}-participants", kwargs=dict(pk=draw.id))
-        response = self.client.post(url, {"name": "paco",})
+        response = self.client.post(
+            url,
+            {
+                "name": "paco",
+            },
+        )
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.content
         )
@@ -101,9 +114,19 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         assert not draw.participants
 
         url = reverse(f"{self.base_url}-participants", kwargs=dict(pk=draw.id))
-        self.client.post(url, {"name": "paco",})
+        self.client.post(
+            url,
+            {
+                "name": "paco",
+            },
+        )
         self.client.post(url, {"name": "ramon", "facebook_id": "this_is_an_id"})
-        response = self.client.post(url, {"name": "paco",})
+        response = self.client.post(
+            url,
+            {
+                "name": "paco",
+            },
+        )
         assert len(self.get_draw(draw.id).participants) == 3
 
         response = self.client.post(

@@ -41,7 +41,9 @@ class Migration(migrations.Migration):
                 ("title", models.TextField(null=True)),
                 ("description", models.TextField(null=True)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="ClientDrawMetaData",
@@ -61,7 +63,9 @@ class Migration(migrations.Migration):
                 ("key", models.CharField(max_length=100)),
                 ("value", models.TextField()),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="Participant",
@@ -80,7 +84,9 @@ class Migration(migrations.Migration):
                 ("name", models.TextField()),
                 ("facebook_id", models.CharField(max_length=100, null=True)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="Prize",
@@ -99,7 +105,9 @@ class Migration(migrations.Migration):
                 ("name", models.TextField()),
                 ("url", models.URLField(null=True)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="Result",
@@ -118,7 +126,9 @@ class Migration(migrations.Migration):
                 ("value", jsonfield.fields.JSONField(null=True)),
                 ("schedule_date", models.DateTimeField(null=True)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="Coin",
@@ -135,7 +145,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
             bases=("api.basedraw",),
         ),
         migrations.CreateModel(
@@ -154,7 +166,9 @@ class Migration(migrations.Migration):
                 ),
                 ("number_of_groups", models.PositiveIntegerField()),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
             bases=("api.basedraw", eas.api.models.ParticipantsMixin),
         ),
         migrations.CreateModel(
@@ -174,7 +188,9 @@ class Migration(migrations.Migration):
                 ("number_of_results", models.PositiveIntegerField(default=1)),
                 ("allow_repeated_results", models.BooleanField(default=True)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
             bases=("api.basedraw", models.Model),
         ),
         migrations.CreateModel(
@@ -192,7 +208,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
             bases=("api.basedraw", eas.api.models.ParticipantsMixin),
         ),
         migrations.CreateModel(
@@ -210,7 +228,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
             bases=(
                 "api.basedraw",
                 eas.api.models.PrizesMixin,
@@ -236,7 +256,9 @@ class Migration(migrations.Migration):
                 ("range_min", models.IntegerField()),
                 ("range_max", models.IntegerField()),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
             bases=("api.basedraw", models.Model),
         ),
         migrations.CreateModel(
@@ -254,7 +276,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
             bases=("api.basedraw",),
         ),
         migrations.AddField(

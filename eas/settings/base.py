@@ -24,7 +24,9 @@ _local_ips = [
 ]
 
 try:
-    _local_ips.append(socket.gethostbyname(socket.gethostname()),)  # IP
+    _local_ips.append(
+        socket.gethostbyname(socket.gethostname()),
+    )  # IP
 except socket.gaierror:
     pass
 
@@ -110,9 +112,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
 ]
 
 # Internationalization
@@ -167,7 +175,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
-        "eas": {"handlers": ["console"], "level": "INFO", "propagate": False,},
+        "eas": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 

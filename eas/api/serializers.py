@@ -115,19 +115,28 @@ class LetterSerializer(BaseSerializer):
 class PrizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Prize
-        fields = COMMON_FIELDS + ("name", "url",)
+        fields = COMMON_FIELDS + (
+            "name",
+            "url",
+        )
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Participant
-        fields = COMMON_FIELDS + ("name", "facebook_id",)
+        fields = COMMON_FIELDS + (
+            "name",
+            "facebook_id",
+        )
 
 
 class RaffleSerializer(BaseSerializer):
     class Meta:
         model = models.Raffle
-        fields = BaseSerializer.BASE_FIELDS + ("prizes", "participants",)
+        fields = BaseSerializer.BASE_FIELDS + (
+            "prizes",
+            "participants",
+        )
 
     prizes = PrizeSerializer(many=True, required=True)
     participants = ParticipantSerializer(many=True, required=True)
@@ -166,7 +175,10 @@ class LotterySerializer(BaseSerializer):
 class GroupsSerializer(BaseSerializer):
     class Meta:
         model = models.Groups
-        fields = BaseSerializer.BASE_FIELDS + ("number_of_groups", "participants",)
+        fields = BaseSerializer.BASE_FIELDS + (
+            "number_of_groups",
+            "participants",
+        )
 
     participants = ParticipantSerializer(many=True, required=True)
     number_of_groups = serializers.IntegerField(min_value=2)
