@@ -22,7 +22,7 @@ class BaseModel(models.Model):
     id = models.CharField(
         max_length=64, default=create_id, primary_key=True, null=False, editable=False
     )
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
 
 
 class BaseDraw(BaseModel):
