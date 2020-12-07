@@ -54,13 +54,26 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         self.assertEqual(result2["prize"]["name"], "cupcake")
         self.assertNotEqual(result1["prize"]["id"], result2["prize"]["id"])
 
-    def test_insuficient_participants(self):
+    def test_0_participants_fail(self):
         draw = self.Factory(participants=[])
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
+
+    def test_insuficient_participants(self):
+        draw = self.Factory(
+            participants=[{"name": "one"}],
+            prizes=[{"name": "cupcake"}, {"name": "cupcake"}],
+        )
+        url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+        response = self.client.post(url, {})
+        result1, result2 = response.json()["value"]
+        self.assertEqual(result1["prize"]["name"], "cupcake")
+        self.assertEqual(result2["prize"]["name"], "cupcake")
+        self.assertEqual(result1["participant"]["name"], "one")
+        self.assertEqual(result2["participant"]["name"], "one")
 
     def test_insuficient_participants_ignored_on_schedule_toss(self):
         draw = self.Factory(participants=[])

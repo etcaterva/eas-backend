@@ -199,7 +199,8 @@ class Raffle(BaseDraw, PrizesMixin, ParticipantsMixin):
         )
         random.shuffle(participants)
         for prize, winner in zip(
-            self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS), participants
+            self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS),
+            itertools.cycle(participants),
         ):
             result.append(
                 {
