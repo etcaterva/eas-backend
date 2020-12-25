@@ -5,6 +5,8 @@ import raven
 
 from .base import *
 
+ADMIN_ENABLED = False
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
