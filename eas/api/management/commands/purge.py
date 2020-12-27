@@ -1,20 +1,8 @@
 import datetime as dt
 
-from dateutil.relativedelta import relativedelta
 from django.core.management.base import BaseCommand
 
 from eas.api import models
-
-MODELS = [
-    models.Coin,
-    models.Groups,
-    models.Letter,
-    models.Link,
-    models.Lottery,
-    models.Raffle,
-    models.RandomNumber,
-    models.Spinner,
-]
 
 DEFAULT_DAYS_TO_KEEP = 90
 
@@ -35,7 +23,7 @@ def delete_old_records(days_to_keep=DEFAULT_DAYS_TO_KEEP, dry_run=False):
     now = dt.datetime.now(dt.timezone.utc)
     usage_cutoff = now - dt.timedelta(days=days_to_keep)
     deleted_records = 0
-    for model in MODELS:
+    for model in models.DRAW_TYPES:
         for draw in model.objects.filter(created_at__lte=usage_cutoff):
             latest_usage = get_latest_usage(draw)
             if latest_usage < usage_cutoff:
