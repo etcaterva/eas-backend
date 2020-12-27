@@ -258,3 +258,15 @@ class Coin(BaseDraw):
 
     def generate_result(self):
         return [random.choice(self.OPTIONS)]
+
+
+DRAW_TYPES = [
+    Coin,
+    Groups,
+    Letter,
+    Link,
+    Lottery,
+    Raffle,
+    RandomNumber,
+    Spinner,
+]
