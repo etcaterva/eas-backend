@@ -8,6 +8,8 @@ from eas.api.models import Raffle
 
 from ..factories import RaffleFactory
 
+NOW = dt.datetime.now(dt.timezone.utc)
+
 
 class TestBackup(LiveServerTestCase):
     def create(self):
@@ -24,7 +26,7 @@ class TestBackup(LiveServerTestCase):
     def test_backup_purge_restore(self):
         draw = self.create()
         assert not draw.results.all()
-        draw.schedule_toss(dt.datetime.now() + dt.timedelta(days=1))
+        draw.schedule_toss(NOW + dt.timedelta(days=1))
         assert draw.results.all()
         assert self.raffle_count() == 1
 
@@ -40,7 +42,7 @@ class TestBackup(LiveServerTestCase):
     def test_past_draw_is_not_backedup(self):
         draw = self.create()
         assert not draw.results.all()
-        draw.schedule_toss(dt.datetime.now() - dt.timedelta(days=11))
+        draw.schedule_toss(NOW - dt.timedelta(days=11))
         assert draw.results.all()
         assert self.raffle_count() == 1
 
@@ -56,8 +58,8 @@ class TestBackup(LiveServerTestCase):
     def test_backup_restor_draw_multiple_toss(self):
         draw = self.create()
         assert not draw.results.all()
-        draw.schedule_toss(dt.datetime.now() + dt.timedelta(days=1))
-        draw.schedule_toss(dt.datetime.now() + dt.timedelta(days=1))
+        draw.schedule_toss(NOW + dt.timedelta(days=1))
+        draw.schedule_toss(NOW + dt.timedelta(days=1))
         assert draw.results.all()
         assert self.raffle_count() == 1
 
