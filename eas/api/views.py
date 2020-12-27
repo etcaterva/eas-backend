@@ -1,6 +1,5 @@
 import logging
 
-from django.db import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
@@ -96,15 +95,21 @@ class ParticipantsMixin:
         draw = self._get_draw(pk)
         serializer = serializers.ParticipantSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        serializer.save(draw=draw)
+        LOG.info("Participant %s added", request.data)
 
-        try:
-            serializer.save(draw=draw)
-        except IntegrityError:
-            LOG.info("Participant %s was already present", request.data)
-            return Response({}, status.HTTP_304_NOT_MODIFIED)
-        else:
-            LOG.info("Participant %s added", request.data)
-            return Response({}, status.HTTP_201_CREATED)
+        # Check for duplicated participants
+        draw = self._get_draw(pk)
+        facebook_participants_id = set()
+        for participant in draw.participants.all():
+            facebook_id = participant.facebook_id
+            if facebook_id is None:
+                pass
+            elif facebook_id in facebook_participants_id:
+                participant.delete()
+            else:
+                facebook_participants_id.add(facebook_id)
+        return Response({}, status.HTTP_201_CREATED)
 
 
 class RaffleViewSet(BaseDrawViewSet, ParticipantsMixin):

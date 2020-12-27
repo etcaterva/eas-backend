@@ -149,9 +149,6 @@ class Participant(BaseModel):
     name = models.TextField(null=False)
     facebook_id = models.CharField(max_length=100, null=True)
 
-    class Meta:
-        unique_together = ("draw", "facebook_id")
-
     def __repr__(self):  # pragma: nocover
         return "<%s  %r(%r)>" % (self.__class__.__name__, self.name, self.id)
 

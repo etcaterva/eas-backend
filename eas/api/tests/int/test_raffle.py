@@ -122,7 +122,7 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         assert draw.participants[1].name == "ramon"
         assert draw.participants[1].facebook_id == "this_is_an_id"
 
-    def test_add_participants_twice_breaks_on_fb_id(self):
+    def test_add_participants_twice_ignores_twice_fb_id(self):
         draw = self.Factory(participants=[])
         assert not draw.participants
 
@@ -134,7 +134,7 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
             },
         )
         self.client.post(url, {"name": "ramon", "facebook_id": "this_is_an_id"})
-        response = self.client.post(
+        self.client.post(
             url,
             {
                 "name": "paco",
@@ -142,12 +142,8 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         )
         assert len(self.get_draw(draw.id).participants) == 3
 
-        response = self.client.post(
-            url, {"name": "ramon", "facebook_id": "this_is_an_id"}
-        )
-        self.assertEqual(
-            response.status_code, status.HTTP_304_NOT_MODIFIED, response.content
-        )
+        self.client.post(url, {"name": "ramon", "facebook_id": "this_is_an_id"})
+
         draw = self.get_draw(draw.id)
         assert len(draw.participants) == 3
         assert draw.participants[0].name == "paco"
