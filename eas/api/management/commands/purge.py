@@ -31,7 +31,7 @@ def get_latest_usage(draw):
     )
 
 
-def delete_old_records(days_to_keep=DEFAULT_DAYS_TO_KEEP):
+def delete_old_records(days_to_keep=DEFAULT_DAYS_TO_KEEP, dry_run=False):
     now = dt.datetime.now(dt.timezone.utc)
     usage_cutoff = now - dt.timedelta(days=days_to_keep)
     deleted_records = 0
@@ -40,7 +40,8 @@ def delete_old_records(days_to_keep=DEFAULT_DAYS_TO_KEEP):
             latest_usage = get_latest_usage(draw)
             if latest_usage < usage_cutoff:
                 deleted_records += 1
-                draw.delete()
+                if not dry_run:
+                    draw.delete()
     return deleted_records
 
 
@@ -51,7 +52,14 @@ class Command(BaseCommand):  # pragma: no cover
         parser.add_argument(
             "days-to-keep", nargs="?", type=int, default=DEFAULT_DAYS_TO_KEEP
         )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            default=False,
+        )
 
     def handle(self, *args, **options):
-        deleted_records = delete_old_records(options["days-to-keep"])
+        deleted_records = delete_old_records(
+            options["days-to-keep"], options["dry_run"]
+        )
         self.stdout.write(self.style.SUCCESS(f"Deleted {deleted_records} draws"))
