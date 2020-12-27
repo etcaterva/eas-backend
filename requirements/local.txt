@@ -11,4 +11,3 @@ pylint
 pylint-django
 pytest-cov
 pytest-django
-python-dateutil
