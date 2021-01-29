@@ -257,6 +257,17 @@ class Coin(BaseDraw):
         return [random.choice(self.OPTIONS)]
 
 
+class SecretSantaResult(BaseModel):
+    source = models.CharField(max_length=100)
+    target = models.CharField(max_length=100)
+
+    def __repr__(self):
+        return "<%s  (%r,%r)>" % (self.__class__.__name__, self.source, self.target)
+
+    def __str__(self):
+        return repr(self)
+
+
 DRAW_TYPES = [
     Coin,
     Groups,

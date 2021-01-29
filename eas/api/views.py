@@ -1,4 +1,5 @@
 import logging
+import random
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -7,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from . import models, serializers
+from . import email, models, serializers
 
 LOG = logging.getLogger(__name__)
 
@@ -180,3 +181,65 @@ class LinkViewSet(BaseDrawViewSet):
     serializer_class = serializers.LinkSerializer
 
     queryset = MODEL.objects.all()
+
+
+def _ss_find_target(targets, exclusions):
+    potential_targets = set(targets) - exclusions
+    if not potential_targets:
+        return
+    return random.choice(list(potential_targets))
+
+
+def _ss_build_results(participants, exclusions_map):
+    results = []
+    targets = list(participants)
+    for source in participants:
+        target = _ss_find_target(targets, exclusions_map[source])
+        if not target:
+            return
+        targets.remove(target)
+        results.append((source, target))
+    return results
+
+
+class SecretSantaSet(
+    mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
+    def create(self, request, *args, **kwargs):
+        LOG.info("Creating new secret santa")
+        serializer = serializers.SecretSantaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        emails_map = {p["name"]: p["email"] for p in data["participants"]}
+        exclusions_map = {
+            p["name"]: set(p.get("exclusions") or []) for p in data["participants"]
+        }
+        LOG.info("Using exclusion map: %r", exclusions_map)
+        for participant, exclusions in exclusions_map.items():
+            exclusions.add(participant)
+        participants = {p["name"] for p in data["participants"]}
+        for _ in range(min(50, len(participants))):
+            results = _ss_build_results(participants, exclusions_map)
+            if results is not None:
+                break
+        else:
+            raise ValidationError("Unable to match participants")
+        for source, target in results:
+            result = models.SecretSantaResult(source=source, target=target)
+            result.save()
+            email.send_secret_santa_mail(
+                emails_map[source], result.id, data["language"]
+            )
+        LOG.info("Created secret santa results %s", results)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def retrieve(
+        self, request, *args, pk=None, **kwargs
+    ):  # pylint: disable=unused-argument
+        LOG.info("Retrieving secret santa result by id: %s", pk)
+        result = get_object_or_404(models.SecretSantaResult, id=pk)
+        LOG.info("Returning result %s", result)
+        return Response({"source": result.source, "target": result.target})

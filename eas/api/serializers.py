@@ -218,3 +218,18 @@ class CoinSerializer(BaseSerializer):
     class Meta:
         model = models.Coin
         fields = BaseSerializer.BASE_FIELDS
+
+
+class SecretSantaParticipantSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    email = serializers.EmailField(max_length=100)
+    exclusions = serializers.ListField(
+        child=serializers.CharField(max_length=100), max_length=500, required=False
+    )
+
+
+class SecretSantaSerializer(serializers.Serializer):
+    participants = serializers.ListField(
+        child=SecretSantaParticipantSerializer(), min_length=3, max_length=500
+    )
+    language = serializers.ChoiceField(choices=["es", "en"])

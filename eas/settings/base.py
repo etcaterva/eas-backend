@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
+import os
 import pathlib
 import socket
 import string
@@ -200,3 +201,12 @@ DEFAULT_RENDERER_CLASSES = [
 ]  # use append, dont just override this varible
 
 REST_FRAMEWORK = {"DEFAULT_RENDERER_CLASSES": DEFAULT_RENDERER_CLASSES}
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.zoho.com"
+EMAIL_HOST_USER = "no-reply@echaloasuerte.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_PASSWORD = os.environ.get("EAS_MAIL_PASSWORD")
