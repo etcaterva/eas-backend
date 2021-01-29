@@ -30,6 +30,9 @@ def delete_old_records(days_to_keep=DEFAULT_DAYS_TO_KEEP, dry_run=False):
                 deleted_records += 1
                 if not dry_run:
                     draw.delete()
+    for ss in models.SecretSantaResult.objects.filter(created_at__lte=usage_cutoff):
+        deleted_records += 1
+        ss.delete()
     return deleted_records
 
 

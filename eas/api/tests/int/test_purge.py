@@ -3,6 +3,7 @@ import datetime as dt
 import freezegun
 from rest_framework.test import APILiveServerTestCase
 
+from eas.api import models
 from eas.api.management.commands import purge
 
 from .. import factories
@@ -32,7 +33,7 @@ class PurgeMixin:
     def tick(self, days=31 * 3):
         self.time.tick(delta=dt.timedelta(days=days))
 
-    def test__draw_without_results(self):
+    def test_draw_without_results(self):
         deleted = purge.delete_old_records()
         assert deleted == 0
 
@@ -120,3 +121,16 @@ class TestRandomNumberPurge(PurgeMixin, APILiveServerTestCase):
 
 class TestSpinnerPurge(PurgeMixin, APILiveServerTestCase):
     FACTORY = factories.SpinnerFactory
+
+
+class TestSecretSantaPurge(APILiveServerTestCase):
+    def test_purge_old_secret_santa(self):
+        with freezegun.freeze_time(NOW) as time:
+            result = models.SecretSantaResult(source="From name", target="To name")
+            result.save()
+            deleted = purge.delete_old_records()
+            assert deleted == 0
+
+            time.tick(delta=dt.timedelta(days=31 * 3))
+            deleted = purge.delete_old_records()
+            assert deleted == 1

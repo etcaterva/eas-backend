@@ -527,6 +527,39 @@ paths:
         required: true
         schema:
           type: string
+  /secret-santa/:
+    post:
+      operationId: secret_santa_create
+      responses:
+        '201':
+          description: Create and Toss a secret santa
+      tags:
+        - secret_santa
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecretSanta'
+        required: true
+    parameters: []
+  '/secret-santa/{id}/':
+    get:
+      operationId: secret_santa_result_get
+      responses:
+        '200':
+          description: Details of a Secret Santa Result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretSantaResult'
+      tags:
+        - secret_santa
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
 components:
   requestBodies:
     DrawTossPayload:
@@ -864,4 +897,33 @@ components:
                 enum:
                   - HEAD
                   - TAIL
-
+    SecretSanta:
+      type: object
+      properties:
+        langauge:
+          type: string
+          enum:
+            - es
+            - en
+        participants:
+          type: array
+          items:
+            maxLength: 500
+            minLength: 3
+            type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                exclusions:
+                  type: array
+                  items:
+                    type: string
+    SecretSantaResult:
+      type: object
+        properties:
+          source:
+            type: string
+          target:
+            type: string
