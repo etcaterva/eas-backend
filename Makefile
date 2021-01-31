@@ -13,7 +13,7 @@ test:
 
 .PHONY: lint
 lint:
-	$(PYTHON) -m pylint eas
+	DJANGO_SETTINGS_MODULE=eas.settings.local $(PYTHON) -m pylint eas
 	$(PYTHON) -m isort eas --check --recursive
 	$(PYTHON) -m black eas --check
 
