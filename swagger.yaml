@@ -911,19 +911,19 @@ components:
             maxLength: 500
             minLength: 3
             type: object
-              properties:
-                name:
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+              exclusions:
+                type: array
+                items:
                   type: string
-                email:
-                  type: string
-                exclusions:
-                  type: array
-                  items:
-                    type: string
     SecretSantaResult:
       type: object
-        properties:
-          source:
-            type: string
-          target:
-            type: string
+      properties:
+        source:
+          type: string
+        target:
+          type: string
