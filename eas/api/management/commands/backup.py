@@ -37,7 +37,7 @@ def deserialize_draws(file_):
 
 
 class Command(BaseCommand):  # pragma: no cover
-    help = "Purges old data from the database"
+    help = "Loads or dumps data to backup from the database"
 
     def add_arguments(self, parser):
         subparsers = parser.add_subparsers(dest="action")
