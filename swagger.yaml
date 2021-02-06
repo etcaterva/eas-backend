@@ -900,7 +900,7 @@ components:
     SecretSanta:
       type: object
       properties:
-        langauge:
+        language:
           type: string
           enum:
             - es
