@@ -1,5 +1,6 @@
 """Models of the objects used in EAS"""
 import datetime as dt
+import enum
 import itertools
 import random
 import string
@@ -71,6 +72,18 @@ class BaseDraw(BaseModel):
 
     def __repr__(self):  # pragma: nocover
         return "<%s  %r>" % (self.__class__.__name__, self.id)
+
+    @property
+    def payments(self):
+        draw_payments = list(self._payments.all())
+        result = []
+        if any(payment.option_certified for payment in draw_payments if payment.payed):
+            result.append(Payment.Options.CERTIFIED.value)
+        if any(payment.option_adfree for payment in draw_payments if payment.payed):
+            result.append(Payment.Options.ADFREE.value)
+        if any(payment.option_support for payment in draw_payments if payment.payed):
+            result.append(Payment.Options.SUPPORT.value)
+        return result
 
 
 class ClientDrawMetaData(BaseModel):
@@ -263,6 +276,41 @@ class SecretSantaResult(BaseModel):
 
     def __repr__(self):
         return "<%s  (%r,%r)>" % (self.__class__.__name__, self.source, self.target)
+
+    def __str__(self):
+        return repr(self)
+
+
+class Payment(BaseModel):
+    """Represents a Payment created in the PayPal portal"""
+
+    class Options(enum.Enum):
+        CERTIFIED = "CERTIFIED"
+        SUPPORT = "SUPPORT"
+        ADFREE = "ADFREE"
+
+    draw = models.ForeignKey(
+        BaseDraw, on_delete=models.CASCADE, related_name="_payments"
+    )
+    payed = models.BooleanField(default=False)
+    draw_url = models.URLField()
+    paypal_id = models.CharField(max_length=500, db_index=True)
+
+    option_certified = models.BooleanField(default=False)
+    option_support = models.BooleanField(default=False)
+    option_adfree = models.BooleanField(default=False)
+
+    def __repr__(self):
+        options_str = ""
+        options_str += "Y" if self.option_certified else "N"
+        options_str += "Y" if self.option_support else "N"
+        options_str += "Y" if self.option_adfree else "N"
+        return "<%s  draw=%r, payed=%r, options=%r>" % (
+            self.__class__.__name__,
+            self.draw,
+            self.payed,
+            options_str,
+        )
 
     def __str__(self):
         return repr(self)

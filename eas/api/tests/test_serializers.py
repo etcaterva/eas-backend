@@ -28,6 +28,7 @@ class TestSerializers(TestCase):
                     "range_max",
                     "number_of_results",
                     "allow_repeated_results",
+                    "payments",
                 ]
             ),
         )

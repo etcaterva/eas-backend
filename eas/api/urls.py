@@ -1,3 +1,4 @@
+from django.conf.urls import url
 from rest_framework.routers import DefaultRouter
 
 from . import views
@@ -16,4 +17,8 @@ router.register(r"letter", views.LetterViewSet, basename="letter")
 router.register(r"coin", views.CoinViewSet, basename="coin")
 router.register(r"link", views.LinkViewSet, basename="link")
 router.register(r"secret-santa", views.SecretSantaSet, basename="secret-santa")
-urlpatterns = router.urls
+urlpatterns = [
+    url(r"paypal/create/", views.paypal_create, name="paypal-create"),
+    url(r"paypal/accept/", views.paypal_accept, name="paypal-accept"),
+    *router.urls,
+]

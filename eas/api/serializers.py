@@ -38,9 +38,11 @@ class BaseSerializer(serializers.ModelSerializer):
         "results",
         "metadata",
         "private_id",
+        "payments",
     )
 
     results = serializers.SerializerMethodField()
+    payments = serializers.SerializerMethodField()
     metadata = DrawMetadataSerializer(many=True, required=False)
 
     def create(self, validated_data):
@@ -61,6 +63,10 @@ class BaseSerializer(serializers.ModelSerializer):
                 "-created_at"
             )
         ]
+
+    @classmethod
+    def get_payments(cls, instance):
+        return instance.payments
 
 
 class ResultSerializer(serializers.ModelSerializer):
@@ -233,3 +239,14 @@ class SecretSantaSerializer(serializers.Serializer):
         child=SecretSantaParticipantSerializer(), min_length=3, max_length=500
     )
     language = serializers.ChoiceField(choices=["es", "en"])
+
+
+class PayPalCreateSerialzier(serializers.Serializer):
+    options = serializers.ListField(
+        child=serializers.ChoiceField(
+            choices=[v.value for v in models.Payment.Options]
+        ),
+        min_length=1,
+    )
+    draw_id = serializers.CharField(max_length=100)
+    draw_url = serializers.URLField()

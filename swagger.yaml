@@ -560,6 +560,18 @@ paths:
         required: true
         schema:
           type: string
+  '/payment/create/':
+    post:
+      operationId: paypal_create
+      responses:
+        '200':
+          description: Initiates a new PayPal payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayPalCreate'
+      tags:
+        - paypal
 components:
   requestBodies:
     DrawTossPayload:
@@ -927,3 +939,19 @@ components:
           type: string
         target:
           type: string
+    PayPalCreate:
+      type: object
+      properties:
+        options:
+          type: array
+          items:
+            type: string
+            enum:
+              - CERTIFIED
+              - ADFREE
+              - SUPPORT
+        draw_url:
+          type: string
+        draw_id:
+          type: string
+

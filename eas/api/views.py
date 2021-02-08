@@ -2,13 +2,14 @@ import logging
 import random
 
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls.base import reverse
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from . import email, models, serializers
+from . import email, models, paypal, serializers
 
 LOG = logging.getLogger(__name__)
 
@@ -243,3 +244,50 @@ class SecretSantaSet(
         result = get_object_or_404(models.SecretSantaResult, id=pk)
         LOG.info("Returning result %s", result)
         return Response({"source": result.source, "target": result.target})
+
+
+@api_view(["POST"])
+def paypal_create(request):
+    payment_options = models.Payment.Options
+    LOG.info("Initiating paypal payment for request: %s", request.data)
+    serializer = serializers.PayPalCreateSerialzier(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    options = data["options"]
+    ammount = 0
+    if payment_options.CERTIFIED.value in options:
+        ammount += 1
+    if payment_options.SUPPORT.value in options:
+        ammount += 2
+    if payment_options.ADFREE.value in options:
+        ammount += 2
+    paypal_id, paypal_url = paypal.create_payment(
+        draw_url=data["draw_url"],
+        accept_url=request.build_absolute_uri(reverse("paypal-accept")),
+        ammount=ammount,
+    )
+    payment = models.Payment(
+        draw_id=data["draw_id"],
+        draw_url=data["draw_url"],
+        paypal_id=paypal_id,
+        option_certified=payment_options.CERTIFIED.value in options,
+        option_support=payment_options.SUPPORT.value in options,
+        option_adfree=payment_options.ADFREE.value in options,
+    )
+    payment.save()
+    LOG.info("Paypal payment creation succeeded: %s", payment)
+    return Response({"redirect_url": paypal_url})
+
+
+@api_view(["GET"])
+def paypal_accept(request):
+    print(request.GET)
+    payment_id = request.GET["paymentId"]
+    payer_id = request.GET["PayerID"]
+    LOG.info("Accepting payment for id %r and payer %r", payment_id, payer_id)
+    payment = get_object_or_404(models.Payment, paypal_id=payment_id)
+    payment.payed = True
+    payment.save()
+    paypal.accept_payment(payment_id, payer_id)
+    LOG.info("Payment %r accepted", payment)
+    return redirect(payment.draw_url)
