@@ -33,6 +33,6 @@ before_deploy:
 
 deploy:
   provider: script
-  script: cd eas-deployment &&  ansible-playbook -i hosts_dev config-eas3.yml --vault-password-file=vault-pass --extra-vars "ansible_user=automation"
+  script: cd eas-deployment &&  ansible-playbook -i environments/dev/hosts config-eas3.yml --vault-password-file=vault-pass --extra-vars "ansible_user=automation"
   on:
     branch: master
