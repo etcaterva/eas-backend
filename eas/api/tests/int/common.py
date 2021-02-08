@@ -5,6 +5,8 @@ import dateutil.parser
 from django.urls import reverse
 from rest_framework import status
 
+from eas.api import models
+
 
 class CustomJsonEncoder(json.JSONEncoder):
     """
@@ -51,6 +53,7 @@ class DrawAPITestMixin:
             "title": draw.title,
             "description": draw.description,
             "metadata": [],
+            "payments": [],
             "results": [
                 dict(
                     created_at=r.created_at,
@@ -192,3 +195,33 @@ class DrawAPITestMixin:
         self.assertEqual(
             chat_enabled_data, dict(client="web", key="chat_enabled", value="false")
         )
+
+    def test_update_payment(self):
+        id_ = self.draw.id
+        payment = models.Payment(
+            draw_id=id_,
+            draw_url="draw-url",
+            paypal_id="paypal-id",
+            payed=False,
+            option_certified=True,
+            option_adfree=True,
+            option_support=True,
+        )
+        payment.save()
+        url = reverse(f"{self.base_url}-detail", kwargs=dict(pk=id_))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert response.data["payments"] == []
+
+        payment.payed = True
+        payment.save()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert set(response.data["payments"]) == set(["CERTIFIED", "ADFREE", "SUPPORT"])
+
+        payment.option_adfree = False
+        payment.option_support = False
+        payment.save()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert set(response.data["payments"]) == set(["CERTIFIED"])
