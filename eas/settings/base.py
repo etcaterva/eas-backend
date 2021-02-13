@@ -200,7 +200,10 @@ DEFAULT_RENDERER_CLASSES = [
     "rest_framework.renderers.JSONRenderer",
 ]  # use append, dont just override this varible
 
-REST_FRAMEWORK = {"DEFAULT_RENDERER_CLASSES": DEFAULT_RENDERER_CLASSES}
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": DEFAULT_RENDERER_CLASSES,
+    "EXCEPTION_HANDLER": "eas.api.error_handler.drf_validation_handler",
+}
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

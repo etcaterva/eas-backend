@@ -87,6 +87,9 @@ class SecretSantaTest(APILiveServerTestCase):
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
+        assert response.json() == {
+            "general": [{"message": "Unable to match participants", "code": "invalid"}]
+        }
 
     def test_retrieve(self):
         result = models.SecretSantaResult(source="From name", target="To Name")
@@ -95,3 +98,20 @@ class SecretSantaTest(APILiveServerTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         self.assertEqual(response.data, {"source": "From name", "target": "To Name"})
+
+    def test_missing_fields(self):
+        secret_santa_data = {}
+        response = self.client.post(self.list_url, secret_santa_data)
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+        assert response.json() == {
+            "schema": {
+                "participants": [
+                    {"message": "This field is required.", "code": "required"}
+                ],
+                "language": [
+                    {"message": "This field is required.", "code": "required"}
+                ],
+            }
+        }
