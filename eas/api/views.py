@@ -156,6 +156,12 @@ class GroupsViewSet(BaseDrawViewSet, ParticipantsMixin):
             )
 
 
+class TournamentViewSet(BaseDrawViewSet, ParticipantsMixin):
+    MODEL = models.Tournament
+    serializer_class = serializers.TournamentSerializer
+    queryset = MODEL.objects.all()
+
+
 class SpinnerViewSet(BaseDrawViewSet):
     MODEL = models.Spinner
     serializer_class = serializers.SpinnerSerializer

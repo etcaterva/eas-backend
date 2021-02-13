@@ -12,6 +12,7 @@ router.register(r"random_number", views.RandomNumberViewSet, basename="random_nu
 router.register(r"raffle", views.RaffleViewSet, basename="raffle")
 router.register(r"lottery", views.LotteryViewSet, basename="lottery")
 router.register(r"groups", views.GroupsViewSet, basename="groups")
+router.register(r"tournament", views.TournamentViewSet, basename="tournament")
 router.register(r"spinner", views.SpinnerViewSet, basename="spinner")
 router.register(r"letter", views.LetterViewSet, basename="letter")
 router.register(r"coin", views.CoinViewSet, basename="coin")

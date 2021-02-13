@@ -5,6 +5,85 @@ info:
 servers:
   - url: '/should-be-overriden'
 paths:
+  /tournament/:
+    post:
+      operationId: tournament_create
+      responses:
+        '201':
+          description: Tournament successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+      tags:
+        - tournament
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tournament'
+        required: true
+    parameters: []
+  '/tournament/{id}/':
+    get:
+      operationId: tournament_read
+      responses:
+        '200':
+          description: The details of the requested tournament
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+      tags:
+        - tournament
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/tournament/{id}/toss/':
+    post:
+      operationId: tournament_toss
+      responses:
+        '201':
+          description: A result of the tournament
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentResult'
+      tags:
+        - tournament
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/tournament/{id}/participants/':
+    post:
+      operationId: tournament_participants_add
+      responses:
+        '201':
+          description: Object created
+        '304':
+          description: Not Modified
+      tags:
+        - tournament
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Participant'
+        required: true
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
   /groups/:
     post:
       operationId: groups_create
@@ -728,6 +807,22 @@ components:
               items:
                 $ref: '#/components/schemas/LinkResult'
               readOnly: true
+    Tournament:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - participants
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/Participant'
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/TournamentResult'
+              readOnly: true
     Groups:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -854,6 +949,18 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Participant'
+    TournamentResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
     GroupsResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
@@ -954,4 +1061,3 @@ components:
           type: string
         draw_id:
           type: string
-
