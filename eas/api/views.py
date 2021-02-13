@@ -234,9 +234,11 @@ class SecretSantaSet(
         for source, target in results:
             result = models.SecretSantaResult(source=source, target=target)
             result.save()
-            email.send_secret_santa_mail(
-                emails_map[source], result.id, data["language"]
-            )
+            target = emails_map[source]
+            try:
+                email.send_secret_santa_mail(target, result.id, data["language"])
+            except Exception:
+                LOG.exception("Failed to send email to %s", target)
         LOG.info("Created secret santa results %s", results)
         headers = self.get_success_headers(serializer.data)
         return Response(
