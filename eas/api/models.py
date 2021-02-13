@@ -316,6 +316,18 @@ class Payment(BaseModel):
         return repr(self)
 
 
+class Tournament(BaseDraw, ParticipantsMixin):
+    def generate_result(self):
+        participants = list(
+            self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS)
+        )
+        random.shuffle(participants)
+        groups = [list() for _ in range((len(participants) + 1) // 2)]
+        for group, participant in zip(itertools.cycle(groups), participants):
+            group.append(participant)
+        return groups
+
+
 DRAW_TYPES = [
     Coin,
     Groups,
@@ -325,4 +337,5 @@ DRAW_TYPES = [
     Raffle,
     RandomNumber,
     Spinner,
+    Tournament,
 ]

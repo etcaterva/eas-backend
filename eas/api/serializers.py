@@ -223,6 +223,24 @@ class GroupsSerializer(BaseSerializer):
         return draw
 
 
+class TournamentSerializer(BaseSerializer):
+    class Meta:
+        model = models.Tournament
+        fields = BaseSerializer.BASE_FIELDS + ("participants",)
+
+    participants = ParticipantSerializer(many=True, required=True)
+
+    def create(self, validated_data):
+        data = dict(validated_data)
+        participants = data.pop("participants")
+        draw = super().create(data)
+        participant_instances = [
+            models.Participant(draw=draw, **participant) for participant in participants
+        ]
+        models.Participant.objects.bulk_create(participant_instances)
+        return draw
+
+
 class SpinnerSerializer(BaseSerializer):
     class Meta:
         model = models.Spinner
