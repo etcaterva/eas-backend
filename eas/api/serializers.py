@@ -51,8 +51,11 @@ class BaseSerializer(serializers.ModelSerializer):
         draw = self.__class__.Meta.model.objects.create(  # pylint: disable=no-member
             **data_copy
         )
-        for metadata in metadata_list:
-            models.ClientDrawMetaData.objects.create(draw=draw, **metadata)
+        metadata_instances = [
+            models.ClientDrawMetaData(draw=draw, **metadata)
+            for metadata in metadata_list
+        ]
+        models.ClientDrawMetaData.objects.bulk_create(metadata_instances)
         return draw
 
     @classmethod
@@ -170,10 +173,12 @@ class RaffleSerializer(BaseSerializer):
             raise serializers.ValidationError("Prizes cannot be empty")
         participants = data.pop("participants")
         draw = super().create(data)
-        for prize in prizes:
-            models.Prize.objects.create(draw=draw, **prize)
-        for participant in participants:
-            models.Participant.objects.create(draw=draw, **participant)
+        prize_instances = [models.Prize(draw=draw, **prize) for prize in prizes]
+        models.Prize.objects.bulk_create(prize_instances)
+        participant_instances = [
+            models.Participant(draw=draw, **participant) for participant in participants
+        ]
+        models.Participant.objects.bulk_create(participant_instances)
         return draw
 
 
@@ -189,8 +194,10 @@ class LotterySerializer(BaseSerializer):
         data = dict(validated_data)
         participants = data.pop("participants")
         draw = super().create(data)
-        for participant in participants:
-            models.Participant.objects.create(draw=draw, **participant)
+        participant_instances = [
+            models.Participant(draw=draw, **participant) for participant in participants
+        ]
+        models.Participant.objects.bulk_create(participant_instances)
         return draw
 
 
@@ -209,8 +216,10 @@ class GroupsSerializer(BaseSerializer):
         data = dict(validated_data)
         participants = data.pop("participants")
         draw = super().create(data)
-        for participant in participants:
-            models.Participant.objects.create(draw=draw, **participant)
+        participant_instances = [
+            models.Participant(draw=draw, **participant) for participant in participants
+        ]
+        models.Participant.objects.bulk_create(participant_instances)
         return draw
 
 
