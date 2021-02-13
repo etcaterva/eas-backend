@@ -211,8 +211,4 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_PASSWORD = os.environ.get("EAS_MAIL_PASSWORD")
 
-PAYPAL_MODE = "sandbox"
-PAYPAL_ID = (
-    "AUoNbxkShLicONf0kssMlkgUo91p2x-62izyrGc0YGpUDvrR2CtW0RjWAN0dX6qR2RTAkeWMIq2R0dYa"
-)
 PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")
