@@ -20,6 +20,7 @@ MIDDLEWARE = [
     *MIDDLEWARE,
 ]
 CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS = ["*"]
 
 
 # Add browsable UI for DRF
