@@ -1,0 +1,41 @@
+name: Run tests
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 8 * * 5' # Fridays at 8am
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        pip install -r requirements/local.txt
+
+    - name: Check makemigrations
+      run: |
+        python manage.py makemigrations --check --dry-run -v2
+
+    - name: Lint code
+      run: |
+        make lint
+
+    - name: Run tests
+      run: |
+        make test
+      env:
+        EAS_PAYPAL_SECRET: ${{ secrets.EAS_PAYPAL_SECRET }}
