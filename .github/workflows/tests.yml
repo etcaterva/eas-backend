@@ -65,4 +65,4 @@ jobs:
         id: set_vars
         run: |
           echo "Follow deployment jobs for this branch:"
-          echo "- https://github.com/etcaterva/deployment/actions?query=workflow%3A%22Manually+triggered+workflow+for+deployment%22+branch%3A${{ steps.extract_branch.outputs.branch }}
+          echo "- https://github.com/etcaterva/deployment/actions?query=workflow%3A%22Manually+triggered+workflow+for+deployment%22+branch%3A${{ steps.extract_branch.outputs.branch }}"
