@@ -45,7 +45,7 @@ class BaseDrawViewSet(
 
     def retrieve(
         self, request, *args, pk=None, **kwargs
-    ):  # pylint: disable=unused-argument
+    ):  # pylint: disable=unused-argument, arguments-differ
         LOG.info("Retrieving draw by id: %s", pk)
         instance = self._get_draw(pk)
         try:
@@ -247,7 +247,7 @@ class SecretSantaSet(
 
     def retrieve(
         self, request, *args, pk=None, **kwargs
-    ):  # pylint: disable=unused-argument
+    ):  # pylint: disable=unused-argument, arguments-differ
         LOG.info("Retrieving secret santa result by id: %s", pk)
         result = get_object_or_404(models.SecretSantaResult, id=pk)
         LOG.info("Returning result %s", result)
