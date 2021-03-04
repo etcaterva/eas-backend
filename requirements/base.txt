@@ -1,4 +1,5 @@
 Django==2.2.13
+django-celery-email==3.0.0
 djangorestframework==3.10.3
 drf-yasg[validation]==1.17.0
 jsonfield==2.0.2
