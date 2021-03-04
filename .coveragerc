@@ -7,6 +7,7 @@ source =
 omit =
     eas/wsgi.py
     eas/settings/*py
+    celery-task.py
 
 [report]
 show_missing = True

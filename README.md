@@ -7,6 +7,7 @@ EAS Backend services
 #### Set up local environment
 
 ```bash
+sudo apt-get install rabbitmq-server
 python3.6 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements/local.txt
@@ -25,6 +26,13 @@ make test
 
 ```bash
 make runlocal
+```
+
+Optionally, run the following to get emails working:
+
+```bash
+docker run -d -p 5672:5672 rabbitmq
+EAS_MAIL_PASSWORD="<set password>" celery --app celery-task worker
 ```
 
 #### Working on the swagger file

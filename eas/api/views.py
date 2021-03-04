@@ -233,6 +233,7 @@ class SecretSantaSet(
                 break
         else:
             raise ValidationError("Unable to match participants")
+        LOG.info("Sending %s secret santa emails", len(results))
         for source, target in results:
             result = models.SecretSantaResult(source=source, target=target)
             result.save()
