@@ -26,3 +26,8 @@ format:
 runlocal:
 	$(PYTHON) ./manage.py migrate
 	$(PYTHON) ./manage.py runserver
+
+.PHONY: check-frozen-reqs
+check-frozen-reqs:
+	pip-compile requirements/base.txt requirements/base.orig.txt --output-file=requirements/base.txt --quiet --no-annotate
+	git diff --exit-code

@@ -7,8 +7,9 @@ django-coverage-plugin
 factory-boy
 freezegun
 isort<5
-pylint==2.6.0
+pip-tools
 pylint-django==2.4.2
 pylint-plugin-utils==0.6
+pylint==2.6.0
 pytest-cov
 pytest-django

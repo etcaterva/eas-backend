@@ -1,0 +1,8 @@
+Django
+djangorestframework
+drf-yasg[validation]
+jsonfield
+paypalrestsdk
+python-dateutil
+pytz
+raven
