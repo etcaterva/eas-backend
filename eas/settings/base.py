@@ -52,6 +52,7 @@ DJANGO_APPS = [
 
 THIRD_PRATY_APPS = [
     "rest_framework",
+    "djcelery_email",
 ]
 
 LOCAL_APPS = [
@@ -206,12 +207,15 @@ REST_FRAMEWORK = {
 }
 
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "djcelery_email.backends.CeleryEmailBackend"
 EMAIL_HOST = "smtp.zoho.com"
 EMAIL_HOST_USER = "no-reply@echaloasuerte.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_PASSWORD = os.environ.get("EAS_MAIL_PASSWORD")
+
+CELERY_EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672/"
 
 PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")
