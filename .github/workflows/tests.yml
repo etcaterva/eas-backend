@@ -40,6 +40,10 @@ jobs:
       env:
         EAS_PAYPAL_SECRET: ${{ secrets.EAS_PAYPAL_SECRET }}
 
+    - name: Check pip frozen reqs
+      run: |
+        make check-frozen-reqs
+
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
