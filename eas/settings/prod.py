@@ -21,14 +21,7 @@ DATABASES = {
 # Sentry config
 INSTALLED_APPS = [
     *INSTALLED_APPS,
-    "raven.contrib.django.raven_compat",
 ]
-
-RAVEN_CONFIG = {
-    "dsn": os.environ.get("SENTRY_DSN"),
-    "release": raven.fetch_git_sha(ROOT_DIR),
-    "environment": "prod",
-}
 
 # Logging Configuration
 BASE_LOG_PATH = os.environ.get("ECHALOASUERTE_LOGS_PATH", "/var/log/echaloasuerte/")

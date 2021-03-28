@@ -216,6 +216,6 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_PASSWORD = os.environ.get("EAS_MAIL_PASSWORD")
 
 CELERY_EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672/"
+CELERY_BROKER_URL = "amqp://guest:guest@rabbitmq:5672/"
 
 PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")

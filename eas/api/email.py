@@ -29,6 +29,8 @@ CONTENT_VALUES = {
     ),
 }
 
+import logging
+LOG = logging.getLogger(__name__) 
 
 def send_secret_santa_mail(to, result_id, language):  # pragma: no cover
     subject, content_values = CONTENT_VALUES[language]
@@ -44,4 +46,6 @@ def send_secret_santa_mail(to, result_id, language):  # pragma: no cover
         headers={"Content-Type": "text/html"},
     )
     email.content_subtype = "html"
+    LOG.debug("Sending email for real")
     email.send()
+    LOG.debug("Sent, maybe?")

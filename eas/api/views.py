@@ -198,6 +198,8 @@ def _ss_find_target(targets, exclusions):
 
 
 def _ss_build_results(participants, exclusions_map):
+
+    LOG.debug("ss_build_results")
     results = []
     targets = list(participants)
     for source in participants:
@@ -206,6 +208,7 @@ def _ss_build_results(participants, exclusions_map):
             return
         targets.remove(target)
         results.append((source, target))
+    LOG.debug(results)
     return results
 
 
@@ -236,7 +239,9 @@ class SecretSantaSet(
             result.save()
             target = emails_map[source]
             try:
+                LOG.debug("Sending email")
                 email.send_secret_santa_mail(target, result.id, data["language"])
+                LOG.debug("email sent")
             except Exception:  # pragma: no cover  # pylint: disable=broad-except
                 LOG.exception("Failed to send email to %s", target)
         LOG.info("Created secret santa results %s", results)

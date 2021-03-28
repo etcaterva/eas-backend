@@ -1,16 +1,41 @@
-version: '2'
+version: '3'
 
 services:
   db:
     image: postgres
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+
+  rabbitmq:
+    image: rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  celery_mails:
+    build: .
+    environment:
+      - DJANGO_SETTINGS_MODULE=eas.settings.prod
+      - EAS_MAIL_PASSWORD=zzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    command: python eas/celery-task.py worker
+    depends_on:
+      - rabbitmq
+
   web:
     build: .
     environment:
-      - DJANGO_SETTINGS_MODULE=eas.settings.dev
-    command: gunicorn eas.wsgi:application -w 2 -b :8000
+      - DJANGO_SETTINGS_MODULE=eas.settings.prod
+    command: bash -c "./manage.py migrate && gunicorn eas.wsgi:application -w 2 -b :8000"
+    deploy:
+      restart_policy:
+        condition: on-failure
     volumes:
       - .:/code
     ports:
       - "8000:8000"
     depends_on:
       - db
+      - celery_mails
+      - rabbitmq
