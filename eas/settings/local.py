@@ -2,6 +2,7 @@
 from .base import *
 
 DEBUG = True
+ADMIN_ENABLED = True
 
 DATABASES = {
     "default": {
