@@ -75,6 +75,7 @@ class BaseDrawViewSet(
             result = draw.toss()
         result_serializer = serializers.ResultSerializer(result)
         LOG.info("Generated result: %s", result)
+        draw.save()  # Updates updated_at
         return Response(result_serializer.data)
 
     def _ready_to_toss_check(self, _):  # pylint: disable=no-self-use
@@ -111,6 +112,7 @@ class ParticipantsMixin:
                 participant.delete()
             else:
                 facebook_participants_id.add(facebook_id)
+        draw.save()  # Updates updated_at
         return Response({}, status.HTTP_201_CREATED)
 
 
