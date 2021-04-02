@@ -19,6 +19,7 @@ ROOT_DIR = pathlib.Path(__file__).absolute().parent.parent.parent
 APP_DIR = ROOT_DIR / "eas"
 
 DEBUG = False
+ADMIN_ENABLED = False
 
 _local_ips = [
     "127.0.0.1",
