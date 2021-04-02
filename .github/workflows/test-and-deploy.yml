@@ -1,8 +1,9 @@
-name: Run tests
+name: Test and Deploy
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: '0 8 * * 5' # Fridays at 8am
 
@@ -44,19 +45,34 @@ jobs:
       run: |
         make check-frozen-reqs
 
+  set-vars:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      deployment_branch: '${{steps.set_vars.outputs.deployment_branch}}'
+    steps:
+      - name: Set vars
+        id: set_vars
+        run: |
+          echo "::set-output name=deployment_branch::"
+
+          if [[ "${{github.ref}}" == "refs/heads/master" ]]; then
+              # if this is a push to master, deploy to dev
+              if [[ "${{github.event_name}}" == "push" ]]; then
+                  echo "::set-output name=deployment_branch::master"
+              # If triggered manually, deply to prod
+              elif [[ "${{github.event_name}}" == "workflow_dispatch" ]]; then
+                  echo "::set-output name=deployment_branch::prod"
+              fi
+          fi
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: needs.set-vars.outputs.deployment_branch != ''
     runs-on: ubuntu-latest
     needs:
       - run-tests
+      - set-vars
     steps:
-
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/} | tr '/' '-' )"
-        id: extract_branch
-
       - name: Invoke deployment workflow
         uses: benc-uk/workflow-dispatch@4c044c1613fabbe5250deadc65452d54c4ad4fc7
         with:
@@ -64,9 +80,10 @@ jobs:
           repo: etcaterva/deployment
           token: ${{ secrets.AUTOMATION_TOKEN }}
           inputs: '{ "tags": "cd-backend" }'
+          ref: 'refs/heads/${{ needs.set-vars.outputs.deployment_branch }}'
 
       - name: Deployment URL
         id: set_vars
         run: |
           echo "Follow deployment jobs for this branch:"
-          echo "- https://github.com/etcaterva/deployment/actions?query=workflow%3A%22Manually+triggered+workflow+for+deployment%22+branch%3A${{ steps.extract_branch.outputs.branch }}"
+          echo "- https://github.com/etcaterva/deployment/actions?query=workflow%3A%22Manually+triggered+workflow+for+deployment%22+branch%3A${{ needs.set-vars.outputs.deployment_branch }}"
