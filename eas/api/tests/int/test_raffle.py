@@ -1,4 +1,5 @@
 import datetime as dt
+import time
 
 from django.urls import reverse
 from rest_framework import status
@@ -150,3 +151,25 @@ class TestRaffle(DrawAPITestMixin, APILiveServerTestCase):
         assert draw.participants[1].name == "ramon"
         assert draw.participants[1].facebook_id == "this_is_an_id"
         assert draw.participants[2].name == "paco"
+
+    def test_add_participants_increments_last_updated(self):
+        draw = self.Factory(participants=[])
+        initial_last_updated = draw.updated_at
+
+        time.sleep(0.1)
+        url = reverse(f"{self.base_url}-participants", kwargs=dict(pk=draw.id))
+        self.client.post(url, {"name": "paco"})
+
+        draw = self.get_draw(draw.id)
+        assert draw.updated_at > initial_last_updated
+
+    def test_toss_increments_last_updated(self):
+        draw = self.Factory()
+        initial_last_updated = draw.updated_at
+
+        time.sleep(0.1)
+        url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+        self.client.post(url, {})
+
+        draw = self.get_draw(draw.id)
+        assert draw.updated_at > initial_last_updated

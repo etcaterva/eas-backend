@@ -121,7 +121,7 @@ class DrawAPITestMixin:
 
         url = reverse(f"{self.base_url}-detail", kwargs=dict(pk=self.draw.id))
         response = self.client.get(url)
-        expected_result = self.as_expected_result(self.draw)
+        expected_result = self.as_expected_result(self.get_draw(self.draw.id))
         self.assertEqual(response.data.keys(), expected_result.keys())
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(response.data, expected_result)
@@ -145,7 +145,7 @@ class DrawAPITestMixin:
 
         url = reverse(f"{self.base_url}-detail", kwargs=dict(pk=self.draw.id))
         response = self.client.get(url)
-        expected_result = self.as_expected_result(self.draw)
+        expected_result = self.as_expected_result(self.get_draw(self.draw.id))
         self.assertEqual(response.data.keys(), expected_result.keys())
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(response.data, expected_result)
@@ -173,7 +173,7 @@ class DrawAPITestMixin:
 
         url = reverse(f"{self.base_url}-detail", kwargs=dict(pk=self.draw.id))
         response = self.client.get(url)
-        expected_result = self.as_expected_result(self.draw)
+        expected_result = self.as_expected_result(self.get_draw(self.draw.id))
         self.assertEqual(response.data.keys(), expected_result.keys())
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(response.data, expected_result)
