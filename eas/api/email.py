@@ -1,3 +1,5 @@
+import copy
+
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template import loader
@@ -31,7 +33,7 @@ CONTENT_VALUES = {
 
 
 def send_secret_santa_mail(to, result_id, language):  # pragma: no cover
-    subject, content_values = CONTENT_VALUES[language]
+    subject, content_values = copy.deepcopy(CONTENT_VALUES[language])
     content_values["CTA_URL"] += result_id
     template = loader.get_template("secret-santa-result-mail.html")
     content = template.render(content_values)
