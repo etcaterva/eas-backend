@@ -639,16 +639,22 @@ paths:
         required: true
         schema:
           type: string
-  '/payment/create/':
+  '/paypal/create/':
     post:
       operationId: paypal_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaypalCreatePayload'
+        required: true
       responses:
         '200':
           description: Initiates a new PayPal payment
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PayPalCreate'
+                $ref: '#/components/schemas/PaypalResponse'
       tags:
         - paypal
 components:
@@ -1046,8 +1052,12 @@ components:
           type: string
         target:
           type: string
-    PayPalCreate:
+    PaypalCreatePayload:
       type: object
+      required:
+        - draw_url
+        - draw_id
+        - options
       properties:
         options:
           type: array
@@ -1057,7 +1067,13 @@ components:
               - CERTIFIED
               - ADFREE
               - SUPPORT
+          minItems: 1
         draw_url:
           type: string
         draw_id:
+          type: string
+    PaypalResponse:
+      type: object
+      properties:
+        redirect_url:
           type: string
