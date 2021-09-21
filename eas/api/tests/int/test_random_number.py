@@ -23,7 +23,13 @@ class TestRandomNumber(DrawAPITestMixin, APILiveServerTestCase):
             "allow_repeated_results": draw.allow_repeated_results,
         }
 
-    def test_creation_invalid(self):
+    def test_creation_valid_range(self):
+        response = self.create(range_min=1, range_max=2, number_of_results=2)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.content
+        )
+
+    def test_creation_invalid_range(self):
         response = self.create(range_min=5, range_max=4)
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
@@ -36,8 +42,16 @@ class TestRandomNumber(DrawAPITestMixin, APILiveServerTestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_creation_invalid_repeated(self):
-        response = self.create(range_min=1, range_max=10, number_of_results=10)
+    def test_creation_invalid_without_repeated(self):
+        response = self.create(range_min=1, range_max=2, number_of_results=10)
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    def test_creation_valid_with_repeated(self):
+        response = self.create(
+            range_min=1, range_max=2, number_of_results=10, allow_repeated_results=True
+        )
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.content
         )
