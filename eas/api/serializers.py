@@ -97,7 +97,8 @@ class RandomNumberSerializer(BaseSerializer):
     number_of_results = serializers.IntegerField(min_value=1, max_value=50)
 
     def validate(self, data):  # pylint: disable=arguments-differ
-        num_values_in_range = data["range_max"] - data["range_min"]
+        num_values_in_range = data["range_max"] - data["range_min"] + 1
+
         if num_values_in_range < 1:
             raise serializers.ValidationError("invalid_range")
         if not data.get("allow_repeated_results", True) and (
