@@ -291,7 +291,6 @@ def paypal_create(request):
 
 @api_view(["GET"])
 def paypal_accept(request):
-    print(request.GET)
     payment_id = request.GET["paymentId"]
     payer_id = request.GET["PayerID"]
     LOG.info("Accepting payment for id %r and payer %r", payment_id, payer_id)
