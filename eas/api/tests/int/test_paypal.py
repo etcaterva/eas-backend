@@ -41,6 +41,11 @@ class PayPalTest(APILiveServerTestCase):
     @mock.patch("eas.api.paypal.create_payment")
     def test_full_payment(self, create_payment, _):
         assert self.draw.payments == []
+        url = reverse("raffle-detail", kwargs=dict(pk=self.draw.id))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert response.json()["payments"] == []
+
         create_payment.return_value = "paypal-id", "fake-url"
         response = self.client.post(
             self.create_url,
@@ -59,3 +64,8 @@ class PayPalTest(APILiveServerTestCase):
         self.assertEqual(response.status_code, status.HTTP_302_FOUND, response.content)
         assert response.url == "http://test.com"
         assert self.draw.payments == ["CERTIFIED", "ADFREE", "SUPPORT"]
+
+        url = reverse("raffle-detail", kwargs=dict(pk=self.draw.id))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert response.json()["payments"] == ["CERTIFIED", "ADFREE", "SUPPORT"]
