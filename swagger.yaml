@@ -753,6 +753,14 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/DrawMetadata'
+              payments:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - CERTIFIED
+                    - ADFREE
+                    - SUPPORT
     Raffle:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
