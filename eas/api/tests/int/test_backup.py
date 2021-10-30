@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from eas.api.management.commands import backup, purge
 from eas.api.models import Raffle
+from eas.api.models import SecretSantaResult
 
 from ..factories import RaffleFactory
 
@@ -153,3 +154,15 @@ class TestBackup(LiveServerTestCase):
             assert self.raffle_count() == 1
             draw.refresh_from_db()
             assert len(draw.results.all()) == 2
+
+    def test_backup_secret_santa(self):
+        SecretSantaResult(source="Mario", target="David").save()
+        assert SecretSantaResult.objects.count() == 1
+
+        with tempfile.NamedTemporaryFile() as dump_file:
+            backup.serialize_public_draws(open(dump_file.name, "w"))
+            self.purge()
+            assert SecretSantaResult.objects.count() == 0
+
+            backup.deserialize_draws(open(dump_file.name))
+            assert SecretSantaResult.objects.count() == 1

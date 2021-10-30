@@ -26,17 +26,19 @@ def serialize_public_draws(file_):
             continue
         collector.collect([draw])
         backup_ids.add(draw.id)
+    for ss in models.SecretSantaResult.objects.filter(created_at__gt=backup_cutoff):
+        collector.collect([ss])
     all_draw_objects = itertools.chain.from_iterable(collector.data.values())
     serializers.serialize("json", all_draw_objects, stream=file_)
 
 
 def serialize_updated_delta(file_, since):
-    backup_ids = set()
     collector = NestedObjects(using="default")
     for draw_type in models.DRAW_TYPES:
         for draw in draw_type.objects.filter(updated_at__gt=since):
             collector.collect([draw])
-            backup_ids.add(draw.id)
+    for ss in models.SecretSantaResult.objects.filter(created_at__gt=since):
+        collector.collect([ss])
     all_draw_objects = itertools.chain.from_iterable(collector.data.values())
     serializers.serialize("json", all_draw_objects, stream=file_)
 
