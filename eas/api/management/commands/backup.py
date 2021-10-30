@@ -28,6 +28,8 @@ def serialize_public_draws(file_):
         backup_ids.add(draw.id)
     for ss in models.SecretSantaResult.objects.filter(created_at__gt=backup_cutoff):
         collector.collect([ss])
+    for payment in models.Payment.objects.filter(created_at__gt=backup_cutoff):
+        collector.collect([payment])
     all_draw_objects = itertools.chain.from_iterable(collector.data.values())
     serializers.serialize("json", all_draw_objects, stream=file_)
 
@@ -39,6 +41,8 @@ def serialize_updated_delta(file_, since):
             collector.collect([draw])
     for ss in models.SecretSantaResult.objects.filter(created_at__gt=since):
         collector.collect([ss])
+    for payment in models.Payment.objects.filter(created_at__gt=since):
+        collector.collect([payment])
     all_draw_objects = itertools.chain.from_iterable(collector.data.values())
     serializers.serialize("json", all_draw_objects, stream=file_)
 
