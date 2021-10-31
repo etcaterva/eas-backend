@@ -1,6 +1,5 @@
 import copy
 
-from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template import loader
 
@@ -41,9 +40,8 @@ def send_secret_santa_mail(to, result_id, language):  # pragma: no cover
         subject=subject,
         body=content,
         to=[to],
-        from_email=settings.EMAIL_HOST_USER,
-        reply_to=[settings.EMAIL_HOST_USER],
-        headers={"Content-Type": "text/html"},
+        from_email="no-reply@echaloasuerte.com",
+        reply_to=["no-reply@echaloasuerte.com"],
     )
     email.content_subtype = "html"
     email.send()
