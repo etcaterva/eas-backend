@@ -207,15 +207,7 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "eas.api.error_handler.drf_validation_handler",
 }
 
-EMAIL_HOST = "email-smtp.us-east-2.amazonaws.com"
-EMAIL_HOST_USER = "AKIA5YJYF55GBYNVGYCH"
-EMAIL_BACKEND = "djcelery_email.backends.CeleryEmailBackend"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-EMAIL_HOST_PASSWORD = os.environ.get("EAS_MAIL_PASSWORD")
-
-CELERY_EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672/"
-
 PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")
+
+AWS_KEY_ID = "AKIA5YJYF55GDDFBTQGN"
+AWS_KEY_SECRET = os.environ.get("EAS_AWS_KEY_SECRET")
