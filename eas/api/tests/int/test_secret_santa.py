@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APILiveServerTestCase
@@ -17,6 +19,9 @@ class SecretSantaTest(APILiveServerTestCase):
                 {"name": "Third Name", "email": "email@address2.com"},
             ],
         }
+        boto_patcher = mock.patch("eas.api.amazonsqs.boto3")
+        boto_patcher.start()
+        self.addCleanup(boto_patcher.stop)
 
     def test_create_secret_santa(self):
         response = self.client.post(self.list_url, self.secret_santa_data)

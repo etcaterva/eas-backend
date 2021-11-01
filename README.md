@@ -28,12 +28,11 @@ make test
 make runlocal
 ```
 
-Optionally, run the following to get emails working:
+If you need to send emails, when calling `make runlocal`, set the
+`EAS_AWS_KEY_SECRET` environment variable.
 
-```bash
-docker run -d -p 5672:5672 rabbitmq
-EAS_MAIL_PASSWORD="<set password>" celery --app celery-task worker
-```
+If you need to test secret santa, you need to also run the mail consumer
+for emails to be delivered.
 
 #### Working on the swagger file
 

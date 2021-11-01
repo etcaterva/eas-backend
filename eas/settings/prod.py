@@ -85,3 +85,6 @@ PAYPAL_MODE = "live"
 PAYPAL_ID = (
     "AfcsuQa3-9RejIysZLXVsQewL6uMirZjPWORj5fYvV3OrQmEiTECsp0Ol4-R3D2YgU7EPIgEaaGKTC5H"
 )
+SECRET_SANTA_QUEUE_URL = (
+    "https://sqs.us-east-2.amazonaws.com/945547505484/eas-backend-secret-santa-email"
+)

@@ -9,7 +9,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from . import email, models, paypal, serializers
+from . import amazonsqs, models, paypal, serializers
 
 LOG = logging.getLogger(__name__)
 
@@ -234,14 +234,18 @@ class SecretSantaSet(
         else:
             raise ValidationError("Unable to match participants")
         LOG.info("Sending %s secret santa emails", len(results))
+        emails = []
         for source, target in results:
             result = models.SecretSantaResult(source=source, target=target)
             result.save()
             target = emails_map[source]
-            try:
-                email.send_secret_santa_mail(target, result.id, data["language"])
-            except Exception:  # pragma: no cover  # pylint: disable=broad-except
-                LOG.exception("Failed to send email to %s", target)
+            emails.append((target, result.id))
+        amazonsqs.send_secret_santa_message(
+            {
+                "lang": data["language"],
+                "mails": emails,
+            }
+        )
         LOG.info("Created secret santa results %s", results)
         headers = self.get_success_headers(serializer.data)
         return Response(
