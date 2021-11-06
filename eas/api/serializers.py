@@ -264,7 +264,7 @@ class SecretSantaParticipantSerializer(serializers.Serializer):
 
 class SecretSantaSerializer(serializers.Serializer):
     participants = serializers.ListField(
-        child=SecretSantaParticipantSerializer(), min_length=3, max_length=100
+        child=SecretSantaParticipantSerializer(), min_length=1, max_length=100
     )
     language = serializers.ChoiceField(choices=["es", "en"])
 
