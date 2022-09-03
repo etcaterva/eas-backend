@@ -657,6 +657,81 @@ paths:
                 $ref: '#/components/schemas/PaypalResponse'
       tags:
         - paypal
+  '/instagram-preview/':
+    post:
+      operationId: instagram_preview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstagramPreviewPayload'
+        required: true
+      responses:
+        '200':
+          description: Previews the information of an instagram post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstagramPreviewResponse'
+      tags:
+        - instagram
+  /instagram/:
+    post:
+      operationId: instagram_create
+      responses:
+        '201':
+          description: The Instagram draw was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instagram'
+      tags:
+        - instagram
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Instagram'
+        required: true
+    parameters: []
+  '/instagram/{id}/':
+    get:
+      operationId: instagram_read
+      responses:
+        '200':
+          description: The details of the requested draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instagram'
+      tags:
+        - instagram
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/instagram/{id}/toss/':
+    post:
+      operationId: instagram_toss
+      responses:
+        '201':
+          description: A result of the draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstagramResult'
+      tags:
+        - instagram
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
 components:
   requestBodies:
     DrawTossPayload:
@@ -801,6 +876,33 @@ components:
               items:
                 $ref: '#/components/schemas/LotteryResult'
               readOnly: true
+    Instagram:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - post_url
+            - prizes
+            - use_likes
+            - use_comments
+          properties:
+            prizes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Prize'
+            use_likes:
+              type: boolean
+              default: false
+            use_comments:
+              type: boolean
+              default: false
+            post_url:
+              type: string
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/InstagramResult'
+              readOnly: true
     Link:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -924,6 +1026,21 @@ components:
               type: string
               format: date-time
     RaffleResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  participant:
+                    $ref: '#/components/schemas/Participant'
+                  prize:
+                    $ref: '#/components/schemas/Prize'
+    InstagramResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
         - type: object
@@ -1085,3 +1202,19 @@ components:
       properties:
         redirect_url:
           type: string
+    InstagramPreviewPayload:
+      type: object
+      required:
+        - post_url
+      properties:
+        post_url:
+          type: string
+    InstagramPreviewResponse:
+      type: object
+      properties:
+        thumbnail:
+          type: string
+        likes:
+          type: integer
+        comments:
+          type: integer

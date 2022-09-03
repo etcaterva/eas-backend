@@ -9,6 +9,8 @@ import uuid
 from django.db import models
 from jsonfield import JSONField
 
+from . import instagram
+
 
 def create_id():
     return str(uuid.uuid4())
@@ -326,6 +328,34 @@ class Tournament(BaseDraw, ParticipantsMixin):
         for group, participant in zip(itertools.cycle(groups), participants):
             group.append(participant)
         return groups
+
+
+class Instagram(BaseDraw, PrizesMixin):
+    post_url = models.URLField()
+    use_likes = models.BooleanField(default=False)
+    use_comments = models.BooleanField(default=False)
+
+    def generate_result(self):
+        if self.use_likes:
+            participants = instagram.get_likes(self.post_url)
+        elif self.use_comments:
+            participants = instagram.get_comments(self.post_url)
+        else:  # pragma: no cover
+            raise NotImplementedError
+
+        result = []
+        random.shuffle(participants)
+        for prize, winner in zip(
+            self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS),
+            itertools.cycle(participants),
+        ):
+            result.append(
+                {
+                    "prize": prize,
+                    "participant": {"name": winner},
+                }
+            )
+        return result
 
 
 DRAW_TYPES = [

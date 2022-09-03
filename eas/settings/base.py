@@ -208,6 +208,9 @@ REST_FRAMEWORK = {
 }
 
 PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")
+INSTAGRAM_PASSWORD = os.environ.get(
+    "EAS_INSTAGRAM_PASSWORD", "instagram-password-unset"
+)
 
 AWS_KEY_ID = "AKIA5YJYF55GDDFBTQGN"
 AWS_KEY_SECRET = os.environ.get("EAS_AWS_KEY_SECRET")

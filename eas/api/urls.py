@@ -18,8 +18,10 @@ router.register(r"letter", views.LetterViewSet, basename="letter")
 router.register(r"coin", views.CoinViewSet, basename="coin")
 router.register(r"link", views.LinkViewSet, basename="link")
 router.register(r"secret-santa", views.SecretSantaSet, basename="secret-santa")
+router.register(r"instagram", views.InstagramViewSet, basename="instagram")
 urlpatterns = [
     url(r"paypal/create/", views.paypal_create, name="paypal-create"),
     url(r"paypal/accept/", views.paypal_accept, name="paypal-accept"),
+    url(r"instagram-preview/", views.instagram_preview, name="instagram-preview"),
     *router.urls,
 ]
