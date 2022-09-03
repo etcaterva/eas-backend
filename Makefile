@@ -1,4 +1,4 @@
-PYTHON ?= python3.6
+PYTHON ?= python
 
 PIP=$(PYTHON) -m pip
 PYTEST=$(PYTHON) -m pytest
