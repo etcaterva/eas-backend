@@ -278,3 +278,31 @@ class PayPalCreateSerialzier(serializers.Serializer):
     )
     draw_id = serializers.CharField(max_length=100)
     draw_url = serializers.URLField()
+
+
+class InstagramSerializer(BaseSerializer):
+    class Meta:
+        model = models.Instagram
+        fields = BaseSerializer.BASE_FIELDS + (
+            "post_url",
+            "use_likes",
+            "use_comments",
+            "prizes",
+        )
+
+    prizes = PrizeSerializer(many=True, required=True)
+
+    def validate(self, data):  # pylint: disable=arguments-differ
+        if data.get("use_likes", False) == data.get("use_comments", False):
+            raise serializers.ValidationError("likes-or-comments")
+        return data
+
+    def create(self, validated_data):
+        data = dict(validated_data)
+        prizes = data.pop("prizes")
+        if not prizes:
+            raise serializers.ValidationError("Prizes cannot be empty")
+        draw = super().create(data)
+        prize_instances = [models.Prize(draw=draw, **prize) for prize in prizes]
+        models.Prize.objects.bulk_create(prize_instances)
+        return draw

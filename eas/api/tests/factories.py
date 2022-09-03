@@ -177,3 +177,23 @@ class LinkFactory(BaseDrawFactory):
     def dict(cls, **kwargs):
         """Returns a dict rather than an object"""
         return fb.build(dict, FACTORY_CLASS=cls, **kwargs)
+
+
+class InstagramFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Instagram"
+
+    post_url = "https://www.instagram.com/p/ChbV971lYLW/"
+    use_likes = False
+    use_comments = True
+    prizes = fb.List([dict(name="cupcake"), dict(name="laptop")])
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        prizes = kwargs.pop("prizes")
+        manager = cls._get_manager(model_class)
+        draw = manager.create(*args, **kwargs)
+        for prize in prizes:
+            models.Prize.objects.create(**prize, draw=draw)
+
+        return draw

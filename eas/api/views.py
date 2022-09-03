@@ -9,7 +9,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from . import amazonsqs, models, paypal, serializers
+from . import amazonsqs, instagram, models, paypal, serializers
 
 LOG = logging.getLogger(__name__)
 
@@ -305,3 +305,25 @@ def paypal_accept(request):
     paypal.accept_payment(payment_id, payer_id)
     LOG.info("Payment %r accepted", payment)
     return redirect(payment.draw_url)
+
+
+@api_view(["GET"])
+def instagram_preview(request):
+    post_url = request.GET["post_url"]
+    LOG.info("Fetching instagram preview for %r", post_url)
+    data = instagram.get_post_info(post_url)
+    LOG.info("Fetched post information: %r", data)
+    return Response(
+        dict(
+            likes=data["likes"],
+            comments=data["comments"],
+            thumbnail=data["thumbnail"],
+        )
+    )
+
+
+class InstagramViewSet(BaseDrawViewSet):
+    MODEL = models.Instagram
+    serializer_class = serializers.InstagramSerializer
+
+    queryset = MODEL.objects.all()
