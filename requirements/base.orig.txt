@@ -1,5 +1,7 @@
+Django<4
+Pillow
 boto3
-Django
+django-celery-email
 djangorestframework
 drf-yasg[validation]
 jsonfield
