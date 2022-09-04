@@ -1,4 +1,4 @@
-Django<4
+Django
 Pillow
 boto3
 django-celery-email
