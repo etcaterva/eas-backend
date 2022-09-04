@@ -27,7 +27,7 @@ def drop_like_indexes(apps, schema_editor):
         try:
             schema_editor.execute(f"DROP INDEX {index_name};")
         except Exception as e:
-            print(f"Failed to drop {index_name!r}: {e!r}")
+            pass
 
 
 class Migration(migrations.Migration):
