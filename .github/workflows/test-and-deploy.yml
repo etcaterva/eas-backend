@@ -2,7 +2,6 @@ name: Test and Deploy
 
 on:
   push:
-  pull_request:
   workflow_dispatch:
   schedule:
     - cron: '0 8 * * 5' # Fridays at 8am
