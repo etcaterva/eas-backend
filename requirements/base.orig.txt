@@ -1,7 +1,6 @@
 Django
 Pillow
 boto3
-django-celery-email
 djangorestframework
 drf-yasg[validation]
 instagrapi

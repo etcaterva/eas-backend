@@ -53,7 +53,6 @@ DJANGO_APPS = [
 
 THIRD_PRATY_APPS = [
     "rest_framework",
-    "djcelery_email",
 ]
 
 LOCAL_APPS = [
