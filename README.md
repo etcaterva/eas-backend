@@ -7,7 +7,6 @@ EAS Backend services
 #### Set up local environment
 
 ```bash
-sudo apt-get install rabbitmq-server
 python3.8 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements/local.txt
@@ -30,9 +29,6 @@ make runlocal
 
 If you need to send emails, when calling `make runlocal`, set the
 `EAS_AWS_KEY_SECRET` environment variable.
-
-If you need to test secret santa, you need to also run the mail consumer
-for emails to be delivered.
 
 #### Working on the swagger file
 
