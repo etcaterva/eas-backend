@@ -8,7 +8,7 @@ EAS Backend services
 
 ```bash
 sudo apt-get install rabbitmq-server
-python3.6 -m venv .venv
+python3.8 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements/local.txt
 
