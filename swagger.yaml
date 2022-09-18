@@ -660,12 +660,6 @@ paths:
   '/instagram-preview/':
     post:
       operationId: instagram_preview
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InstagramPreviewPayload'
-        required: true
       responses:
         '200':
           description: Previews the information of an instagram post
@@ -675,6 +669,12 @@ paths:
                 $ref: '#/components/schemas/InstagramPreviewResponse'
       tags:
         - instagram
+    parameters:
+      - name: post_url
+        in: query
+        required: true
+        schema:
+          type: string
   /instagram/:
     post:
       operationId: instagram_create
@@ -1201,13 +1201,6 @@ components:
       type: object
       properties:
         redirect_url:
-          type: string
-    InstagramPreviewPayload:
-      type: object
-      required:
-        - post_url
-      properties:
-        post_url:
           type: string
     InstagramPreviewResponse:
       type: object

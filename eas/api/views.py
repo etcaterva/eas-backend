@@ -1,5 +1,6 @@
 import logging
 import random
+import urllib.parse
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
@@ -309,7 +310,8 @@ def paypal_accept(request):
 
 @api_view(["GET"])
 def instagram_preview(request):
-    post_url = request.GET["post_url"]
+    encoded_post_url = request.GET["post_url"]
+    post_url = urllib.parse.unquote(encoded_post_url)
     LOG.info("Fetching instagram preview for %r", post_url)
     data = instagram.get_post_info(post_url)
     LOG.info("Fetched post information: %r", data)
