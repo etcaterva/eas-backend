@@ -39,6 +39,8 @@ jobs:
         make test
       env:
         EAS_PAYPAL_SECRET: ${{ secrets.EAS_PAYPAL_SECRET }}
+        EAS_INSTAGRAM_USERNAME: ${{ secrets.EAS_INSTAGRAM_USERNAME }}
+        EAS_INSTAGRAM_PASSWORD: ${{ secrets.EAS_INSTAGRAM_PASSWORD }}
 
     - name: Check pip frozen reqs
       run: |

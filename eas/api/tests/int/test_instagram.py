@@ -12,7 +12,10 @@ from .. import factories
 
 
 @pytest.fixture(autouse=True)
-def instagram_fake():
+def instagram_fake(request):
+    if "end2end" in request.keywords:
+        yield
+        return
     with patch("eas.api.instagram._get_client") as instagram_get_client:
         client = instagram_get_client.return_value
         client.media_pk_from_url.return_value = 1234
@@ -113,3 +116,18 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
+
+
+@pytest.mark.end2end
+def test_instagram_api_integration():
+    test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/?igshid=MDJmNzVkMjY%3D"
+    post_info = instagram.get_post_info(test_url)
+    likes = instagram.get_likes(test_url)
+    comments = instagram.get_comments(test_url)
+    assert post_info["thumbnail"]
+    assert post_info["likes"] >= 100
+    assert post_info["comments"] > 15
+    assert len(likes) >= 100
+    assert "melanicf" in comments
+    assert len(comments) > 15
+    assert "manuel_cantonero" in likes
