@@ -16,7 +16,9 @@ def instagram_fake():
     with patch("eas.api.instagram._get_client") as instagram_get_client:
         client = instagram_get_client.return_value
         client.media_pk_from_url.return_value = 1234
-        client.media_info.return_value = Mock(likes=1, comments=2, thumbnail_url="url")
+        client.media_info.return_value = Mock(
+            like_count=1, comment_count=2, thumbnail_url="url"
+        )
         client.media_comments.return_value = [
             Mock(user=Mock(username="mariocj89")),
             Mock(user=Mock(username="dnaranjo89")),
