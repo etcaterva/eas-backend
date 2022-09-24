@@ -207,6 +207,7 @@ REST_FRAMEWORK = {
 }
 
 PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")
+INSTAGRAM_USERNAME = os.environ.get("EAS_INSTAGRAM_USERNAME", "echaloasuerte@gmail.com")
 INSTAGRAM_PASSWORD = os.environ.get(
     "EAS_INSTAGRAM_PASSWORD", "instagram-password-unset"
 )
