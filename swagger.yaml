@@ -658,7 +658,7 @@ paths:
       tags:
         - paypal
   '/instagram-preview/':
-    post:
+    get:
       operationId: instagram_preview
       responses:
         '200':
