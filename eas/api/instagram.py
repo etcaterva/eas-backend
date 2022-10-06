@@ -1,5 +1,6 @@
 import functools
 import logging
+import pickle
 
 import instagrapi
 import instagrapi.exceptions
@@ -14,22 +15,40 @@ def _get_instagram_login():  # pragma: no cover
     return settings.INSTAGRAM_USERNAME, settings.INSTAGRAM_PASSWORD
 
 
-@functools.lru_cache
+def _get_instagram_cache():
+    try:
+        with open(settings.INSTAGRAM_CACHE_FILE, "rb") as f:
+            return pickle.load(f)
+    except (FileNotFoundError, pickle.PickleError, EOFError):
+        return None
+
+
+def _set_instagram_cache(client):
+    with open(settings.INSTAGRAM_CACHE_FILE, "wb") as f:
+        pickle.dump(client, f)
+
+
 def _get_client():  # pragma: no cover
+    client = _get_instagram_cache()
+    if client is not None:
+        return client
+
     client = instagrapi.Client()
     username, password = _get_instagram_login()
     LOG.info("Log in instagram with username %r", username)
     client.login(username, password)
+    LOG.info("Log in success")
+    _set_instagram_cache(client)
     return client
 
 
-def _refresh_client_on_error(func):  # pragma: no cover
+def _refresh_client_on_error(func):
     @functools.wraps(func)
     def _(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except instagrapi.exceptions.ClientError:
-            _get_client.cache_clear()
+        except instagrapi.exceptions.ClientError:  # pragma: no cover
+            _set_instagram_cache(None)
         return func(*args, **kwargs)
 
     return _

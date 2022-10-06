@@ -14,6 +14,7 @@ import os
 import pathlib
 import socket
 import string
+import tempfile
 
 ROOT_DIR = pathlib.Path(__file__).absolute().parent.parent.parent
 APP_DIR = ROOT_DIR / "eas"
@@ -210,6 +211,9 @@ PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")
 INSTAGRAM_USERNAME = os.environ.get("EAS_INSTAGRAM_USERNAME", "echaloasuerte@gmail.com")
 INSTAGRAM_PASSWORD = os.environ.get(
     "EAS_INSTAGRAM_PASSWORD", "instagram-password-unset"
+)
+INSTAGRAM_CACHE_FILE = os.environ.get(
+    "EAS_INSTAGRAM_CACHE_FILE", f"{tempfile.gettempdir()}/eas-instagram-cache.pickle"
 )
 
 AWS_KEY_ID = "AKIA5YJYF55GDDFBTQGN"
