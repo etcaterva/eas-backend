@@ -10,12 +10,14 @@ LOG = logging.getLogger(__name__)
 
 MAX_COMMENT_RETRIEVE = 100
 
+NotFoundError = instagrapi.exceptions.NotFoundError
+
 
 def _get_instagram_login():  # pragma: no cover
     return settings.INSTAGRAM_USERNAME, settings.INSTAGRAM_PASSWORD
 
 
-def _get_instagram_cache():
+def _get_instagram_cache():  # pragma: no cover
     try:
         with open(settings.INSTAGRAM_CACHE_FILE, "rb") as f:
             return pickle.load(f)
@@ -23,7 +25,7 @@ def _get_instagram_cache():
         return None
 
 
-def _set_instagram_cache(client):
+def _set_instagram_cache(client):  # pragma: no cover
     with open(settings.INSTAGRAM_CACHE_FILE, "wb") as f:
         pickle.dump(client, f)
 
@@ -42,12 +44,14 @@ def _get_client():  # pragma: no cover
     return client
 
 
-def _refresh_client_on_error(func):
+def _refresh_client_on_error(func):  # pragma: no cover
     @functools.wraps(func)
     def _(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except instagrapi.exceptions.ClientError:  # pragma: no cover
+        except NotFoundError:  # pragma: no cover
+            raise
+        except instagrapi.exceptions.ClientError:
             _set_instagram_cache(None)
         return func(*args, **kwargs)
 

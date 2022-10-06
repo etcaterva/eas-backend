@@ -313,7 +313,10 @@ def instagram_preview(request):
     encoded_post_url = request.GET["post_url"]
     post_url = urllib.parse.unquote(encoded_post_url)
     LOG.info("Fetching instagram preview for %r", post_url)
-    data = instagram.get_post_info(post_url)
+    try:
+        data = instagram.get_post_info(post_url)
+    except instagram.NotFoundError:
+        return Response(status=404)
     LOG.info("Fetched post information: %r", data)
     return Response(
         dict(
