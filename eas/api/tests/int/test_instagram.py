@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APILiveServerTestCase
 
-from eas.api import models
+from eas.api import instagram, models
 from eas.api.tests.int.common import DrawAPITestMixin
 
 from .. import factories
@@ -41,6 +41,16 @@ class TestInstagramPreview(APILiveServerTestCase):
         response = self.client.get(self.url, {"post_url": "test-instagram-post-url"})
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         assert response.json() == {"comments": 2, "likes": 1, "thumbnail": "url"}
+
+    def test_preview_not_found(self):
+        with patch("eas.api.instagram.get_post_info") as instagram_mock:
+            instagram_mock.side_effect = instagram.NotFoundError
+            response = self.client.get(
+                self.url, {"post_url": "test-instagram-post-url"}
+            )
+            self.assertEqual(
+                response.status_code, status.HTTP_404_NOT_FOUND, response.content
+            )
 
 
 class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
