@@ -885,6 +885,7 @@ components:
             - prizes
             - use_likes
             - use_comments
+            - min_mentions
           properties:
             prizes:
               type: array
@@ -895,6 +896,9 @@ components:
               default: false
             use_comments:
               type: boolean
+              default: false
+            min_mentions:
+              type: integer
               default: false
             post_url:
               type: string

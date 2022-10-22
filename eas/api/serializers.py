@@ -287,14 +287,20 @@ class InstagramSerializer(BaseSerializer):
             "post_url",
             "use_likes",
             "use_comments",
+            "min_mentions",
             "prizes",
         )
 
     prizes = PrizeSerializer(many=True, required=True)
 
     def validate(self, data):  # pylint: disable=arguments-differ
-        if data.get("use_likes", False) == data.get("use_comments", False):
+        use_likes = data.get("use_likes", False)
+        use_comments = data.get("use_comments", False)
+        min_mentions = data.get("min_mentions", False)
+        if not use_likes and not use_comments:
             raise serializers.ValidationError("likes-or-comments")
+        if not use_comments and (min_mentions != 0):
+            raise serializers.ValidationError("min-mention-needs-comments")
         return data
 
     def create(self, validated_data):

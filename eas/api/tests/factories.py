@@ -186,6 +186,7 @@ class InstagramFactory(BaseDrawFactory):
     post_url = "https://www.instagram.com/p/ChbV971lYLW/"
     use_likes = False
     use_comments = True
+    min_mentions = 0
     prizes = fb.List([dict(name="cupcake"), dict(name="laptop")])
 
     @classmethod
