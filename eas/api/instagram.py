@@ -1,6 +1,7 @@
 import functools
 import logging
 import pickle
+import re
 
 import instagrapi
 import instagrapi.exceptions
@@ -9,6 +10,7 @@ from django.conf import settings
 LOG = logging.getLogger(__name__)
 
 MAX_COMMENT_RETRIEVE = 100
+MENTION_RE = re.compile(r"(^|[^\w])@([\w\_\.]+)")
 
 NotFoundError = instagrapi.exceptions.NotFoundError
 
@@ -83,18 +85,19 @@ def get_likes(url):
     LOG.info("Fetching likes for %r", url)
     client = _get_client()
     media_pk = client.media_pk_from_url(url)
-    result = list({c.username for c in client.media_likers(media_pk)})
+    result = {c.username for c in client.media_likers(media_pk)}
     LOG.info("Got %r likes for %r", len(result), url)
     return result
 
 
 @_refresh_client_on_error
-def get_comments(url):
+def get_comments(url, min_mentions=0):
     LOG.info("Fetching comments for %r", url)
     client = _get_client()
+    result = set()
     media_pk = client.media_pk_from_url(url)
-    result = list(
-        {c.user.username for c in client.media_comments(media_pk, MAX_COMMENT_RETRIEVE)}
-    )
+    for comment in client.media_comments(media_pk, MAX_COMMENT_RETRIEVE):
+        if len(MENTION_RE.findall(comment.text)) >= min_mentions:
+            result.add(comment.user.username)
     LOG.info("Got %r comments for %r", len(result), url)
     return result

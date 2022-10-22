@@ -23,14 +23,20 @@ def instagram_fake(request):
             like_count=1, comment_count=2, thumbnail_url="url"
         )
         client.media_comments.return_value = [
-            Mock(user=Mock(username="mariocj89")),
-            Mock(user=Mock(username="dnaranjo89")),
-            Mock(user=Mock(username="palvarez89")),
+            Mock(
+                user=Mock(username="mariocj89"),
+                text="@melaniacf @elputo email@result a@",
+            ),
+            Mock(
+                user=Mock(username="dnaranjo89"),
+                text="Not a mention mariocj89@gmail.com",
+            ),
+            Mock(user=Mock(username="palvarez89"), text="@mariocj89"),
         ]
         client.media_likers.return_value = [
-            Mock(username="mariocj89"),
-            Mock(username="dnaranjo89"),
-            Mock(username="palvarez89"),
+            Mock(username="perico77"),
+            Mock(username="raul66"),
+            Mock(username="ficus123"),
         ]
         yield client
 
@@ -68,6 +74,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             "post_url": draw.post_url,
             "use_likes": draw.use_likes,
             "use_comments": draw.use_comments,
+            "min_mentions": draw.min_mentions,
             "prizes": [
                 dict(
                     id=p.id,
@@ -105,8 +112,30 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             }
         ]
 
+    def test_success_mentions(self):
+        draw = self.Factory(
+            prizes=[{"name": "cupcake"}],
+            use_comments=True,
+            use_likes=False,
+            min_mentions=2,
+        )
+        url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+        response = self.client.post(url, {})
+        assert response.json()["value"] == [
+            {
+                "prize": {"id": ANY, "name": "cupcake", "url": None},
+                "participant": {"name": "mariocj89"},
+            }
+        ]
+
     def test_create_invalid_combination(self):
         response = self.create(use_comments=False, use_likes=False)
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    def test_create_invalid_min_mentions_no_comments(self):
+        response = self.create(use_comments=False, use_likes=True, min_mentions=2)
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
@@ -121,13 +150,22 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
 @pytest.mark.end2end
 def test_instagram_api_integration():
     test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/?igshid=MDJmNzVkMjY%3D"
+
     post_info = instagram.get_post_info(test_url)
-    likes = instagram.get_likes(test_url)
-    comments = instagram.get_comments(test_url)
     assert post_info["thumbnail"]
     assert post_info["likes"] >= 100
     assert post_info["comments"] > 15
+
+    likes = instagram.get_likes(test_url)
     assert len(likes) >= 100
+
+    comments = instagram.get_comments(test_url)
     assert "melanicf" in comments
     assert len(comments) > 15
     assert "manuel_cantonero" in likes
+
+    assert {"efphotographers", "melanicf"} == instagram.get_comments(
+        test_url, min_mentions=1
+    )
+    assert {"melanicf"} == instagram.get_comments(test_url, min_mentions=2)
+    assert set() == instagram.get_comments(test_url, min_mentions=3)
