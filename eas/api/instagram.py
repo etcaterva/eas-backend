@@ -9,7 +9,7 @@ from django.conf import settings
 
 LOG = logging.getLogger(__name__)
 
-MAX_COMMENT_RETRIEVE = 100
+MAX_COMMENT_RETRIEVE = 1000
 MENTION_RE = re.compile(r"(^|[^\w])@([\w\_\.]+)")
 
 NotFoundError = instagrapi.exceptions.NotFoundError
@@ -81,26 +81,16 @@ def get_post_info(url):
 
 
 @_refresh_client_on_error
-def get_likes(url):
-    LOG.info("Fetching likes for %r", url)
-    client = _get_client()
-    media_pk = client.media_pk_from_url(url)
-    result = {c.username for c in client.media_likers(media_pk)}
-    LOG.info("Got %r likes for %r", len(result), url)
-    return result
-
-
-@_refresh_client_on_error
 def get_comments(url, min_mentions=0, require_like=False):
     LOG.info("Fetching comments for %r", url)
     client = _get_client()
     result = set()
     media_pk = client.media_pk_from_url(url)
-    for comment in client.media_comments(media_pk, MAX_COMMENT_RETRIEVE * 2):
+    for comment in client.media_comments(media_pk, MAX_COMMENT_RETRIEVE):
         if len(MENTION_RE.findall(comment.text)) < min_mentions:
             continue
         if require_like and not comment.has_liked:
             continue
-        result.add(comment.user.username)
+        result.add((comment.user.username, comment.text))
     LOG.info("Got %r comments for %r", len(result), url)
     return result

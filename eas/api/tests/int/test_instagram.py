@@ -25,15 +25,15 @@ def instagram_fake(request):
         client.media_comments.return_value = [
             Mock(
                 user=Mock(username="mariocj89"),
-                text="@melaniacf @elputo email@result a@",
-                has_liked=True,
+                text="comment with a mention @dnaranjo89",
+                has_liked=False,
             ),
             Mock(
                 user=Mock(username="dnaranjo89"),
                 text="Not a mention mariocj89@gmail.com",
                 has_liked=True,
             ),
-            Mock(user=Mock(username="palvarez89"), text="@mariocj89", has_liked=False),
+            Mock(user=Mock(username="palvarez89"), text="This rocks!", has_liked=False),
         ]
         client.media_likers.return_value = [
             Mock(username="perico77"),
@@ -75,7 +75,6 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             **super()._transform_draw(draw, write_access),
             "post_url": draw.post_url,
             "use_likes": draw.use_likes,
-            "use_comments": draw.use_comments,
             "min_mentions": draw.min_mentions,
             "prizes": [
                 dict(
@@ -88,59 +87,52 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             ],
         }
 
-    def test_success_result_comments(self):
+    def test_success_result_only_comments(self):
         draw = self.Factory(
-            prizes=[{"name": "cupcake"}], use_comments=True, use_likes=False
+            prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
         )
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
         assert response.json()["value"] == [
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
-                "participant": {"name": ANY},
+                "comment": {"name": ANY, "text": ANY},
             }
         ]
 
-    def test_success_result_likes(self):
+    def test_success_result_with_likes(self):
         draw = self.Factory(
-            prizes=[{"name": "cupcake"}], use_comments=False, use_likes=True
+            prizes=[{"name": "cupcake"}], use_likes=True, min_mentions=0
         )
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
         assert response.json()["value"] == [
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
-                "participant": {"name": ANY},
+                "comment": {
+                    "name": "dnaranjo89",
+                    "text": "Not a mention mariocj89@gmail.com",
+                },
             }
         ]
 
-    def test_success_mentions(self):
+    def test_success_result_with_mentions(self):
         draw = self.Factory(
             prizes=[{"name": "cupcake"}],
-            use_comments=True,
             use_likes=False,
-            min_mentions=2,
+            min_mentions=1,
         )
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
         assert response.json()["value"] == [
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
-                "participant": {"name": "mariocj89"},
+                "comment": {
+                    "name": "mariocj89",
+                    "text": "comment with a mention @dnaranjo89",
+                },
             }
         ]
-
-    def test_create_invalid_combination(self):
-        response = self.create(use_comments=False, use_likes=False)
-        self.assertEqual(
-            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
-        )
-
-    def test_create_invalid_min_mentions_no_comments(self):
-        response = self.create(use_comments=False, use_likes=True, min_mentions=2)
-        self.assertEqual(
-            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
-        )
 
     def test_create_invalid_no_prizes(self):
         response = self.create(prizes=[])
@@ -158,16 +150,21 @@ def test_instagram_api_integration():
     assert post_info["likes"] >= 100
     assert post_info["comments"] > 15
 
-    likes = instagram.get_likes(test_url)
-    assert len(likes) >= 100
-
     comments = instagram.get_comments(test_url)
-    assert "melanicf" in comments
+    users = {c[0] for c in comments}
+    assert "melanicf" in users
     assert len(comments) > 15
-    assert "manuel_cantonero" in likes
 
-    assert {"efphotographers", "melanicf"} == instagram.get_comments(
-        test_url, min_mentions=1
-    )
-    assert {"melanicf"} == instagram.get_comments(test_url, min_mentions=2)
+    comments = instagram.get_comments(test_url, min_mentions=1)
+    users = {c[0] for c in comments}
+    assert {"efphotographers", "melanicf"} == users
+
+    comments = instagram.get_comments(test_url, min_mentions=2)
+    users = {c[0] for c in comments}
+    assert {"melanicf"} == users
+
     assert set() == instagram.get_comments(test_url, min_mentions=3)
+
+    comments = instagram.get_comments(test_url, require_like=True)
+    users = {c[0] for c in comments}
+    assert {"songdeluxe"} == users

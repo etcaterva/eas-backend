@@ -884,7 +884,6 @@ components:
             - post_url
             - prizes
             - use_likes
-            - use_comments
             - min_mentions
           properties:
             prizes:
@@ -894,12 +893,9 @@ components:
             use_likes:
               type: boolean
               default: false
-            use_comments:
-              type: boolean
-              default: false
             min_mentions:
               type: integer
-              default: false
+              default: 0
             post_url:
               type: string
             results:
@@ -1055,8 +1051,13 @@ components:
               items:
                 type: object
                 properties:
-                  participant:
-                    $ref: '#/components/schemas/Participant'
+                  comment:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                      text:
+                        type: string
                   prize:
                     $ref: '#/components/schemas/Prize'
     LinkResult:
