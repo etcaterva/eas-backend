@@ -333,20 +333,17 @@ class Tournament(BaseDraw, ParticipantsMixin):
 class Instagram(BaseDraw, PrizesMixin):
     post_url = models.URLField()
     use_likes = models.BooleanField(default=False)
-    use_comments = models.BooleanField(default=False)
     min_mentions = models.IntegerField(default=0)
 
     def generate_result(self):
-        if self.use_comments:
-            participants = instagram.get_comments(
+        comments = {
+            r[0]: r[1]
+            for r in instagram.get_comments(
                 self.post_url, self.min_mentions, require_like=self.use_likes
             )
-        elif self.use_likes:
-            participants = instagram.get_likes(self.post_url)
-        else:  # pragma: no cover
-            raise NotImplementedError()
+        }  # deduplicates comments by user
 
-        participants = list(participants)
+        participants = list(comments.keys())
         random.shuffle(participants)
 
         result = []
@@ -355,10 +352,7 @@ class Instagram(BaseDraw, PrizesMixin):
             itertools.cycle(participants),
         ):
             result.append(
-                {
-                    "prize": prize,
-                    "participant": {"name": winner},
-                }
+                {"prize": prize, "comment": {"name": winner, "text": comments[winner]}}
             )
         return result
 
