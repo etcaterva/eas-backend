@@ -91,13 +91,16 @@ def get_likes(url):
 
 
 @_refresh_client_on_error
-def get_comments(url, min_mentions=0):
+def get_comments(url, min_mentions=0, require_like=False):
     LOG.info("Fetching comments for %r", url)
     client = _get_client()
     result = set()
     media_pk = client.media_pk_from_url(url)
-    for comment in client.media_comments(media_pk, MAX_COMMENT_RETRIEVE):
-        if len(MENTION_RE.findall(comment.text)) >= min_mentions:
-            result.add(comment.user.username)
+    for comment in client.media_comments(media_pk, MAX_COMMENT_RETRIEVE * 2):
+        if len(MENTION_RE.findall(comment.text)) < min_mentions:
+            continue
+        if require_like and not comment.has_liked:
+            continue
+        result.add(comment.user.username)
     LOG.info("Got %r comments for %r", len(result), url)
     return result

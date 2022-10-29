@@ -337,15 +337,19 @@ class Instagram(BaseDraw, PrizesMixin):
     min_mentions = models.IntegerField(default=0)
 
     def generate_result(self):
-        participants = set()
-        if self.use_likes:
-            participants |= instagram.get_likes(self.post_url)
         if self.use_comments:
-            participants |= instagram.get_comments(self.post_url, self.min_mentions)
+            participants = instagram.get_comments(
+                self.post_url, self.min_mentions, require_like=self.use_likes
+            )
+        elif self.use_likes:
+            participants = instagram.get_likes(self.post_url)
+        else:  # pragma: no cover
+            raise NotImplementedError()
 
-        result = []
         participants = list(participants)
         random.shuffle(participants)
+
+        result = []
         for prize, winner in zip(
             self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS),
             itertools.cycle(participants),

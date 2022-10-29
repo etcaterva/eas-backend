@@ -26,12 +26,14 @@ def instagram_fake(request):
             Mock(
                 user=Mock(username="mariocj89"),
                 text="@melaniacf @elputo email@result a@",
+                has_liked=True,
             ),
             Mock(
                 user=Mock(username="dnaranjo89"),
                 text="Not a mention mariocj89@gmail.com",
+                has_liked=True,
             ),
-            Mock(user=Mock(username="palvarez89"), text="@mariocj89"),
+            Mock(user=Mock(username="palvarez89"), text="@mariocj89", has_liked=False),
         ]
         client.media_likers.return_value = [
             Mock(username="perico77"),
