@@ -61,7 +61,7 @@ def _refresh_client_on_error(func):  # pragma: no cover
 
 
 @_refresh_client_on_error
-def get_post_info(url):
+def get_post_info(url):  # pragma: no cover
     LOG.info("Fetching info for %r", url)
     client = _get_client()
     media_pk = client.media_pk_from_url(url)
@@ -81,7 +81,7 @@ def get_post_info(url):
 
 
 @_refresh_client_on_error
-def get_comments(url, min_mentions=0, require_like=False):
+def get_comments(url, min_mentions=0, require_like=False):  # pragma: no cover
     LOG.info("Fetching comments for %r", url)
     client = _get_client()
     result = set()

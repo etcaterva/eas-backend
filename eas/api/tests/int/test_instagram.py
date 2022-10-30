@@ -141,7 +141,17 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
         )
 
 
+
+try:
+    instagram._get_client()
+except Exception:
+    instagrap_api_works = False
+else:
+    instagrap_api_works = True
+
+
 @pytest.mark.end2end
+@pytest.mark.skipif(not instagrap_api_works, reason="Unable to create an instagram API client.")
 def test_instagram_api_integration():
     test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/?igshid=MDJmNzVkMjY%3D"
 
