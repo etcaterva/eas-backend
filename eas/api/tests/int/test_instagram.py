@@ -12,7 +12,7 @@ from .. import factories
 
 
 @pytest.fixture(autouse=True)
-def instagram_fake(request):
+def instagram_fake(request):  # pragma: no cover
     if "end2end" in request.keywords:
         yield
         return
@@ -143,9 +143,9 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
 
 try:
     instagram._get_client()  # pylint: disable=protected-access
-except Exception:  # pylint: disable=broad-except
+except Exception:  # pylint: disable=broad-except  # pragma: no cover
     instagrap_api_works = False
-else:
+else:  # pragma: no cover
     instagrap_api_works = True
 
 
@@ -153,7 +153,7 @@ else:
 @pytest.mark.skipif(
     not instagrap_api_works, reason="Unable to create an instagram API client."
 )
-def test_instagram_api_integration():
+def test_instagram_api_integration():  # pragma: no cover
     test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/?igshid=MDJmNzVkMjY%3D"
 
     post_info = instagram.get_post_info(test_url)
