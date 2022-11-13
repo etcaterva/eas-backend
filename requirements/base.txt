@@ -14,7 +14,7 @@ cffi==1.15.1
 charset-normalizer==2.1.1
 coreapi==2.3.3
 coreschema==0.0.4
-cryptography==37.0.4
+cryptography==38.0.3
 django==4.1
 djangorestframework==3.13.1
 drf-yasg[validation]==1.21.3
