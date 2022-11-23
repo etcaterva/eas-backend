@@ -208,9 +208,14 @@ REST_FRAMEWORK = {
 }
 
 PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")
-INSTAGRAM_USERNAME = os.environ.get("EAS_INSTAGRAM_USERNAME", "echaloasuerte@gmail.com")
-INSTAGRAM_PASSWORD = os.environ.get(
-    "EAS_INSTAGRAM_PASSWORD", "instagram-password-unset"
+INSTAGRAM_EMAIL_USERNAME = os.environ.get(
+    "EAS_INSTAGRAM_EMAIL_USERNAME", "instagram-email-username-unset"
+)
+INSTAGRAM_EMAIL_PASSWORD = os.environ.get(
+    "EAS_INSTAGRAM_EMAIL_PASSWORD", "instagram-email-password-unset"
+)
+INSTAGRAM_PASSWORD_FILE = os.environ.get(
+    "EAS_INSTAGRAM_PASSWORD_FILE", f"{tempfile.gettempdir()}/eas-instagram-password"
 )
 INSTAGRAM_CACHE_FILE = os.environ.get(
     "EAS_INSTAGRAM_CACHE_FILE", f"{tempfile.gettempdir()}/eas-instagram-cache.pickle"
