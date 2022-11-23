@@ -7,6 +7,8 @@ import instagrapi
 import instagrapi.exceptions
 from django.conf import settings
 
+from . import instagram_challenge
+
 LOG = logging.getLogger(__name__)
 
 MAX_COMMENT_RETRIEVE = 1000
@@ -16,7 +18,13 @@ NotFoundError = instagrapi.exceptions.NotFoundError
 
 
 def _get_instagram_login():  # pragma: no cover
-    return settings.INSTAGRAM_USERNAME, settings.INSTAGRAM_PASSWORD
+    user = settings.INSTAGRAM_EMAIL_USERNAME
+    try:
+        with open(settings.INSTAGRAM_PASSWORD_FILE) as f:
+            password = f.read()
+    except FileNotFoundError:
+        password = instagram_challenge.change_password_handler(user)
+    return user, password
 
 
 def _get_instagram_cache():  # pragma: no cover
@@ -38,6 +46,7 @@ def _get_client():  # pragma: no cover
         return client
 
     client = instagrapi.Client()
+    client.challenge_code_handler = instagram_challenge.challenge_code_handler
     username, password = _get_instagram_login()
     LOG.info("Log in instagram with username %r", username)
     client.login(username, password)
