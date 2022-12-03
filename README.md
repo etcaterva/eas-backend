@@ -30,6 +30,10 @@ make runlocal
 If you need to send emails, when calling `make runlocal`, set the
 `EAS_AWS_KEY_SECRET` environment variable.
 
+If you need to to use instagram, when calling `make runlocal`, set the
+`EAS_INSTAGRAM_EMAIL_USERNAME` to an instagram user email and create
+a `eas-instagram.pass` file at the repo root with the password.
+
 #### Working on the swagger file
 
 ```bash
