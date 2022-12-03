@@ -1,5 +1,6 @@
 import functools
 import logging
+import pathlib
 import pickle
 import re
 
@@ -19,11 +20,15 @@ NotFoundError = instagrapi.exceptions.NotFoundError
 
 def _get_instagram_login():  # pragma: no cover
     user = settings.INSTAGRAM_EMAIL_USERNAME
-    try:
-        with open(settings.INSTAGRAM_PASSWORD_FILE) as f:
-            password = f.read()
-    except FileNotFoundError:
-        password = instagram_challenge.change_password_handler(user)
+    instagram_password_file = pathlib.Path(settings.INSTAGRAM_PASSWORD_FILE)
+    if not instagram_password_file.exists():
+        LOG.fatal(
+            "%s does not exist. Create the file and set EAS_INSTAGRAM_EMAIL_USERNAME"
+            " env var to develop locally",
+            instagram_password_file,
+        )
+        raise RuntimeError("Instagram features cannot be used as it is not configured")
+    password = instagram_password_file.read_text().strip()
     return user, password
 
 
