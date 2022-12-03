@@ -1,15 +1,14 @@
 -r base.txt
-astroid
-black
-coverage
-django-cors-headers
-django-coverage-plugin
-factory-boy
-freezegun
+black==22.8.0
+coverage==6.4.4
+django-cors-headers==3.13.0
+django-coverage-plugin==2.0.3
+factory-boy==3.2.1
+freezegun==1.2.2
 isort<5
-pip-tools
+pip-tools==6.8.0
 pylint-django==2.4.2
 pylint-plugin-utils==0.6
 pylint==2.6.0
-pytest-cov
-pytest-django
+pytest-cov==3.0.0
+pytest-django==4.5.2
