@@ -14,7 +14,6 @@ import os
 import pathlib
 import socket
 import string
-import tempfile
 
 ROOT_DIR = pathlib.Path(__file__).absolute().parent.parent.parent
 APP_DIR = ROOT_DIR / "eas"
@@ -215,10 +214,10 @@ INSTAGRAM_EMAIL_PASSWORD = os.environ.get(
     "EAS_INSTAGRAM_EMAIL_PASSWORD", "instagram-email-password-unset"
 )
 INSTAGRAM_PASSWORD_FILE = os.environ.get(
-    "EAS_INSTAGRAM_PASSWORD_FILE", f"{tempfile.gettempdir()}/eas-instagram-password"
+    "EAS_INSTAGRAM_PASSWORD_FILE", f"{ROOT_DIR}/eas-instagram.pass"
 )
 INSTAGRAM_CACHE_FILE = os.environ.get(
-    "EAS_INSTAGRAM_CACHE_FILE", f"{tempfile.gettempdir()}/eas-instagram-cache.pickle"
+    "EAS_INSTAGRAM_CACHE_FILE", f"{ROOT_DIR}/eas-instagram-cache.pickle"
 )
 
 AWS_KEY_ID = "AKIA5YJYF55GDDFBTQGN"
