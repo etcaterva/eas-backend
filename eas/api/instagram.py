@@ -7,6 +7,8 @@ import re
 import instagrapi
 import instagrapi.exceptions
 from django.conf import settings
+from instagrapi.exceptions import MediaNotFound
+from instagrapi.extractors import extract_comment
 
 from . import instagram_challenge
 
@@ -16,6 +18,43 @@ MAX_COMMENT_RETRIEVE = 1000
 MENTION_RE = re.compile(r"(^|[^\w])@([\w\_\.]+)")
 
 NotFoundError = instagrapi.exceptions.NotFoundError
+
+
+class Client(instagrapi.Client):  # pragma: no cover
+    def media_comments(self, media_id):  # pylint: disable=arguments-differ
+        """Custom implementation to get a generator"""
+
+        def _get_comments():
+            if result.get("comments"):
+                for comment in result["comments"]:
+                    yield extract_comment(comment)
+
+        media_id = self.media_id(media_id)
+        params = None
+        result = self.private_request(f"media/{media_id}/comments/", params)
+        yield from _get_comments()
+        while (result.get("has_more_comments") and result.get("next_max_id")) or (
+            result.get("has_more_headload_comments") and result.get("next_min_id")
+        ):  # pragma: no cover
+            try:
+                if result.get("has_more_comments"):
+                    params = {"max_id": result.get("next_max_id")}
+                else:
+                    params = {"min_id": result.get("next_min_id")}
+                if not (
+                    result.get("next_max_id")
+                    or result.get("next_min_id")
+                    or result.get("comments")
+                ):
+                    break
+                result = self.private_request(f"media/{media_id}/comments/", params)
+                yield from _get_comments()
+            except instagrapi.exceptions.ClientNotFoundError as e:
+                raise MediaNotFound(e, media_id=media_id, **self.last_json) from e
+            except instagrapi.exceptions.ClientError as e:
+                if "Media not found" in str(e):
+                    raise MediaNotFound(e, media_id=media_id, **self.last_json) from e
+                raise e
 
 
 def _get_instagram_login():  # pragma: no cover
@@ -50,7 +89,7 @@ def _get_client():  # pragma: no cover
     if client is not None:
         return client
 
-    client = instagrapi.Client()
+    client = Client()
     client.challenge_code_handler = instagram_challenge.challenge_code_handler
     username, password = _get_instagram_login()
     LOG.info("Log in instagram with username %r", username)
@@ -68,6 +107,7 @@ def _refresh_client_on_error(func):  # pragma: no cover
         except NotFoundError:  # pragma: no cover
             raise
         except instagrapi.exceptions.ClientError:
+            LOG.warning("Refreshing instagram client", exc_info=True)
             _set_instagram_cache(None)
         return func(*args, **kwargs)
 
@@ -98,13 +138,10 @@ def get_post_info(url):  # pragma: no cover
 def get_comments(url, min_mentions=0, require_like=False):  # pragma: no cover
     LOG.info("Fetching comments for %r", url)
     client = _get_client()
-    result = set()
     media_pk = client.media_pk_from_url(url)
-    for comment in client.media_comments(media_pk, MAX_COMMENT_RETRIEVE):
+    for comment in client.media_comments(media_pk):
         if len(MENTION_RE.findall(comment.text)) < min_mentions:
             continue
         if require_like and not comment.has_liked:
             continue
-        result.add((comment.user.username, comment.text))
-    LOG.info("Got %r comments for %r", len(result), url)
-    return result
+        yield (comment.user.username, comment.text)
