@@ -14,7 +14,6 @@ from . import instagram_challenge
 
 LOG = logging.getLogger(__name__)
 
-MAX_COMMENT_RETRIEVE = 1000
 MENTION_RE = re.compile(r"(^|[^\w])@([\w\_\.]+)")
 
 NotFoundError = instagrapi.exceptions.NotFoundError
@@ -36,6 +35,7 @@ class Client(instagrapi.Client):  # pragma: no cover
         while (result.get("has_more_comments") and result.get("next_max_id")) or (
             result.get("has_more_headload_comments") and result.get("next_min_id")
         ):  # pragma: no cover
+            LOG.info("Fetching an additional page for post %s", media_id)
             try:
                 if result.get("has_more_comments"):
                     params = {"max_id": result.get("next_max_id")}
