@@ -309,7 +309,7 @@ def paypal_accept(request):
 
 
 @api_view(["GET"])
-def instagram_preview(request):
+def instagram_preview(request):  # pragma: no cover
     encoded_post_url = request.GET["post_url"]
     post_url = urllib.parse.unquote(encoded_post_url)
     LOG.info("Fetching instagram preview for %r", post_url)

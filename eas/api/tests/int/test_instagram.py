@@ -7,6 +7,7 @@ from rest_framework.test import APILiveServerTestCase
 
 from eas.api import instagram, models
 from eas.api.tests.int.common import DrawAPITestMixin
+from eas.api.tests.int.test_purge import PurgeMixin
 
 from .. import factories
 
@@ -16,52 +17,19 @@ def instagram_fake(request):  # pragma: no cover
     if "end2end" in request.keywords:
         yield
         return
-    with patch("eas.api.instagram._get_client") as instagram_get_client:
-        client = instagram_get_client.return_value
-        client.media_pk_from_url.return_value = 1234
-        client.media_info.return_value = Mock(
-            like_count=1, comment_count=2, thumbnail_url="url"
-        )
-        client.media_comments.return_value = [
+    with patch("eas.api.instagram._CLIENT") as client:
+        client.fetch_comments.return_value = [
             Mock(
-                user=Mock(username="mariocj89"),
+                username="mariocj89",
                 text="comment with a mention @dnaranjo89",
-                has_liked=False,
             ),
             Mock(
-                user=Mock(username="dnaranjo89"),
+                username="dnaranjo89",
                 text="Not a mention mariocj89@gmail.com",
-                has_liked=True,
             ),
-            Mock(user=Mock(username="palvarez89"), text="This rocks!", has_liked=False),
-        ]
-        client.media_likers.return_value = [
-            Mock(username="perico77"),
-            Mock(username="raul66"),
-            Mock(username="ficus123"),
+            Mock(username="palvarez89", text="This rocks!"),
         ]
         yield client
-
-
-class TestInstagramPreview(APILiveServerTestCase):
-    def setUp(self):
-        self.client.default_format = "json"
-        self.url = reverse("instagram-preview")
-
-    def test_preview_success(self):
-        response = self.client.get(self.url, {"post_url": "test-instagram-post-url"})
-        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
-        assert response.json() == {"comments": 2, "likes": 1, "thumbnail": "url"}
-
-    def test_preview_not_found(self):
-        with patch("eas.api.instagram.get_post_info") as instagram_mock:
-            instagram_mock.side_effect = instagram.NotFoundError
-            response = self.client.get(
-                self.url, {"post_url": "test-instagram-post-url"}
-            )
-            self.assertEqual(
-                response.status_code, status.HTTP_404_NOT_FOUND, response.content
-            )
 
 
 class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
@@ -100,7 +68,8 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             }
         ]
 
-    def test_success_result_with_likes(self):
+    @pytest.mark.skip
+    def test_success_result_with_likes(self):  # pragma: no cover
         draw = self.Factory(
             prizes=[{"name": "cupcake"}], use_likes=True, min_mentions=0
         )
@@ -141,18 +110,11 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
         )
 
 
-try:
-    instagram._get_client()  # pylint: disable=protected-access
-except Exception:  # pylint: disable=broad-except  # pragma: no cover
-    instagrap_api_works = False
-else:  # pragma: no cover
-    instagrap_api_works = True
+class TestInstagramPurge(PurgeMixin, APILiveServerTestCase):
+    FACTORY = factories.InstagramFactory
 
 
 @pytest.mark.end2end
-@pytest.mark.skipif(
-    not instagrap_api_works, reason="Unable to create an instagram API client."
-)
 def test_instagram_api_integration():  # pragma: no cover
     test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/?igshid=MDJmNzVkMjY%3D"
 
@@ -168,11 +130,11 @@ def test_instagram_api_integration():  # pragma: no cover
 
     comments = set(instagram.get_comments(test_url, min_mentions=1))
     users = {c[0] for c in comments}
-    assert {"efphotographers", "melanicf"} == users
+    assert {"efphotographers"} == users
 
     comments = set(instagram.get_comments(test_url, min_mentions=2))
     users = {c[0] for c in comments}
-    assert {"melanicf"} == users
+    assert set() == users
 
     assert set() == set(instagram.get_comments(test_url, min_mentions=3))
 

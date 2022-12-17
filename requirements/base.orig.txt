@@ -9,3 +9,5 @@ paypalrestsdk
 python-dateutil
 pytz
 raven
+requests
+requests-cache
