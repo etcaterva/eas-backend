@@ -332,3 +332,11 @@ class InstagramViewSet(BaseDrawViewSet):
     serializer_class = serializers.InstagramSerializer
 
     queryset = MODEL.objects.all()
+
+    def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
+        # Check if a result is possible
+        try:
+            draw.generate_result()
+        except instagram.NotFoundError:
+            LOG.info("Invalid draw created, cannot generate result", exc_info=True)
+            raise ValidationError("The instagram post does not exist") from None

@@ -1,6 +1,7 @@
 Django
 Pillow
 boto3
+cachetools
 djangorestframework
 drf-yasg[validation]
 instagrapi
@@ -10,4 +11,3 @@ python-dateutil
 pytz
 raven
 requests
-requests-cache
