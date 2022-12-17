@@ -14,6 +14,7 @@ from .. import factories
 
 @pytest.fixture(autouse=True)
 def instagram_fake(request):  # pragma: no cover
+    instagram._CLIENT.fetch_comments.cache_clear()  # pylint: disable=no-member,protected-access
     if "end2end" in request.keywords:
         yield
         return
@@ -68,6 +69,18 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             }
         ]
 
+    def test_invalid_post_url(self):
+        with patch("eas.api.instagram._CLIENT") as client:
+            client.fetch_comments.side_effect = instagram.NotFoundError
+            draw = self.Factory(
+                prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
+            )
+            url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+            response = self.client.post(url, {})
+            self.assertEqual(
+                response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+            )
+
     @pytest.mark.skip
     def test_success_result_with_likes(self):  # pragma: no cover
         draw = self.Factory(
@@ -116,7 +129,7 @@ class TestInstagramPurge(PurgeMixin, APILiveServerTestCase):
 
 @pytest.mark.end2end
 def test_instagram_api_integration():  # pragma: no cover
-    test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/?igshid=MDJmNzVkMjY%3D"
+    test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/"
 
     post_info = instagram.get_post_info(test_url)
     assert post_info["thumbnail"]

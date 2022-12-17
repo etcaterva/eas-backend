@@ -336,14 +336,12 @@ class Instagram(BaseDraw, PrizesMixin):
     min_mentions = models.IntegerField(default=0)
 
     def generate_result(self):
-        min_participants = max(20, len(self.prizes.values()) * 2)
-        comments = {}
-        for participant, comment in instagram.get_comments(
+        comments_list = instagram.get_comments(
             self.post_url, self.min_mentions, require_like=self.use_likes
-        ):  # dedup participants by username
+        )
+        comments = {}
+        for participant, comment in comments_list:  # dedup participants by username
             comments[participant] = comment
-            if len(comments) > min_participants:  # pragma: no cover
-                break
 
         participants = list(comments.keys())
         random.shuffle(participants)

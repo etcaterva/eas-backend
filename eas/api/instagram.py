@@ -1,12 +1,11 @@
-# pylint: skip-file
 import datetime as dt
-import functools
 import logging
 import re
 from dataclasses import dataclass
 
+import cachetools
 import instagrapi
-import requests_cache
+import requests
 from django.conf import settings
 
 LOG = logging.getLogger(__name__)
@@ -35,8 +34,15 @@ def str_bounded(obj):  # pragma: no cover
 class _Client:
     def __init__(self):
         self._client = instagrapi.Client()
-        self._session = requests_cache.CachedSession(expire_after=dt.timedelta(hours=1))
+        self._session = requests.Session()
 
+    @cachetools.cached(
+        cachetools.TTLCache(
+            maxsize=500,
+            timer=dt.datetime.now,
+            ttl=dt.timedelta(hours=1),
+        )
+    )
     def fetch_comments(self, url):  # pragma: no cover
         media_pk = self._client.media_pk_from_url(url)
         response = self._session.get(
@@ -51,11 +57,15 @@ class _Client:
             "Fetch comments for %s, response %s", url, str_bounded(response.json())
         )
         response.raise_for_status()
-        for comment in response.json():
-            yield _Comment(
+        if not response.json():
+            raise NotFoundError(f"No posts found for {url}")
+        return [
+            _Comment(
                 text=comment["text"],
                 username=comment["owner"]["username"],
             )
+            for comment in response.json()
+        ]
 
 
 _CLIENT = _Client()
