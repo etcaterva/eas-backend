@@ -1,6 +1,5 @@
 import logging
 import random
-import urllib.parse
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
@@ -306,25 +305,6 @@ def paypal_accept(request):
     paypal.accept_payment(payment_id, payer_id)
     LOG.info("Payment %r accepted", payment)
     return redirect(payment.draw_url)
-
-
-@api_view(["GET"])
-def instagram_preview(request):  # pragma: no cover
-    encoded_post_url = request.GET["post_url"]
-    post_url = urllib.parse.unquote(encoded_post_url)
-    LOG.info("Fetching instagram preview for %r", post_url)
-    try:
-        data = instagram.get_post_info(post_url)
-    except instagram.NotFoundError:
-        return Response(status=404)
-    LOG.info("Fetched post information: %r", data)
-    return Response(
-        dict(
-            likes=data["likes"],
-            comments=data["comments"],
-            thumbnail=data["thumbnail"],
-        )
-    )
 
 
 class InstagramViewSet(BaseDrawViewSet):

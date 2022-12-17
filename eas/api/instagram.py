@@ -82,17 +82,6 @@ class _Client:
 _CLIENT = _Client()
 
 
-def get_post_info(url):  # pragma: no cover
-    LOG.info("Fetching info for %r", url)
-    ret = dict(
-        likes=999,
-        comments=999,
-        thumbnail="https://avatars.githubusercontent.com/u/9324508?v=4",
-    )
-    LOG.info("Got info for %r", url)
-    return ret
-
-
 def get_comments(url, min_mentions=0, require_like=False):  # pragma: no cover
     LOG.info("Fetching comments for %r", url)
     for comment in _CLIENT.fetch_comments(url):
