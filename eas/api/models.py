@@ -369,4 +369,5 @@ DRAW_TYPES = [
     RandomNumber,
     Spinner,
     Tournament,
+    Instagram,
 ]
