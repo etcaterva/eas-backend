@@ -657,24 +657,6 @@ paths:
                 $ref: '#/components/schemas/PaypalResponse'
       tags:
         - paypal
-  '/instagram-preview/':
-    get:
-      operationId: instagram_preview
-      responses:
-        '200':
-          description: Previews the information of an instagram post
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InstagramPreviewResponse'
-      tags:
-        - instagram
-    parameters:
-      - name: post_url
-        in: query
-        required: true
-        schema:
-          type: string
   /instagram/:
     post:
       operationId: instagram_create
@@ -1207,12 +1189,3 @@ components:
       properties:
         redirect_url:
           type: string
-    InstagramPreviewResponse:
-      type: object
-      properties:
-        thumbnail:
-          type: string
-        likes:
-          type: integer
-        comments:
-          type: integer

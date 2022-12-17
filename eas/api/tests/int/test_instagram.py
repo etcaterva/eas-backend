@@ -131,11 +131,6 @@ class TestInstagramPurge(PurgeMixin, APILiveServerTestCase):
 def test_instagram_api_integration():  # pragma: no cover
     test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/"
 
-    post_info = instagram.get_post_info(test_url)
-    assert post_info["thumbnail"]
-    assert post_info["likes"] >= 100
-    assert post_info["comments"] > 15
-
     comments = set(instagram.get_comments(test_url))
     users = {c[0] for c in comments}
     assert "melanicf" in users

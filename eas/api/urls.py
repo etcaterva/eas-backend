@@ -22,6 +22,5 @@ router.register(r"instagram", views.InstagramViewSet, basename="instagram")
 urlpatterns = [
     re_path(r"paypal/create/", views.paypal_create, name="paypal-create"),
     re_path(r"paypal/accept/", views.paypal_accept, name="paypal-accept"),
-    re_path(r"instagram-preview/", views.instagram_preview, name="instagram-preview"),
     *router.urls,
 ]
