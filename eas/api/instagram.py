@@ -14,9 +14,14 @@ MENTION_RE = re.compile(r"(^|[^\w])@([\w\_\.]+)")
 
 DATALAMA_APIK = settings.DATALAMA_APIK
 
+ONE_MINUTE = 60
+
 
 class NotFoundError(Exception):
     pass
+
+
+InstagramTimeoutError = requests.exceptions.ConnectionError
 
 
 @dataclass
@@ -53,6 +58,7 @@ class _Client:
                 "amount": 1000,
                 "access_key": DATALAMA_APIK,
             },
+            timeout=ONE_MINUTE * 2,
         )
         LOG.info(
             "Fetch comments for %s, response %s", url, str_bounded(response.json())
