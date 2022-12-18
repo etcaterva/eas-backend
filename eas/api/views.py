@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls.base import reverse
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action, api_view
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.response import Response
 
 from . import amazonsqs, instagram, models, paypal, serializers
@@ -338,5 +338,18 @@ class InstagramViewSet(BaseDrawViewSet):
         try:
             draw.generate_result()
         except instagram.NotFoundError:
-            LOG.info("Invalid draw created, cannot generate result", exc_info=True)
+            LOG.info(
+                "Invalid draw %s created, cannot generate result",
+                draw.private_id,
+                exc_info=True,
+            )
             raise ValidationError("The instagram post does not exist") from None
+        except instagram.InstagramTimeoutError:
+            LOG.error(
+                "Timed out generating result for draw %s",
+                draw.private_id,
+                exc_info=True,
+            )
+            raise APIException(
+                "Timed out generating result. Try again later."
+            ) from None

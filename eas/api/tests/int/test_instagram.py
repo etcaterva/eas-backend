@@ -81,6 +81,20 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
                 response.status_code, status.HTTP_400_BAD_REQUEST, response.content
             )
 
+    def test_timeout_on_post_fetch(self):
+        with patch("eas.api.instagram._CLIENT") as client:
+            client.fetch_comments.side_effect = instagram.InstagramTimeoutError
+            draw = self.Factory(
+                prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
+            )
+            url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+            response = self.client.post(url, {})
+            self.assertEqual(
+                response.status_code,
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                response.content,
+            )
+
     @pytest.mark.skip
     def test_success_result_with_likes(self):  # pragma: no cover
         draw = self.Factory(
