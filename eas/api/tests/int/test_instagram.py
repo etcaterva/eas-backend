@@ -14,10 +14,10 @@ from .. import factories
 
 @pytest.fixture(autouse=True)
 def instagram_fake(request):  # pragma: no cover
-    instagram._CLIENT.fetch_comments.cache_clear()  # pylint: disable=no-member,protected-access
     if "end2end" in request.keywords:
         yield
         return
+    instagram._CLIENT.fetch_comments.cache_clear()  # pylint: disable=no-member,protected-access
     with patch("eas.api.instagram._CLIENT") as client:
         client.fetch_comments.return_value = [
             Mock(
