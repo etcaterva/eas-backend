@@ -11,7 +11,8 @@ from django.conf import settings
 LOG = logging.getLogger(__name__)
 
 MENTION_RE = re.compile(r"(^|[^\w])@([\w\_\.]+)")
-API_TOKEN = "0hotPADZiQKy3yEqoIiVW6g628QrthPJ"
+
+DATALAMA_APIK = settings.DATALAMA_APIK
 
 
 class NotFoundError(Exception):
@@ -50,7 +51,7 @@ class _Client:
             params={
                 "media_id": media_pk,
                 "amount": 1000,
-                "access_key": settings.DATALAMA_APIK,
+                "access_key": DATALAMA_APIK,
             },
         )
         LOG.info(

@@ -65,7 +65,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
         assert response.json()["value"] == [
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
-                "comment": {"name": ANY, "text": ANY},
+                "comment": {"username": ANY, "text": ANY},
             }
         ]
 
@@ -92,7 +92,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
                 "comment": {
-                    "name": "dnaranjo89",
+                    "username": "dnaranjo89",
                     "text": "Not a mention mariocj89@gmail.com",
                 },
             }
@@ -110,7 +110,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
                 "comment": {
-                    "name": "mariocj89",
+                    "username": "mariocj89",
                     "text": "comment with a mention @dnaranjo89",
                 },
             }
@@ -128,6 +128,10 @@ class TestInstagramPurge(PurgeMixin, APILiveServerTestCase):
 
 
 @pytest.mark.end2end
+@pytest.mark.skipif(
+    instagram.DATALAMA_APIK == "datalama-apik",
+    reason="Datalama APIK not set",
+)
 def test_instagram_api_integration():  # pragma: no cover
     test_url = "https://www.instagram.com/p/Cix1MFjj5Q4/"
 
@@ -150,7 +154,3 @@ def test_instagram_api_integration():  # pragma: no cover
     assert set() == users
 
     assert set() == set(instagram.get_comments(test_url, min_mentions=3))
-
-    # comments = set(instagram.get_comments(test_url, require_like=True))
-    # users = {c[0] for c in comments}
-    # assert {"songdeluxe"} == users

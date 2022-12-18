@@ -352,7 +352,10 @@ class Instagram(BaseDraw, PrizesMixin):
             itertools.cycle(participants),
         ):
             result.append(
-                {"prize": prize, "comment": {"name": winner, "text": comments[winner]}}
+                {
+                    "prize": prize,
+                    "comment": {"username": winner, "text": comments[winner]},
+                }
             )
         return result
 
