@@ -13,7 +13,7 @@ ONE_MINUTE = 60  # seconds
 
 
 @functools.lru_cache(None)
-def _session():
+def _session():  # pragma: no cover
     return requests.Session()
 
 
