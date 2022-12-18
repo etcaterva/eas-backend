@@ -64,6 +64,8 @@ class _Client:
         LOG.info(
             "Fetch comments for %s, response %s", url, str_bounded(response.json())
         )
+        if response.status_code == 403:
+            LOG.critical("Out of lamadava quota! %s", response.json())
         response.raise_for_status()
         if not response.json():
             raise NotFoundError(f"No posts found for {url}")
