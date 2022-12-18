@@ -336,12 +336,12 @@ class Instagram(BaseDraw, PrizesMixin):
     min_mentions = models.IntegerField(default=0)
 
     def generate_result(self):
-        comments_list = instagram.get_comments(
-            self.post_url, self.min_mentions, require_like=self.use_likes
-        )
-        comments = {}
-        for participant, comment in comments_list:  # dedup participants by username
-            comments[participant] = comment
+        comments = {
+            c.username: c
+            for c in instagram.get_comments(
+                self.post_url, self.min_mentions, require_like=self.use_likes
+            )
+        }  # dedup participants
 
         participants = list(comments.keys())
         random.shuffle(participants)
@@ -351,10 +351,15 @@ class Instagram(BaseDraw, PrizesMixin):
             self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS),
             itertools.cycle(participants),
         ):
+            comment = comments[winner]
             result.append(
                 {
                     "prize": prize,
-                    "comment": {"username": winner, "text": comments[winner]},
+                    "comment": {
+                        "username": winner,
+                        "text": comment.text,
+                        "id": comment.id,
+                    },
                 }
             )
         return result

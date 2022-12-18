@@ -26,6 +26,7 @@ InstagramTimeoutError = requests.exceptions.ConnectionError
 
 @dataclass
 class _Comment:
+    id: str
     text: str
     username: str
 
@@ -68,6 +69,7 @@ class _Client:
             raise NotFoundError(f"No posts found for {url}")
         return [
             _Comment(
+                id=comment["id"],
                 text=comment["text"],
                 username=comment["owner"]["username"],
             )
@@ -96,4 +98,4 @@ def get_comments(url, min_mentions=0, require_like=False):  # pragma: no cover
             continue
         if require_like:
             raise NotImplementedError("Not implemented")
-        yield (comment.username, comment.text)
+        yield comment

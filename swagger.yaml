@@ -1054,6 +1054,8 @@ components:
                   comment:
                     type: object
                     properties:
+                      id:
+                        type: string
                       username:
                         type: string
                       text:

@@ -21,14 +21,16 @@ def instagram_fake(request):  # pragma: no cover
     with patch("eas.api.instagram._CLIENT") as client:
         client.fetch_comments.return_value = [
             Mock(
+                id="1",
                 username="mariocj89",
                 text="comment with a mention @dnaranjo89",
             ),
             Mock(
+                id="2",
                 username="dnaranjo89",
                 text="Not a mention mariocj89@gmail.com",
             ),
-            Mock(username="palvarez89", text="This rocks!"),
+            Mock(id="2", username="palvarez89", text="This rocks!"),
         ]
         yield client
 
@@ -65,7 +67,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
         assert response.json()["value"] == [
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
-                "comment": {"username": ANY, "text": ANY},
+                "comment": {"username": ANY, "text": ANY, "id": ANY},
             }
         ]
 
@@ -106,6 +108,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
                 "comment": {
+                    "id": ANY,
                     "username": "dnaranjo89",
                     "text": "Not a mention mariocj89@gmail.com",
                 },
@@ -124,6 +127,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
                 "comment": {
+                    "id": ANY,
                     "username": "mariocj89",
                     "text": "comment with a mention @dnaranjo89",
                 },
@@ -154,17 +158,15 @@ def test_instagram_api_integration():  # pragma: no cover
     assert post_info["likes"] >= 100
     assert post_info["comments"] > 15
 
-    comments = set(instagram.get_comments(test_url))
-    users = {c[0] for c in comments}
+    comments = list(instagram.get_comments(test_url))
+    users = {c.username for c in comments}
     assert "melanicf" in users
     assert len(comments) > 15
 
-    comments = set(instagram.get_comments(test_url, min_mentions=1))
-    users = {c[0] for c in comments}
+    comments = list(instagram.get_comments(test_url, min_mentions=1))
+    users = {c.username for c in comments}
     assert {"efphotographers"} == users
 
-    comments = set(instagram.get_comments(test_url, min_mentions=2))
-    users = {c[0] for c in comments}
+    comments = list(instagram.get_comments(test_url, min_mentions=2))
+    users = {c.username for c in comments}
     assert set() == users
-
-    assert set() == set(instagram.get_comments(test_url, min_mentions=3))
