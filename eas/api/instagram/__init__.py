@@ -52,7 +52,12 @@ def _fetch_comments(url):
 
 def get_comments(url, min_mentions=0, require_like=False):  # pragma: no cover
     """Fetch and filter comments"""
-    LOG.info("Fetching comments for %r", url)
+    LOG.info(
+        "Fetching comments for %r, mentions=%s, require_like=%s",
+        url,
+        min_mentions,
+        require_like,
+    )
     ret = []
     for comment in _fetch_comments(url):
         if len(MENTION_RE.findall(comment.text)) < min_mentions:
