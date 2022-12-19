@@ -25,6 +25,7 @@ def _session():  # pragma: no cover
     )
 )
 def fetch_comments(media_pk):  # pragma: no cover
+    LOG.info("Sending request to lamadava for %s", media_pk)
     response = _session().get(
         "https://api.lamadava.com/gql/comments",
         params={
