@@ -1040,6 +1040,8 @@ components:
                         type: string
                       username:
                         type: string
+                      userpic:
+                        type: string
                       text:
                         type: string
                   prize:

@@ -357,6 +357,7 @@ class Instagram(BaseDraw, PrizesMixin):
                     "prize": prize,
                     "comment": {
                         "username": winner,
+                        "userpic": comment.userpic,
                         "text": comment.text,
                         "id": comment.id,
                     },
