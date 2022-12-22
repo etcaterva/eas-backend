@@ -20,10 +20,11 @@ InstagramTimeoutError = requests.exceptions.ConnectionError
 
 
 @dataclass
-class _Comment:
+class Comment:
     id: str
     text: str
     username: str
+    userpic: str
 
 
 _CLIENT = instagrapi.Client()
@@ -41,10 +42,11 @@ def _fetch_comments(url):
     if not response:
         raise NotFoundError(f"No posts found for {url}")
     return [
-        _Comment(
+        Comment(
             id=comment["id"],
             text=comment["text"],
             username=comment["owner"]["username"],
+            userpic=comment["owner"]["profile_pic_url"],
         )
         for comment in response
     ]

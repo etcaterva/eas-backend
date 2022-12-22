@@ -57,7 +57,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
         assert response.json()["value"] == [
             {
                 "prize": {"id": ANY, "name": "cupcake", "url": None},
-                "comment": {"username": ANY, "text": ANY, "id": ANY},
+                "comment": {"username": ANY, "text": ANY, "id": ANY, "userpic": ANY},
             }
         ]
 
@@ -101,6 +101,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
                 "comment": {
                     "id": ANY,
                     "username": "cristy_tarrias",
+                    "userpic": ANY,
                     "text": "Para tí Miguel 🔥 @onenomimi @arooa91 @luciita1588 @sheiila.aliiehs",
                 },
             }
