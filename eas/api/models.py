@@ -60,6 +60,15 @@ class BaseDraw(BaseModel):
         result_obj.save()  # Should we really save here???
         return result_obj
 
+    def has_unresolved_results(self):
+        """Checks if there is any result pending resolution"""
+        for result in self.results.filter(
+            schedule_date__lte=dt.datetime.now(dt.timezone.utc)
+        ):
+            if result.value is None:
+                return True
+        return False
+
     def resolve_scheduled_results(self):
         """Resolves all scheduled results in the past"""
         for result in self.results.filter(
