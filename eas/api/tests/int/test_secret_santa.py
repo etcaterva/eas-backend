@@ -1,10 +1,14 @@
+import datetime as dt
 from unittest import mock
 
+import freezegun
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APILiveServerTestCase
 
 from eas.api import models
+
+NOW = dt.datetime.now()
 
 
 class SecretSantaTest(APILiveServerTestCase):
@@ -20,7 +24,7 @@ class SecretSantaTest(APILiveServerTestCase):
             ],
         }
         boto_patcher = mock.patch("eas.api.amazonsqs.boto3")
-        boto_patcher.start()
+        self.sqs = boto_patcher.start().client.return_value
         self.addCleanup(boto_patcher.stop)
 
     def test_create_secret_santa(self):
@@ -28,6 +32,7 @@ class SecretSantaTest(APILiveServerTestCase):
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.content
         )
+        assert response.json() == {"id": mock.ANY}
 
     def test_create_with_exclusions(self):
         self.secret_santa_data = {
@@ -120,3 +125,138 @@ class SecretSantaTest(APILiveServerTestCase):
                 ],
             }
         }
+
+    def test_fecth_secret_santa_admin(self):
+        # Create draw
+        response = self.client.post(self.list_url, self.secret_santa_data)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.content
+        )
+        draw_id = response.json()["id"]
+
+        # Fetch admin
+        response = self.client.get(
+            reverse("secret-santa-admin", kwargs=dict(pk=draw_id))
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        result = response.json()
+        assert "id" in result
+        assert "created_at" in result
+        original_participants = {
+            p["name"] for p in self.secret_santa_data["participants"]
+        }
+        returned_participants = {
+            p["name"]: p["revealed"] for p in result["participants"]
+        }
+        assert set(returned_participants) == original_participants
+        assert not any(returned_participants.values())
+        assert result["participants"][0]["id"]
+
+        # Fetch one result
+        draw = models.SecretSanta.objects.get(pk=result["id"])
+        draw_result = models.SecretSantaResult.objects.filter(draw=draw).all()[0]
+        response = self.client.get(
+            reverse("secret-santa-detail", kwargs=dict(pk=draw_result.id))
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        fetched_participant = response.json()["source"]
+
+        # Fetch admin
+        response = self.client.get(
+            reverse("secret-santa-admin", kwargs=dict(pk=draw_id))
+        ).json()
+        returned_participants = {
+            p["name"]: p["revealed"] for p in response["participants"]
+        }
+        assert len([1 for x in returned_participants.values() if x])
+        assert returned_participants[fetched_participant]
+
+    def test_resend_email_success(self):
+        draw = models.SecretSanta()
+        draw.save()
+        result = models.SecretSantaResult(
+            source="From name", target="To Name", draw=draw
+        )
+        result.save()
+        assert self.sqs.send_message.call_count == 0
+
+        url = reverse(
+            "secret-santa-resend-email",
+            kwargs=dict(draw_pk=draw.id, result_pk=result.id),
+        )
+        with freezegun.freeze_time(NOW + dt.timedelta(days=3)):
+            response = self.client.post(
+                url, {"language": "en", "email": "mail@mail.com"}
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert self.sqs.send_message.call_count == 1
+
+    def test_resend_email_unlinked_result_fails(self):
+        draw = models.SecretSanta()
+        draw.save()
+        result = models.SecretSantaResult(
+            source="From name", target="To Name", draw=draw
+        )
+        result.save()
+        draw2 = models.SecretSanta()
+        draw2.save()
+        result2 = models.SecretSantaResult(
+            source="From name", target="To Name", draw=draw2
+        )
+        result2.save()
+
+        url = reverse(
+            "secret-santa-resend-email",
+            kwargs=dict(draw_pk=draw2.id, result_pk=result.id),
+        )
+        response = self.client.post(url, {"language": "en", "email": "mail@mail.com"})
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+        url = reverse(
+            "secret-santa-resend-email",
+            kwargs=dict(draw_pk=draw.id, result_pk=result2.id),
+        )
+        response = self.client.post(url, {"language": "en", "email": "mail@mail.com"})
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    def test_resend_email_revealed_result_fails(self):
+        draw = models.SecretSanta()
+        draw.save()
+        result = models.SecretSantaResult(
+            source="From name", target="To Name", draw=draw
+        )
+        result.save()
+
+        response = self.client.get(
+            reverse("secret-santa-detail", kwargs=dict(pk=result.id))
+        )
+
+        url = reverse(
+            "secret-santa-resend-email",
+            kwargs=dict(draw_pk=draw.id, result_pk=result.id),
+        )
+        response = self.client.post(url, {"language": "en", "email": "mail@mail.com"})
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    def test_resend_email_too_recent_fails(self):
+        draw = models.SecretSanta()
+        draw.save()
+        result = models.SecretSantaResult(
+            source="From name", target="To Name", draw=draw
+        )
+        result.save()
+
+        url = reverse(
+            "secret-santa-resend-email",
+            kwargs=dict(draw_pk=draw.id, result_pk=result.id),
+        )
+        response = self.client.post(url, {"language": "en", "email": "mail@mail.com"})
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )

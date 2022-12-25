@@ -281,9 +281,20 @@ class Coin(BaseDraw):
         return [random.choice(self.OPTIONS)]
 
 
+class SecretSanta(BaseModel):
+    """Links the different results generated from a secret santa toss"""
+
+
 class SecretSantaResult(BaseModel):
+    draw = models.ForeignKey(
+        SecretSanta,
+        on_delete=models.CASCADE,
+        null=True,
+        unique=False,
+    )
     source = models.CharField(max_length=100)
     target = models.CharField(max_length=100)
+    revealed = models.BooleanField(default=False)
 
     def __repr__(self):
         return "<%s  (%r,%r)>" % (self.__class__.__name__, self.source, self.target)
