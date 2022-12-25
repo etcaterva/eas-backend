@@ -43,17 +43,22 @@ class BaseDrawViewSet(
         except Http404:
             return get_object_or_404(self.MODEL, private_id=pk)
 
-    def retrieve(
-        self, request, *args, pk=None, **kwargs
-    ):  # pylint: disable=unused-argument, arguments-differ
-        LOG.info("Retrieving draw by id: %s", pk)
-        instance = self._get_draw(pk)
+    def _toss_unresolved_results(self, instance):
+        if not instance.has_unresolved_results():
+            return
         try:
             self._ready_to_toss_check(instance)
         except ValidationError:
             pass
         else:
             instance.resolve_scheduled_results()
+
+    def retrieve(
+        self, request, *args, pk=None, **kwargs
+    ):  # pylint: disable=unused-argument, arguments-differ
+        LOG.info("Retrieving draw by id: %s", pk)
+        instance = self._get_draw(pk)
+        self._toss_unresolved_results(instance)
         serializer = self.get_serializer(instance)
         result_data = serializer.data
         if pk != result_data["private_id"]:
