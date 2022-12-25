@@ -1,3 +1,4 @@
+import datetime as dt
 import logging
 import random
 
@@ -239,9 +240,11 @@ class SecretSantaSet(
         else:
             raise ValidationError("Unable to match participants")
         LOG.info("Sending %s secret santa emails", len(results))
+        draw = models.SecretSanta()
+        draw.save()
         emails = []
         for source, target in results:
-            result = models.SecretSantaResult(source=source, target=target)
+            result = models.SecretSantaResult(source=source, target=target, draw=draw)
             result.save()
             target = emails_map[source]
             emails.append((target, result.id))
@@ -254,7 +257,7 @@ class SecretSantaSet(
         LOG.info("Created secret santa results %s", results)
         headers = self.get_success_headers(serializer.data)
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            {"id": draw.id}, status=status.HTTP_201_CREATED, headers=headers
         )
 
     def retrieve(
@@ -262,8 +265,54 @@ class SecretSantaSet(
     ):  # pylint: disable=unused-argument, arguments-differ
         LOG.info("Retrieving secret santa result by id: %s", pk)
         result = get_object_or_404(models.SecretSantaResult, id=pk)
+        result.revealed = True
+        result.save()
         LOG.info("Returning result %s", result)
         return Response({"source": result.source, "target": result.target})
+
+
+@api_view(["GET"])
+def secret_santa_admin(request, pk):
+    LOG.info("Retrieving secret santa draw by id: %s", pk)
+    draw = get_object_or_404(models.SecretSanta, id=pk)
+    result = {
+        "id": draw.id,
+        "created_at": draw.created_at,
+        "participants": [],
+    }
+    for participant in models.SecretSantaResult.objects.filter(draw=draw).all():
+        result["participants"].append(
+            {
+                "id": participant.id,
+                "name": participant.source,
+                "revealed": participant.revealed,
+            }
+        )
+    LOG.info("Returning result %s", result)
+    return Response(result)
+
+
+@api_view(["POST"])
+def secret_santa_resend_email(request, draw_pk, result_pk):
+    LOG.info("Resending secret santa %s result %s", draw_pk, result_pk)
+    draw = get_object_or_404(models.SecretSanta, id=draw_pk)
+    result = get_object_or_404(models.SecretSantaResult, id=result_pk)
+    if result.draw.id != draw.id:
+        raise ValidationError(f"Result {result.id} does not belong to {draw.id}")
+    if result.revealed:
+        raise ValidationError(f"Result {result.id} has been already revealed")
+    if (cutoff := result.created_at + dt.timedelta(days=2)) > dt.datetime.now(
+        dt.timezone.utc
+    ):
+        raise ValidationError(f"Result {result.id} cannot be resent before {cutoff}")
+    amazonsqs.send_secret_santa_message(
+        {
+            "lang": request.data["language"],
+            "mails": [(request.data["email"], result.id)],
+        }
+    )
+    LOG.info("Returning result %s", result)
+    return Response()
 
 
 @api_view(["POST"])

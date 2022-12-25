@@ -612,6 +612,10 @@ paths:
       responses:
         '201':
           description: Create and Toss a secret santa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretSantaCreateResponse'
       tags:
         - secret_santa
       requestBody:
@@ -635,6 +639,48 @@ paths:
         - secret_santa
     parameters:
       - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/secret-santa-admin/{id}/':
+    get:
+      operationId: secret_santa_result_admin_get
+      responses:
+        '200':
+          description: Management info of a secret santa draw.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretSantaAdminResult'
+      tags:
+        - secret_santa
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/secret-santa-admin/{draw_id}/{result_id}/':
+    post:
+      operationId: secret_santa_result_admin_get
+      responses:
+        '200':
+          description: Resend the email of a secret santa result
+      tags:
+        - secret_santa
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecretSantaResendEmail'
+    parameters:
+      - name: draw_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: result_id
         in: path
         required: true
         schema:
@@ -1168,6 +1214,32 @@ components:
           type: string
         target:
           type: string
+    SecretSantaCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+    SecretSantaAdminResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        created_at:
+          type: string
+          format: date-time
+        participants:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              revealed:
+                type: boolean
     PaypalCreatePayload:
       type: object
       required:
@@ -1192,4 +1264,14 @@ components:
       type: object
       properties:
         redirect_url:
+          type: string
+    SecretSantaResendEmail:
+      type: object
+      properties:
+        language:
+          type: string
+          enum:
+            - es
+            - en
+        email:
           type: string
