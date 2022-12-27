@@ -64,7 +64,7 @@ class BaseDrawViewSet(
         result_data = serializer.data
         if pk != result_data["private_id"]:
             self.remove_private_fields(result_data)
-        LOG.info("Returning draw %s", instance)
+        LOG.info("Returning draw %s", result_data)
         return Response(result_data)
 
     @action(methods=["post"], detail=True)
@@ -80,7 +80,7 @@ class BaseDrawViewSet(
             self._ready_to_toss_check(draw)
             result = draw.toss()
         result_serializer = serializers.ResultSerializer(result)
-        LOG.info("Generated result: %s", result)
+        LOG.info("Generated result %s", result_serializer.data)
         draw.save()  # Updates updated_at
         return Response(result_serializer.data)
 
