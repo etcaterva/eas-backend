@@ -355,34 +355,30 @@ class Instagram(BaseDraw, PrizesMixin):
     use_likes = models.BooleanField(default=False)
     min_mentions = models.IntegerField(default=0)
 
-    def generate_result(self):
+    def fetch_comments(self):
         comments = {
-            c.username: c
+            c.username: {
+                "username": c.username,
+                "userpic": c.userpic,
+                "text": c.text,
+                "id": c.id,
+            }
             for c in instagram.get_comments(
                 self.post_url, self.min_mentions, require_like=self.use_likes
             )
         }  # dedup participants
+        comments = list(comments.values())
+        random.shuffle(comments)
+        return comments
 
-        participants = list(comments.keys())
-        random.shuffle(participants)
-
+    def generate_result(self):
+        comments = self.fetch_comments()
         result = []
         for prize, winner in zip(
             self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS),
-            itertools.cycle(participants),
+            itertools.cycle(comments),
         ):
-            comment = comments[winner]
-            result.append(
-                {
-                    "prize": prize,
-                    "comment": {
-                        "username": winner,
-                        "userpic": comment.userpic,
-                        "text": comment.text,
-                        "id": comment.id,
-                    },
-                }
-            )
+            result.append({"prize": prize, "comment": winner})
         return result
 
 

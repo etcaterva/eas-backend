@@ -760,6 +760,33 @@ paths:
         required: true
         schema:
           type: string
+  '/instagram/{id}/retoss/':
+    patch:
+      operationId: instagram_retoss
+      responses:
+        '201':
+          description: A result of the draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstagramResult'
+      tags:
+        - instagram
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: 'object'
+              properties:
+                prize_id:
+                  type: string
+                  minLength: 1
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
 components:
   requestBodies:
     DrawTossPayload:

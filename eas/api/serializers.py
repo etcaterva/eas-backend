@@ -19,6 +19,10 @@ class DrawTossPayloadSerializer(serializers.Serializer):
     schedule_date = serializers.DateTimeField(allow_null=True, required=False)
 
 
+class DrawRetossPayloadSerializer(serializers.Serializer):
+    prize_id = serializers.CharField(min_length=1)
+
+
 class DrawMetadataSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ClientDrawMetaData
