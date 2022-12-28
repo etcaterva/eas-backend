@@ -387,3 +387,41 @@ class InstagramViewSet(BaseDrawViewSet):
             raise APIException(
                 "Timed out generating result. Try again later."
             ) from None
+
+    @action(methods=["PATCH"], detail=True)
+    def retoss(self, request, pk):
+        LOG.info("Retossing draw with id: %s", pk)
+        draw = get_object_or_404(self.MODEL, private_id=pk)
+        serializer = serializers.DrawRetossPayloadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        prize_id = serializer.validated_data.get("prize_id")
+
+        result = draw.results.order_by("created_at").last()
+        if result is None:
+            raise ValidationError(f"{draw} does not have any result")
+
+        result.id = None
+        result.created_at = None
+        new_comments = draw.fetch_comments()
+
+        referenced_result_item = None
+        for result_content in result.value:
+            if result_content["prize"]["id"] == prize_id:
+                referenced_result_item = result_content
+        if referenced_result_item is None:
+            raise ValidationError(
+                f"{draw} does not have a result with prize {prize_id}"
+            )
+
+        for new_comment in new_comments:  # attempt finding a new comment
+            if new_comment != referenced_result_item["comment"]:
+                LOG.info("Replacing %s by %s", referenced_result_item, new_comment)
+                referenced_result_item["comment"] = new_comment
+                break
+
+        result.save()
+
+        result_serializer = serializers.ResultSerializer(result)
+        LOG.info("Regenerated result %s", result_serializer.data)
+        draw.save()  # Updates updated_at
+        return Response(result_serializer.data)
