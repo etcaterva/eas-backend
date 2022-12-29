@@ -432,3 +432,26 @@ class ShiftsViewSet(BaseDrawViewSet):
     serializer_class = serializers.ShiftsSerializer
 
     queryset = MODEL.objects.all()
+
+
+@api_view(["POST"])
+def redeem_promo_code(request):
+    LOG.info("Redeeming promo code: %s", request.data)
+    serializer = serializers.PromoCodeSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    draw_id = data["draw_id"]
+    get_object_or_404(models.BaseDraw, id=draw_id)
+    code = data["code"]
+    code_object = get_object_or_404(models.PromoCode, code=code)
+    payment = models.Payment(
+        draw_id=draw_id,
+        payed=True,
+        option_certified=True,
+        option_support=True,
+        option_adfree=True,
+    )
+    payment.save()
+    code_object.delete()
+    LOG.info("%s code redeemed on draw %s", code, draw_id)
+    return Response()

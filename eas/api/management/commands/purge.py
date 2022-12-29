@@ -33,6 +33,9 @@ def delete_old_records(days_to_keep=DEFAULT_DAYS_TO_KEEP, dry_run=False):
     for ss in models.SecretSantaResult.objects.filter(created_at__lte=usage_cutoff):
         deleted_records += 1
         ss.delete()
+    for pc in models.PromoCode.objects.filter(created_at__lte=usage_cutoff):
+        deleted_records += 1
+        pc.delete()
     return deleted_records
 
 

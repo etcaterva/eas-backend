@@ -5,7 +5,7 @@ from django.test.testcases import LiveServerTestCase
 from freezegun import freeze_time
 
 from eas.api.management.commands import backup, purge
-from eas.api.models import Payment, Raffle, SecretSantaResult
+from eas.api.models import Payment, PromoCode, Raffle, SecretSantaResult
 
 from ..factories import RaffleFactory
 
@@ -112,6 +112,7 @@ class TestBackup(LiveServerTestCase):
 
         SecretSantaResult(source="Mario", target="David").save()
         Payment(draw=draw).save()
+        PromoCode().save()
 
         with tempfile.NamedTemporaryFile() as dump_file:
             backup.serialize_updated_delta(open(dump_file.name, "w"), since=NOW)
@@ -168,6 +169,18 @@ class TestBackup(LiveServerTestCase):
 
             backup.deserialize_draws(open(dump_file.name))
             assert SecretSantaResult.objects.count() == 1
+
+    def test_backup_promo_code(self):
+        PromoCode().save()
+        assert PromoCode.objects.count() == 1
+
+        with tempfile.NamedTemporaryFile() as dump_file:
+            backup.serialize_public_draws(open(dump_file.name, "w"))
+            self.purge()
+            assert PromoCode.objects.count() == 0
+
+            backup.deserialize_draws(open(dump_file.name))
+            assert PromoCode.objects.count() == 1
 
     def test_backup_payment(self):
         Payment(draw=self.create()).save()

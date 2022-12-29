@@ -304,7 +304,10 @@ class SecretSantaResult(BaseModel):
 
 
 class Payment(BaseModel):
-    """Represents a Payment created in the PayPal portal"""
+    """Represents a Payment for a draw
+
+    Can be created via PayPal or a discount code.
+    """
 
     class Options(enum.Enum):
         CERTIFIED = "CERTIFIED"
@@ -315,8 +318,8 @@ class Payment(BaseModel):
         BaseDraw, on_delete=models.CASCADE, related_name="_payments"
     )
     payed = models.BooleanField(default=False)
-    draw_url = models.URLField()
-    paypal_id = models.CharField(max_length=500, db_index=True)
+    draw_url = models.URLField(null=True)
+    paypal_id = models.CharField(max_length=500, db_index=True, null=True)
 
     option_certified = models.BooleanField(default=False)
     option_support = models.BooleanField(default=False)
@@ -397,16 +400,46 @@ class Shifts(BaseDraw, ParticipantsMixin):
         ]
 
 
+def compute_checksum(code):
+    acc = 0
+    for l in code:
+        acc += ord(l)
+    return chr(ord("A") + (acc % 25))
+
+
+def created_discount_code():
+    code = "".join([random.choice(string.ascii_uppercase) for _ in range(7)])
+    return code + compute_checksum(code)
+
+
+class PromoCode(BaseModel):
+    """Codes to get free certified draws"""
+
+    code = models.CharField(
+        max_length=8,
+        default=created_discount_code,
+        unique=True,
+        null=False,
+        editable=False,
+    )
+
+    def __repr__(self):
+        return "<%s(%r) %r)>" % (self.__class__.__name__, self.id, self.code)
+
+    def __str__(self):
+        return repr(self)
+
+
 DRAW_TYPES = [
     Coin,
     Groups,
+    Instagram,
     Letter,
     Link,
     Lottery,
     Raffle,
     RandomNumber,
+    Shifts,
     Spinner,
     Tournament,
-    Instagram,
-    Shifts,
 ]
