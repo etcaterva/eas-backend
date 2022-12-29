@@ -787,6 +787,63 @@ paths:
         required: true
         schema:
           type: string
+  /shifts/:
+    post:
+      operationId: shifts_create
+      responses:
+        '201':
+          description: Shifts successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shifts'
+      tags:
+        - shifts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shifts'
+        required: true
+    parameters: []
+  '/shifts/{id}/':
+    get:
+      operationId: shifts_read
+      responses:
+        '200':
+          description: The details of the requested shifts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shifts'
+      tags:
+        - shifts
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/shifts/{id}/toss/':
+    post:
+      operationId: shifts_toss
+      responses:
+        '201':
+          description: A result of the shifts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftsResult'
+      tags:
+        - shifts
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
 components:
   requestBodies:
     DrawTossPayload:
@@ -978,6 +1035,37 @@ components:
               items:
                 $ref: '#/components/schemas/LinkResult'
               readOnly: true
+    Shifts:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - intervals
+            - participants
+          properties:
+            intervals:
+              type: array
+              items:
+                type: object
+                required:
+                  - start_time
+                  - end_time
+                properties:
+                  start_time:
+                    type: string
+                    format: date-time
+                  end_time:
+                    type: string
+                    format: date-time
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/Participant'
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ShiftsResult'
+              readOnly: true
     Tournament:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -1119,6 +1207,27 @@ components:
                         type: string
                   prize:
                     $ref: '#/components/schemas/Prize'
+    ShiftsResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  start_time:
+                    type: string
+                    format: date-time
+                  end_time:
+                    type: string
+                    format: date-time
+                  participants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Participant'
     LinkResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'

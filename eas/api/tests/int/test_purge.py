@@ -134,3 +134,7 @@ class TestSecretSantaPurge(APILiveServerTestCase):
             time.tick(delta=dt.timedelta(days=31 * 3))
             deleted = purge.delete_old_records()
             assert deleted == 1
+
+
+class TestShiftsPurge(PurgeMixin, APILiveServerTestCase):
+    FACTORY = factories.ShiftsFactory

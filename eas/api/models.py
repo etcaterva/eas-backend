@@ -382,6 +382,21 @@ class Instagram(BaseDraw, PrizesMixin):
         return result
 
 
+class Shifts(BaseDraw, ParticipantsMixin):
+    intervals = JSONField()
+
+    def generate_result(self):
+        intervals = list(self.intervals)
+        participants = list(
+            self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS)
+        )
+        random.shuffle(participants)
+        return [
+            {"interval": interval, "participants": [participant]}
+            for interval, participant in zip(intervals, participants)
+        ]
+
+
 DRAW_TYPES = [
     Coin,
     Groups,
@@ -393,4 +408,5 @@ DRAW_TYPES = [
     Spinner,
     Tournament,
     Instagram,
+    Shifts,
 ]
