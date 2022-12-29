@@ -685,6 +685,20 @@ paths:
         required: true
         schema:
           type: string
+  '/promo-code/redeem/':
+    post:
+      operationId: redeem_promo_code
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedeemPromoCode'
+        required: true
+      responses:
+        '200':
+          description: Certifies a draw with a promo code
+      tags:
+        - paypal
   '/paypal/create/':
     post:
       operationId: paypal_create
@@ -1379,6 +1393,16 @@ components:
                 type: string
               revealed:
                 type: boolean
+    RedeemPromoCode:
+      type: object
+      required:
+        - draw_id
+        - code
+      properties:
+        code:
+          type: string
+        draw_id:
+          type: string
     PaypalCreatePayload:
       type: object
       required:

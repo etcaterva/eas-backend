@@ -21,6 +21,11 @@ router.register(r"secret-santa", views.SecretSantaSet, basename="secret-santa")
 router.register(r"instagram", views.InstagramViewSet, basename="instagram")
 router.register(r"shifts", views.ShiftsViewSet, basename="shifts")
 urlpatterns = [
+    re_path(
+        r"promo-code/redeem/$",
+        views.redeem_promo_code,
+        name="redeem-promo-code",
+    ),
     re_path(r"paypal/create/", views.paypal_create, name="paypal-create"),
     re_path(r"paypal/accept/", views.paypal_accept, name="paypal-accept"),
     re_path(

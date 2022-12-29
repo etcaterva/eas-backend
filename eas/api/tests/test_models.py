@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from eas.api.models import RandomNumber
+from eas.api.models import RandomNumber, created_discount_code
 
 from .factories import RandomNumberFactory
 
@@ -38,3 +38,9 @@ class TestModels(TestCase):
     def test_repr(self):
         repr(self.draw)
         repr(self.draw.toss())
+
+
+def test_generate_code():
+    discount_codes = [created_discount_code() for _ in range(100)]
+    assert len(discount_codes) == len(set(discount_codes))
+    assert all([len(d) == 8 for d in discount_codes])

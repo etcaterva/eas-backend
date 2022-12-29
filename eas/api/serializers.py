@@ -284,6 +284,11 @@ class PayPalCreateSerialzier(serializers.Serializer):
     draw_url = serializers.URLField()
 
 
+class PromoCodeSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=8)
+    draw_id = serializers.CharField(max_length=100)
+
+
 class InstagramSerializer(BaseSerializer):
     class Meta:
         model = models.Instagram
