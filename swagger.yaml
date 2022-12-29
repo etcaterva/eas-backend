@@ -652,7 +652,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecretSantaAdminResult'
+                $ref: '#/components/schemas/SecretSantaAdminResponse'
       tags:
         - secret_santa
     parameters:
@@ -662,8 +662,8 @@ paths:
         schema:
           type: string
   '/secret-santa-admin/{draw_id}/{result_id}/':
-    post:
-      operationId: secret_santa_result_admin_get
+    patch:
+      operationId: secret_santa_result_admin_patch
       responses:
         '200':
           description: Resend the email of a secret santa result
