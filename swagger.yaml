@@ -1218,12 +1218,15 @@ components:
               items:
                 type: object
                 properties:
-                  start_time:
-                    type: string
-                    format: date-time
-                  end_time:
-                    type: string
-                    format: date-time
+                  interval:
+                    type: object
+                    properties:
+                      start_time:
+                        type: string
+                        format: date-time
+                      end_time:
+                        type: string
+                        format: date-time
                   participants:
                     type: array
                     items:
