@@ -425,3 +425,10 @@ class InstagramViewSet(BaseDrawViewSet):
         LOG.info("Regenerated result %s", result_serializer.data)
         draw.save()  # Updates updated_at
         return Response(result_serializer.data)
+
+
+class ShiftsViewSet(BaseDrawViewSet):
+    MODEL = models.Shifts
+    serializer_class = serializers.ShiftsSerializer
+
+    queryset = MODEL.objects.all()

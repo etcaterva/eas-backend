@@ -19,6 +19,7 @@ router.register(r"coin", views.CoinViewSet, basename="coin")
 router.register(r"link", views.LinkViewSet, basename="link")
 router.register(r"secret-santa", views.SecretSantaSet, basename="secret-santa")
 router.register(r"instagram", views.InstagramViewSet, basename="instagram")
+router.register(r"shifts", views.ShiftsViewSet, basename="shifts")
 urlpatterns = [
     re_path(r"paypal/create/", views.paypal_create, name="paypal-create"),
     re_path(r"paypal/accept/", views.paypal_accept, name="paypal-accept"),

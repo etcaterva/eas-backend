@@ -1,3 +1,4 @@
+import datetime as dt
 import random
 from functools import partial
 
@@ -6,6 +7,9 @@ import factory as fb
 from .. import models
 
 Faker = partial(fb.Faker, locale="es_ES")  # pylint: disable=invalid-name
+NOW = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=365)
+NOW = NOW.replace(microsecond=0)
+HOUR_1 = dt.timedelta(hours=1)
 
 
 class BaseDrawFactory(fb.django.DjangoModelFactory):
@@ -195,5 +199,43 @@ class InstagramFactory(BaseDrawFactory):
         draw = manager.create(*args, **kwargs)
         for prize in prizes:
             models.Prize.objects.create(**prize, draw=draw)
+
+        return draw
+
+
+class ShiftsFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Shifts"
+
+    intervals = fb.List([])
+    participants = fb.List(
+        [dict(name="pedro"), dict(name="david"), dict(name="mario"), dict(name="jack")]
+    )
+
+    @staticmethod
+    def _fill_empty_intervals(intervals, participants):
+        if intervals:
+            return
+        for i in range(len(participants)):
+            intervals.append(
+                {"start_time": NOW + HOUR_1 * i, "end_time": NOW + HOUR_1 * (i + 1)},
+            )
+
+    @classmethod
+    def dict(cls, **kwargs):
+        """Returns a dict rather than an object"""
+        res = fb.build(dict, FACTORY_CLASS=cls, **kwargs)
+        cls._fill_empty_intervals(res["intervals"], res["participants"])
+        return res
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        participants = kwargs.pop("participants")
+        intervals = kwargs.get("intervals")
+        cls._fill_empty_intervals(intervals, participants)
+        manager = cls._get_manager(model_class)
+        draw = manager.create(*args, **kwargs)
+        for participant in participants:
+            models.Participant.objects.create(**participant, draw=draw)
 
         return draw

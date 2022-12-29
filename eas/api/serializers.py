@@ -305,3 +305,41 @@ class InstagramSerializer(BaseSerializer):
         prize_instances = [models.Prize(draw=draw, **prize) for prize in prizes]
         models.Prize.objects.bulk_create(prize_instances)
         return draw
+
+
+class ShiftIntervalSerializer(serializers.Serializer):
+    start_time = serializers.DateTimeField(allow_null=False, required=True)
+    end_time = serializers.DateTimeField(allow_null=False, required=True)
+
+
+class ShiftsSerializer(BaseSerializer):
+    class Meta:
+        model = models.Shifts
+        fields = BaseSerializer.BASE_FIELDS + (
+            "intervals",
+            "participants",
+        )
+
+    # participants = ParticipantSerializer(many=True, required=True)
+    # intervals = ShiftIntervalSerializer(many=True, required=True)
+    participants = serializers.ListField(
+        child=ParticipantSerializer(), min_length=1, max_length=500
+    )
+    intervals = serializers.ListField(
+        child=ShiftIntervalSerializer(), min_length=1, max_length=500
+    )
+
+    def create(self, validated_data):
+        data = dict(validated_data)
+        participants = data.pop("participants")
+        intervals = data["intervals"]
+        if len(intervals) < len(participants):
+            raise serializers.ValidationError(
+                "Not enough intervals, got {len(intervals)}, need {len(participants)}"
+            )
+        draw = super().create(data)
+        participant_instances = [
+            models.Participant(draw=draw, **participant) for participant in participants
+        ]
+        models.Participant.objects.bulk_create(participant_instances)
+        return draw
