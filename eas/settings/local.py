@@ -34,5 +34,5 @@ PAYPAL_ID = (
 
 SECRET_SANTA_QUEUE_URL = os.environ.get(
     "EAS_SQS_SS_QUEUE_URL",
-    "https://sqs.us-east-2.amazonaws.com/945547505484/eas-backend-secret-santa-email-test",
+    "https://sqs.us-east-2.amazonaws.com/059860094276/eas-backend-secret-santa-email-test",
 )
