@@ -10,7 +10,7 @@ LOGGER = logging.getLogger(__name__)
 def send_secret_santa_message(message):
     sqs_client = boto3.client(
         "sqs",
-        region_name="us-east-2",
+        region_name="eu-west-3",
         aws_access_key_id=settings.AWS_KEY_ID,
         aws_secret_access_key=settings.AWS_KEY_SECRET,
     )
