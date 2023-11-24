@@ -6,6 +6,7 @@ django-coverage-plugin==2.0.3
 factory-boy==3.2.1
 freezegun==1.2.2
 isort<5
+pip==23.0.1
 pip-tools==6.8.0
 pylint-django==2.4.2
 pylint-plugin-utils==0.6
