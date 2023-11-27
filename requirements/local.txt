@@ -10,5 +10,5 @@ pip-tools==6.8.0
 pylint-django==2.4.2
 pylint-plugin-utils==0.6
 pylint==2.6.0
-pytest-cov==3.0.0
+pytest-cov==4.1.0
 pytest-django==4.5.2
