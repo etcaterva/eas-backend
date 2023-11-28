@@ -45,7 +45,7 @@ jobs:
         EAS_DATALAMA_APIK: ${{ secrets.EAS_DATALAMA_APIK }}
 
     - name: Update Coverage Badge
-      if: github.ref == format('refs/heads/{0}', "pedro/coverage-badge")
+      if: github.ref == 'refs/heads/pedro/coverage-badge'
       uses: we-cli/coverage-badge-action@main
 
     - name: Check pip frozen reqs
