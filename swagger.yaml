@@ -662,8 +662,8 @@ paths:
         schema:
           type: string
   '/secret-santa-admin/{draw_id}/{result_id}/':
-    patch:
-      operationId: secret_santa_result_admin_patch
+    post:
+      operationId: secret_santa_result_admin_post
       responses:
         '200':
           description: Resend the email of a secret santa result
