@@ -38,9 +38,15 @@ jobs:
     - name: Run tests
       run: |
         make test
+        mkdir -p ./coverage
+        mv converage.json ./coverage/coverage-summary.json
       env:
         EAS_PAYPAL_SECRET: ${{ secrets.EAS_PAYPAL_SECRET }}
         EAS_DATALAMA_APIK: ${{ secrets.EAS_DATALAMA_APIK }}
+
+    - name: Update Coverage Badge
+      if: github.ref == format('refs/heads/{0}', "pedro/coverage-badge")
+      uses: we-cli/coverage-badge-action@main
 
     - name: Check pip frozen reqs
       run: |
