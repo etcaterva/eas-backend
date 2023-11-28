@@ -61,15 +61,16 @@ jobs:
       - name: Set vars
         id: set_vars
         run: |
-          echo "::set-output name=deployment_branch::"
+          echo "deployment_branch=" >> $GITHUB_OUTPUT
 
           if [[ "${{github.ref}}" == "refs/heads/master" ]]; then
               # if this is a push to master, deploy to dev
               if [[ "${{github.event_name}}" == "push" ]]; then
-                  echo "::set-output name=deployment_branch::master"
+                  echo "deployment_branch=master" >> $GITHUB_OUTPUT
               # If triggered manually, deply to prod
               elif [[ "${{github.event_name}}" == "workflow_dispatch" ]]; then
-                  echo "::set-output name=deployment_branch::prod"
+                  echo "deployment_branch=prod" >> $GITHUB_OUTPUT
+
               fi
           fi
   test_swagger_editor_validator_remote:
