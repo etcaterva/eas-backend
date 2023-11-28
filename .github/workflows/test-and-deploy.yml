@@ -39,7 +39,7 @@ jobs:
       run: |
         make test
         mkdir -p ./coverage
-        mv converage.json ./coverage/coverage-summary.json
+        mv coverage.json ./coverage/coverage-summary.json
       env:
         EAS_PAYPAL_SECRET: ${{ secrets.EAS_PAYPAL_SECRET }}
         EAS_DATALAMA_APIK: ${{ secrets.EAS_DATALAMA_APIK }}
