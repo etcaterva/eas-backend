@@ -184,7 +184,7 @@ class SecretSantaTest(APILiveServerTestCase):
             "secret-santa-resend-email",
             kwargs=dict(draw_pk=draw.id, result_pk=result.id),
         )
-        with freezegun.freeze_time(NOW + dt.timedelta(days=3)):
+        with freezegun.freeze_time(NOW + dt.timedelta(days=1)):
             response = self.client.post(
                 url, {"language": "en", "email": "mail@mail.com"}
             )
@@ -222,6 +222,7 @@ class SecretSantaTest(APILiveServerTestCase):
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
+        self.assertEqual(response.json()["general"][0]["code"], "invalid")
 
     def test_resend_email_revealed_result_fails(self):
         draw = models.SecretSanta()
@@ -243,6 +244,7 @@ class SecretSantaTest(APILiveServerTestCase):
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
+        self.assertEqual(response.json()["general"][0]["code"], "revealed")
 
     def test_resend_email_too_recent_fails(self):
         draw = models.SecretSanta()
@@ -260,3 +262,50 @@ class SecretSantaTest(APILiveServerTestCase):
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
+        self.assertEqual(response.json()["general"][0]["code"], "too-early")
+
+    def test_resend_email_invalidates_previous_result(self):
+        new_email_data = {"language": "en", "email": "mail@mail.com"}
+        draw = models.SecretSanta()
+        draw.save()
+        result = models.SecretSantaResult(
+            source="From name", target="To Name", draw=draw
+        )
+        result.save()
+        assert self.sqs.send_message.call_count == 0
+
+        url = reverse(
+            "secret-santa-resend-email",
+            kwargs=dict(draw_pk=draw.id, result_pk=result.id),
+        )
+        with freezegun.freeze_time(NOW + dt.timedelta(days=1)):
+            response = self.client.post(url, new_email_data)
+            self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+            assert self.sqs.send_message.call_count == 1
+            new_result_id = response.json()["new_result"]
+
+            # Send email on same result is invalid
+            response = self.client.post(url, new_email_data)
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(response.json()["general"][0]["code"], "invalid")
+
+            # Send email on new result is too early
+            url = reverse(
+                "secret-santa-resend-email",
+                kwargs=dict(draw_pk=draw.id, result_pk=new_result_id),
+            )
+            response = self.client.post(url, new_email_data)
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(response.json()["general"][0]["code"], "too-early")
+
+            # OK to fetch new result
+            response = self.client.get(
+                reverse("secret-santa-detail", kwargs=dict(pk=new_result_id))
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+
+            # Fails to fetch old result
+            response = self.client.get(
+                reverse("secret-santa-detail", kwargs=dict(pk=result.id))
+            )
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

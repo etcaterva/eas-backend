@@ -265,6 +265,11 @@ class SecretSantaSet(
     ):  # pylint: disable=unused-argument, arguments-differ
         LOG.info("Retrieving secret santa result by id: %s", pk)
         result = get_object_or_404(models.SecretSantaResult, id=pk)
+        if not result.valid:
+            raise ValidationError(
+                f"Result {result.id} has been sent a invalidated by an admin",
+                code="invalid",
+            )
         result.revealed = True
         result.save()
         LOG.info("Returning result %s", result)
@@ -297,22 +302,48 @@ def secret_santa_resend_email(request, draw_pk, result_pk):
     LOG.info("Resending secret santa %s result %s", draw_pk, result_pk)
     draw = get_object_or_404(models.SecretSanta, id=draw_pk)
     result = get_object_or_404(models.SecretSantaResult, id=result_pk)
-    if result.draw.id != draw.id:
+    if (not result.draw) or (result.draw.id != draw.id):
         raise ValidationError(f"Result {result.id} does not belong to {draw.id}")
     if result.revealed:
-        raise ValidationError(f"Result {result.id} has been already revealed")
-    if (cutoff := result.created_at + dt.timedelta(days=2)) > dt.datetime.now(
+        raise ValidationError(
+            f"Result {result.id} has been already revealed", code="revealed"
+        )
+    if (cutoff := result.created_at + dt.timedelta(hours=1)) > dt.datetime.now(
         dt.timezone.utc
     ):
-        raise ValidationError(f"Result {result.id} cannot be resent before {cutoff}")
+        return Response(
+            {
+                "general": [
+                    {
+                        "id": result.id,
+                        "message": "Result cannot be resent before cutoff",
+                        "cutoff": cutoff,
+                        "code": "too-early",
+                    }
+                ]
+            },
+            status=400,
+        )
+
+    # copy result:
+    new_result = get_object_or_404(models.SecretSantaResult, id=result_pk)
+    new_result.id = None
+    new_result.created_at = None
+    new_result.save()
+
+    # Invalidate previous:
+    result.valid = False
+    result.draw = None
+    result.save()
+
     amazonsqs.send_secret_santa_message(
         {
             "lang": request.data["language"],
-            "mails": [(request.data["email"], result.id)],
+            "mails": [(request.data["email"], new_result.id)],
         }
     )
-    LOG.info("Returning result %s", result)
-    return Response()
+    LOG.info("Returning result %s", new_result)
+    return Response({"new_result": new_result.id})
 
 
 @api_view(["POST"])
