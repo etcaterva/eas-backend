@@ -667,6 +667,10 @@ paths:
       responses:
         '200':
           description: Resend the email of a secret santa result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretSantaResendEmailResponse'
       tags:
         - secret_santa
       requestBody:
@@ -1437,4 +1441,9 @@ components:
             - es
             - en
         email:
+          type: string
+    SecretSantaResendEmailResponse:
+      type: object
+      properties:
+        new_result:
           type: string

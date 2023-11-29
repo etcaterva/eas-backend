@@ -295,6 +295,7 @@ class SecretSantaResult(BaseModel):
     source = models.CharField(max_length=100)
     target = models.CharField(max_length=100)
     revealed = models.BooleanField(default=False)
+    valid = models.BooleanField(default=True)
 
     def __repr__(self):
         return "<%s  (%r,%r)>" % (self.__class__.__name__, self.source, self.target)
