@@ -149,7 +149,7 @@ class MultiResultMixin(models.Model):
 
 class RandomNumber(MultiResultMixin, BaseDraw):
     range_min = models.IntegerField()
-    range_max = models.IntegerField()
+    range_max = models.BigIntegerField()
 
     def generate_result_item(self):
         return random.randint(self.range_min, self.range_max)
