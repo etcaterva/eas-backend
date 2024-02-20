@@ -41,15 +41,19 @@ def _fetch_comments(url):
     LOG.info("Fetched %s comments for %s", len(response), url)
     if not response:
         raise NotFoundError(f"No posts found for {url}")
-    return [
-        Comment(
-            id=comment["id"],
-            text=comment["text"],
-            username=comment["owner"]["username"],
-            userpic=comment["owner"]["profile_pic_url"],
-        )
-        for comment in response
-    ]
+    try:
+        return [
+            Comment(
+                id=comment["id"],
+                text=comment["text"],
+                username=comment["owner"]["username"],
+                userpic=comment["owner"]["profile_pic_url"],
+            )
+            for comment in response
+        ]
+    except KeyError as e:
+        LOG.info("Lamadava response seems malformed: %s", response, exc_info=True)
+        raise
 
 
 def get_comments(url, min_mentions=0, require_like=False):  # pragma: no cover
