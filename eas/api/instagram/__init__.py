@@ -51,7 +51,7 @@ def _fetch_comments(url):
             )
             for comment in response
         ]
-    except KeyError as e:
+    except KeyError:
         LOG.info("Lamadava response seems malformed: %s", response, exc_info=True)
         raise
 
