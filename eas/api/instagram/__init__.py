@@ -41,15 +41,22 @@ def _fetch_comments(url):
     LOG.info("Fetched %s comments for %s", len(response), url)
     if not response:
         raise NotFoundError(f"No posts found for {url}")
-    return [
-        Comment(
-            id=comment["id"],
-            text=comment["text"],
-            username=comment["owner"]["username"],
-            userpic=comment["owner"]["profile_pic_url"],
-        )
-        for comment in response
-    ]
+    res = []
+    for comment in response:
+        try:
+            res.append(
+                Comment(
+                    id=comment.get("id", "null"),
+                    text=comment["text"],
+                    username=comment["owner"]["username"],
+                    userpic=comment["owner"]["profile_pic_url"],
+                )
+            )
+        except KeyError as e:  # pragma: no cover
+            LOG.error(
+                "Comment does not contain field %s: %s", e, comment, exc_info=True
+            )
+    return res
 
 
 def get_comments(url, min_mentions=0, require_like=False):  # pragma: no cover

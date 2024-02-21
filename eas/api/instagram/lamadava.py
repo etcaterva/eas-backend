@@ -37,6 +37,5 @@ def fetch_comments(media_pk):  # pragma: no cover
     )
     if not response.ok:
         LOG.error("Failed lamadava request! %s", response.text)
-    LOG.info("Lamadava response: %s", response)
     response.raise_for_status()
     return response.json()
