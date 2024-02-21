@@ -46,10 +46,10 @@ def _fetch_comments(url):
         try:
             res.append(
                 Comment(
-                    id=comment.get("id", "null"),
+                    id=comment["pk"],
                     text=comment["text"],
-                    username=comment["owner"]["username"],
-                    userpic=comment["owner"]["profile_pic_url"],
+                    username=comment["user"]["username"],
+                    userpic=comment["user"]["profile_pic_url"],
                 )
             )
         except KeyError as e:  # pragma: no cover
