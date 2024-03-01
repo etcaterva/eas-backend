@@ -36,6 +36,8 @@ def fetch_comments(media_pk):  # pragma: no cover
         timeout=ONE_MINUTE * 2,
     )
     if not response.ok:
-        LOG.error("Failed lamadava request! %s", response.text)
+        LOG.warning("Failed lamadava request! %s", response.text)
+    if response.json()["exc_type"] == "NotFoundError":
+        return []
     response.raise_for_status()
     return response.json()
