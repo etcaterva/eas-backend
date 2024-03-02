@@ -1,3 +1,4 @@
+import contextlib
 import datetime as dt
 import functools
 import logging
@@ -37,7 +38,8 @@ def fetch_comments(media_pk):  # pragma: no cover
     )
     if not response.ok:
         LOG.warning("Failed lamadava request! %s", response.text)
-        if response.json()["exc_type"] == "NotFoundError":
-            return []
+        with contextlib.suppress(Exception):
+            if response.json()["exc_type"] == "NotFoundError":
+                return []
     response.raise_for_status()
     return response.json()
