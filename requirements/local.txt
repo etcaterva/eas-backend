@@ -1,5 +1,5 @@
 -r base.txt
-black==22.8.0
+black==24.3.0
 coverage==6.4.4
 django-cors-headers==3.13.0
 django-coverage-plugin==2.0.3
