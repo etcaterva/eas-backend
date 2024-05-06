@@ -22,7 +22,7 @@ django==4.1.13
 djangorestframework==3.14.0
 drf-yasg[validation]==1.21.4
 exceptiongroup==1.0.4
-idna==3.4
+idna==3.7
 importlib-resources==5.10.1
 inflection==0.5.1
 instagrapi==1.16.30
