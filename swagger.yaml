@@ -805,6 +805,90 @@ paths:
         required: true
         schema:
           type: string
+  /tiktok/:
+    post:
+      operationId: tiktok_create
+      responses:
+        '201':
+          description: The tiktok draw was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tiktok'
+      tags:
+        - tiktok
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tiktok'
+        required: true
+    parameters: []
+  '/tiktok/{id}/':
+    get:
+      operationId: tiktok_read
+      responses:
+        '200':
+          description: The details of the requested draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tiktok'
+      tags:
+        - tiktok
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/tiktok/{id}/toss/':
+    post:
+      operationId: tiktok_toss
+      responses:
+        '201':
+          description: A result of the draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tiktokResult'
+      tags:
+        - tiktok
+      requestBody:
+        $ref: '#/components/requestBodies/DrawTossPayload'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+  '/tiktok/{id}/retoss/':
+    patch:
+      operationId: tiktok_retoss
+      responses:
+        '201':
+          description: A result of the draw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tiktokResult'
+      tags:
+        - tiktok
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: 'object'
+              properties:
+                prize_id:
+                  type: string
+                  minLength: 1
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
   /shifts/:
     post:
       operationId: shifts_create
@@ -1033,6 +1117,29 @@ components:
               items:
                 $ref: '#/components/schemas/InstagramResult'
               readOnly: true
+    Tiktok:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          required:
+            - post_url
+            - prizes
+            - min_mentions
+          properties:
+            prizes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Prize'
+            min_mentions:
+              type: integer
+              default: 0
+            post_url:
+              type: string
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/TiktokResult'
+              readOnly: true
     Link:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
@@ -1222,6 +1329,32 @@ components:
                       userpic:
                         type: string
                       text:
+                        type: string
+                  prize:
+                    $ref: '#/components/schemas/Prize'
+    TiktokResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  comment:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      text:
+                        type: string
+                      username:
+                        type: string
+                      userpic:
+                        type: string
+                      userid:
                         type: string
                   prize:
                     $ref: '#/components/schemas/Prize'

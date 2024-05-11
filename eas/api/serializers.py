@@ -289,6 +289,28 @@ class PromoCodeSerializer(serializers.Serializer):
     draw_id = serializers.CharField(max_length=100)
 
 
+class TiktokSerializer(BaseSerializer):
+    class Meta:
+        model = models.Tiktok
+        fields = BaseSerializer.BASE_FIELDS + (
+            "post_url",
+            "min_mentions",
+            "prizes",
+        )
+
+    prizes = PrizeSerializer(many=True, required=True)
+
+    def create(self, validated_data):
+        data = dict(validated_data)
+        prizes = data.pop("prizes")
+        if not prizes:
+            raise serializers.ValidationError("Prizes cannot be empty")
+        draw = super().create(data)
+        prize_instances = [models.Prize(draw=draw, **prize) for prize in prizes]
+        models.Prize.objects.bulk_create(prize_instances)
+        return draw
+
+
 class InstagramSerializer(BaseSerializer):
     class Meta:
         model = models.Instagram

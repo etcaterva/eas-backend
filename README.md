@@ -27,12 +27,11 @@ make test
 make runlocal
 ```
 
-If you need to send emails, when calling `make runlocal`, set the
-`EAS_AWS_KEY_SECRET` environment variable.
+The following env vars enable additional services:
 
-If you need to to use instagram, when calling `make runlocal`, set the
-`EAS_INSTAGRAM_EMAIL_USERNAME` to an instagram user email and create
-a `eas-instagram.pass` file at the repo root with the password.
+- `EAS_AWS_KEY_SECRET`: Send emails (Get from AWS portal).
+- `EAS_LAMADAVA_APIK`: Instagram (Get from hikerapi console).
+- `EAS_LAMATOK_APIK`: TikTok (Get from hikerapi console).
 
 #### Working on the swagger file
 

@@ -209,4 +209,4 @@ PAYPAL_SECRET = os.environ.get("EAS_PAYPAL_SECRET", "paypal-secret-unset")
 AWS_KEY_ID = "AKIAQ337QRVCGGGT4UH6"
 AWS_KEY_SECRET = os.environ.get("EAS_AWS_KEY_SECRET")
 LAMADAVA_APIK = os.environ.get("EAS_LAMADAVA_APIK", "lamadava-apik")
-DATALAMA_APIK = os.environ.get("EAS_DATALAMA_APIK", "datalama-apik")
+LAMATOK_APIK = os.environ.get("EAS_LAMATOK_APIK", "lamatok-apik")

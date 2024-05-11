@@ -9,7 +9,7 @@ import uuid
 from django.db import models
 from jsonfield import JSONField
 
-from . import instagram
+from . import instagram, tiktok
 
 
 def create_id():
@@ -386,6 +386,37 @@ class Instagram(BaseDraw, PrizesMixin):
         return result
 
 
+class Tiktok(BaseDraw, PrizesMixin):
+    post_url = models.URLField()
+    min_mentions = models.IntegerField(default=0)
+
+    def fetch_comments(self):
+        comments = {
+            c.username: {
+                "text": c.text,
+                "id": c.id,
+                "url": c.url,
+                "username": c.username,
+                "userid": c.userid,
+                "userpic": c.userpic,
+            }
+            for c in tiktok.get_comments(self.post_url, self.min_mentions)
+        }  # dedup participants
+        comments = list(comments.values())
+        random.shuffle(comments)
+        return comments
+
+    def generate_result(self):
+        comments = self.fetch_comments()
+        result = []
+        for prize, winner in zip(
+            self.prizes.values(*PrizesMixin.SERIALIZE_FIELDS),
+            itertools.cycle(comments),
+        ):
+            result.append({"prize": prize, "comment": winner})
+        return result
+
+
 class Shifts(BaseDraw, ParticipantsMixin):
     intervals = JSONField()
 
@@ -442,5 +473,6 @@ DRAW_TYPES = [
     RandomNumber,
     Shifts,
     Spinner,
+    Tiktok,
     Tournament,
 ]
