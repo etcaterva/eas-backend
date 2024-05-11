@@ -19,6 +19,7 @@ router.register(r"coin", views.CoinViewSet, basename="coin")
 router.register(r"link", views.LinkViewSet, basename="link")
 router.register(r"secret-santa", views.SecretSantaSet, basename="secret-santa")
 router.register(r"instagram", views.InstagramViewSet, basename="instagram")
+router.register(r"tiktok", views.TiktokViewSet, basename="tiktok")
 router.register(r"shifts", views.ShiftsViewSet, basename="shifts")
 urlpatterns = [
     re_path(

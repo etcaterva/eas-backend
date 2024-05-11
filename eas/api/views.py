@@ -10,7 +10,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.response import Response
 
-from . import amazonsqs, instagram, models, paypal, serializers
+from . import amazonsqs, instagram, models, paypal, serializers, tiktok
 
 LOG = logging.getLogger(__name__)
 
@@ -390,6 +390,72 @@ def paypal_accept(request):
     paypal.accept_payment(payment_id, payer_id)
     LOG.info("Payment %r accepted", payment)
     return redirect(payment.draw_url)
+
+
+class TiktokViewSet(BaseDrawViewSet):
+    MODEL = models.Tiktok
+    serializer_class = serializers.TiktokSerializer
+
+    queryset = MODEL.objects.all()
+
+    def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
+        # Check if a result is possible
+        try:
+            draw.generate_result()
+        except tiktok.NotFoundError:
+            LOG.info(
+                "Invalid draw %s created, cannot generate result",
+                draw.private_id,
+                exc_info=True,
+            )
+            raise ValidationError("The tiktok post does not exist") from None
+        except tiktok.TiktokTimeoutError:
+            LOG.error(
+                "Timed out generating result for draw %s",
+                draw.private_id,
+                exc_info=True,
+            )
+            raise APIException(
+                "Timed out generating result. Try again later."
+            ) from None
+
+    @action(methods=["PATCH"], detail=True)
+    def retoss(self, request, pk):
+        LOG.info("Retossing draw with id: %s", pk)
+        draw = get_object_or_404(self.MODEL, private_id=pk)
+        serializer = serializers.DrawRetossPayloadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        prize_id = serializer.validated_data.get("prize_id")
+
+        result = draw.results.order_by("created_at").last()
+        if result is None:
+            raise ValidationError(f"{draw} does not have any result")
+
+        result.id = None
+        result.created_at = None
+        new_comments = draw.fetch_comments()
+
+        referenced_result_item = None
+        for result_content in result.value:
+            if result_content["prize"]["id"] == prize_id:
+                referenced_result_item = result_content
+        if referenced_result_item is None:
+            raise ValidationError(
+                f"{draw} does not have a result with prize {prize_id}"
+            )
+
+        for new_comment in new_comments:  # attempt finding a new comment
+            if new_comment != referenced_result_item["comment"]:
+                LOG.info("Replacing %s by %s", referenced_result_item, new_comment)
+                referenced_result_item["comment"] = new_comment
+                break
+
+        result.save()
+
+        result_serializer = serializers.ResultSerializer(result)
+        LOG.info("Regenerated result %s", result_serializer.data)
+        draw.save()  # Updates updated_at
+        return Response(result_serializer.data)
 
 
 class InstagramViewSet(BaseDrawViewSet):

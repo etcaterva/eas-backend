@@ -203,6 +203,25 @@ class InstagramFactory(BaseDrawFactory):
         return draw
 
 
+class TiktokFactory(BaseDrawFactory):
+    class Meta:
+        model = "api.Tiktok"
+
+    post_url = "https://www.tiktok.com/@spiderfish257/video/6744531482393545985?lang=en"
+    min_mentions = 0
+    prizes = fb.List([dict(name="cupcake"), dict(name="laptop")])
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        prizes = kwargs.pop("prizes")
+        manager = cls._get_manager(model_class)
+        draw = manager.create(*args, **kwargs)
+        for prize in prizes:
+            models.Prize.objects.create(**prize, draw=draw)
+
+        return draw
+
+
 class ShiftsFactory(BaseDrawFactory):
     class Meta:
         model = "api.Shifts"
