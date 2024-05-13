@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: EAS API
-  version: 0.0.1
+  version: 1.0.0
 servers:
   - url: '/should-be-overriden'
 paths:
@@ -814,14 +814,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/tiktok'
+                $ref: '#/components/schemas/Tiktok'
       tags:
         - tiktok
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/tiktok'
+              $ref: '#/components/schemas/Tiktok'
         required: true
     parameters: []
   '/tiktok/{id}/':
@@ -833,7 +833,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/tiktok'
+                $ref: '#/components/schemas/Tiktok'
       tags:
         - tiktok
     parameters:
@@ -851,7 +851,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/tiktokResult'
+                $ref: '#/components/schemas/TiktokResult'
       tags:
         - tiktok
       requestBody:
@@ -871,7 +871,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/tiktokResult'
+                $ref: '#/components/schemas/TiktokResult'
       tags:
         - tiktok
       requestBody:
