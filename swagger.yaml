@@ -1416,9 +1416,20 @@ components:
               nullable: true
               type: array
               items:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Participant'
+                type: object
+                properties:
+                  id:
+                    type: string
+                  participant_1:
+                    $ref: '#/components/schemas/Participant'
+                  participant_2:
+                    $ref: '#/components/schemas/Participant'
+                  score:
+                    type: string
+                  winner_id:
+                    type: string
+                  next_match_id:
+                    type: string
     GroupsResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'

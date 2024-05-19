@@ -1,4 +1,5 @@
 """Models of the objects used in EAS"""
+import contextlib
 import datetime as dt
 import enum
 import itertools
@@ -348,10 +349,61 @@ class Tournament(BaseDraw, ParticipantsMixin):
             self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS)
         )
         random.shuffle(participants)
-        groups = [list() for _ in range((len(participants) + 1) // 2)]
-        for group, participant in zip(itertools.cycle(groups), participants):
-            group.append(participant)
-        return groups
+        if len(participants) % 2 != 0:
+            participants.append(None)
+        counter = itertools.count()
+        result = []
+
+        match_count = 2 ** (len(participants) - 1).bit_length()  # closest power of 2
+        matches = []
+        while match_count > 1:
+            match_count //= 2
+            next_matches = [
+                {
+                    "id": next(counter),
+                    "participant_1": None,
+                    "participant_2": None,
+                    "score": None,
+                    "winner_id": None,
+                    "next_match_id": None,
+                }
+                for _ in range(match_count)
+            ]
+            next_match_ids = itertools.chain(
+                *zip(
+                    [m["id"] for m in next_matches],
+                    [m["id"] for m in next_matches],
+                )
+            )
+            for m in matches:
+                m["next_match_id"] = next(next_match_ids)
+            matches = next_matches
+            result += matches
+
+        round1_count = 2 ** (len(participants) - 1).bit_length()  # closest power of 2
+        participants_iter = iter(participants)
+        round1_count //= 2
+        with contextlib.suppress(StopIteration):
+            for i in range(round1_count):
+                result[i]["participant_1"] = next(participants_iter)
+            for i in range(round1_count):
+                result[i]["participant_2"] = next(participants_iter)
+        for i in range(round1_count):  # Resolve orphan matches
+            match = result[i]
+            assert match["participant_1"] is not None
+            if match["participant_2"] is not None:  # Standard match
+                continue
+            assert match["next_match_id"] is not None
+            match["winner_id"] = match["participant_1"]["id"]
+            next_match = result[match["next_match_id"]]
+            assert next_match["id"] == match["next_match_id"]
+            if next_match["participant_1"] is None:
+                next_match["participant_1"] = match["participant_1"]
+            else:
+                assert next_match["participant_2"] is None
+                next_match["participant_2"] = match["participant_1"]
+
+        return result
 
 
 class Instagram(BaseDraw, PrizesMixin):
