@@ -68,23 +68,27 @@ class TestTournament(DrawAPITestMixin, APILiveServerTestCase):
             {
                 "id": ANY,
                 "next_match_id": None,
-                "participant_1": {
-                    "facebook_id": None,
-                    "name": ANY,
-                    "id": ANY,
-                },
-                "participant_2": {
-                    "facebook_id": None,
-                    "name": ANY,
-                    "id": ANY,
-                },
+                "participants": [
+                    {
+                        "facebook_id": None,
+                        "name": ANY,
+                        "id": ANY,
+                    },
+                    {
+                        "facebook_id": None,
+                        "name": ANY,
+                        "id": ANY,
+                    },
+                ],
                 "score": None,
                 "winner_id": None,
             }
         ]
-        assert result[0]["participant_1"]["name"] in ["1", "2"]
-        assert result[0]["participant_2"]["name"] in ["1", "2"]
-        assert result[0]["participant_1"]["name"] != result[0]["participant_2"]["name"]
+        assert result[0]["participants"][0]["name"] in ["1", "2"]
+        assert result[0]["participants"][1]["name"] in ["1", "2"]
+        assert (
+            result[0]["participants"][0]["name"] != result[0]["participants"][1]["name"]
+        )
 
     def test_success_4_people_has_empty_match(self):
         draw = self.Factory(
@@ -97,8 +101,7 @@ class TestTournament(DrawAPITestMixin, APILiveServerTestCase):
         assert result[2] == {
             "id": 2,
             "next_match_id": None,
-            "participant_1": None,
-            "participant_2": None,
+            "participants": [],
             "score": None,
             "winner_id": None,
         }
@@ -113,33 +116,29 @@ class TestTournament(DrawAPITestMixin, APILiveServerTestCase):
         empty_match = {
             "id": ANY,
             "next_match_id": ANY,
-            "participant_1": None,
-            "participant_2": None,
+            "participants": [],
             "score": None,
             "winner_id": None,
         }
         assert result[6] == empty_match
 
-        assert result[0]["participant_1"]
-        assert result[0]["participant_2"]
+        assert len(result[0]["participants"]) == 2
         assert result[0]["next_match_id"] == result[4]["id"]
 
-        assert result[1]["participant_1"]
-        assert result[1]["participant_2"] is None
+        assert len(result[1]["participants"]) == 1
         assert result[1]["next_match_id"] == result[4]["id"]
 
-        assert result[2]["participant_1"]
-        assert result[2]["participant_2"] is None
+        assert len(result[2]["participants"]) == 1
         assert result[2]["next_match_id"] == result[5]["id"]
 
-        assert result[3]["participant_1"]
-        assert result[3]["participant_2"] is None
+        assert len(result[3]["participants"]) == 1
         assert result[3]["next_match_id"] == result[5]["id"]
 
-        assert result[4]["participant_1"]["id"] == result[1]["winner_id"]
-        assert result[4]["participant_2"] is None
+        assert len(result[4]["participants"]) == 1
+        assert result[4]["participants"][0]["id"] == result[1]["winner_id"]
         assert result[4]["next_match_id"] == result[6]["id"]
 
-        assert result[5]["participant_1"]["id"] == result[2]["winner_id"]
-        assert result[5]["participant_2"]["id"] == result[3]["winner_id"]
+        assert len(result[5]["participants"]) == 2
+        assert result[5]["participants"][0]["id"] == result[2]["winner_id"]
+        assert result[5]["participants"][1]["id"] == result[3]["winner_id"]
         assert result[5]["next_match_id"] == result[6]["id"]

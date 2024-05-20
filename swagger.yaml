@@ -1420,10 +1420,10 @@ components:
                 properties:
                   id:
                     type: string
-                  participant_1:
-                    $ref: '#/components/schemas/Participant'
-                  participant_2:
-                    $ref: '#/components/schemas/Participant'
+                  participants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Participant'
                   score:
                     type: string
                   winner_id:
