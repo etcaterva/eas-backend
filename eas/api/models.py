@@ -349,8 +349,6 @@ class Tournament(BaseDraw, ParticipantsMixin):
             self.participants.values(*ParticipantsMixin.SERIALIZE_FIELDS)
         )
         random.shuffle(participants)
-        if len(participants) % 2 != 0:
-            participants.append(None)
         counter = itertools.count()
         result = []
 
@@ -361,8 +359,7 @@ class Tournament(BaseDraw, ParticipantsMixin):
             next_matches = [
                 {
                     "id": next(counter),
-                    "participant_1": None,
-                    "participant_2": None,
+                    "participants": [],
                     "score": None,
                     "winner_id": None,
                     "next_match_id": None,
@@ -385,23 +382,20 @@ class Tournament(BaseDraw, ParticipantsMixin):
         round1_count //= 2
         with contextlib.suppress(StopIteration):
             for i in range(round1_count):
-                result[i]["participant_1"] = next(participants_iter)
+                result[i]["participants"].append(next(participants_iter))
             for i in range(round1_count):
-                result[i]["participant_2"] = next(participants_iter)
+                result[i]["participants"].append(next(participants_iter))
         for i in range(round1_count):  # Resolve orphan matches
             match = result[i]
-            assert match["participant_1"] is not None
-            if match["participant_2"] is not None:  # Standard match
+            assert match["participants"] is not None
+            if len(match["participants"]) > 1:  # Standard match
                 continue
             assert match["next_match_id"] is not None
-            match["winner_id"] = match["participant_1"]["id"]
+            match["winner_id"] = match["participants"][0]["id"]
             next_match = result[match["next_match_id"]]
             assert next_match["id"] == match["next_match_id"]
-            if next_match["participant_1"] is None:
-                next_match["participant_1"] = match["participant_1"]
-            else:
-                assert next_match["participant_2"] is None
-                next_match["participant_2"] = match["participant_1"]
+            next_match["participants"].append(match["participants"][0])
+            assert len(next_match["participants"]) <= 2
 
         return result
 
