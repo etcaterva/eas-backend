@@ -430,6 +430,7 @@ class TiktokViewSet(BaseDrawViewSet):
         result = draw.results.order_by("created_at").last()
         if result is None:
             raise ValidationError(f"{draw} does not have any result")
+        self._ready_to_toss_check(draw)
 
         result.id = None
         result.created_at = None
@@ -496,6 +497,7 @@ class InstagramViewSet(BaseDrawViewSet):
         result = draw.results.order_by("created_at").last()
         if result is None:
             raise ValidationError(f"{draw} does not have any result")
+        self._ready_to_toss_check(draw)
 
         result.id = None
         result.created_at = None
