@@ -6,7 +6,7 @@ from . import models
 
 
 class StringListField(serializers.ListField):
-    child = serializers.CharField(min_length=1, max_length=200)
+    child = serializers.CharField(min_length=1, max_length=2000)
 
 
 COMMON_FIELDS = (
@@ -120,7 +120,7 @@ class LetterSerializer(BaseSerializer):
             "allow_repeated_results",
         )
 
-    number_of_results = serializers.IntegerField(min_value=1, max_value=200)
+    number_of_results = serializers.IntegerField(min_value=1, max_value=2000)
 
     def validate(self, data):  # pylint: disable=arguments-differ
         if not data.get("allow_repeated_results", False) and (
@@ -156,8 +156,8 @@ class LinkSerializer(BaseSerializer):
             "items_set2",
         )
 
-    items_set1 = StringListField(min_length=1, max_length=200)
-    items_set2 = StringListField(min_length=1, max_length=200)
+    items_set1 = StringListField(min_length=1, max_length=2000)
+    items_set2 = StringListField(min_length=1, max_length=2000)
 
 
 class RaffleSerializer(BaseSerializer):
