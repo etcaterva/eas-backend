@@ -791,14 +791,7 @@ paths:
       tags:
         - instagram
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: 'object'
-              properties:
-                prize_id:
-                  type: string
-                  minLength: 1
+        $ref: '#/components/requestBodies/DrawReTossPayload'
     parameters:
       - name: id
         in: path
@@ -875,14 +868,7 @@ paths:
       tags:
         - tiktok
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: 'object'
-              properties:
-                prize_id:
-                  type: string
-                  minLength: 1
+        $ref: '#/components/requestBodies/DrawReTossPayload'
     parameters:
       - name: id
         in: path
@@ -954,6 +940,11 @@ components:
           schema:
             $ref: '#/components/schemas/DrawTossPayload'
       required: true
+    DrawReTossPayload:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DrawReTossPayload'
   schemas:
     DrawMetadata:
       required:
@@ -1019,6 +1010,12 @@ components:
         schedule_date:
           type: string
           format: date-time
+    DrawReTossPayload:
+      type: object
+      properties:
+        prize_id:
+          type: string
+          minLength: 1
     BaseDraw:
       allOf:
         - $ref: '#/components/schemas/BaseObject'
