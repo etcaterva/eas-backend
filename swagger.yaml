@@ -1353,6 +1353,8 @@ components:
                         type: string
                       userid:
                         type: string
+                      url:
+                        type: string
                   prize:
                     $ref: '#/components/schemas/Prize'
     ShiftsResult:
