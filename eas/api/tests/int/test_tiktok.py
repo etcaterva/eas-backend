@@ -83,6 +83,12 @@ class Testtiktok(DrawAPITestMixin, APILiveServerTestCase):
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
 
+    def test_post_url_redirect(self):
+        draw = self.Factory(post_url="https://vm.tiktok.com/ZMrjQ8U3W/")
+        url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+
     def test_timeout_on_post_fetch(self):
         with patch("eas.api.tiktok.lamatok") as client:
             client.fetch_comments.side_effect = tiktok.TiktokTimeoutError
