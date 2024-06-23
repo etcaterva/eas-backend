@@ -32,6 +32,9 @@ class Comment:
 def _extract_media_pk(url):
     if match := TIKTOK_RE.search(url):
         return match.group(1)
+    response = requests.get(url, allow_redirects=False)
+    if response.status_code in (301, 308):
+        return _extract_media_pk(response.headers["Location"])
     raise NotFoundError(f"Invalid tiktok URL {url}")
 
 
