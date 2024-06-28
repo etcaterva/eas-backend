@@ -25,6 +25,28 @@ def lamadava_fake():
             yield lamadava_mock
 
 
+COMMENT = instagram.Comment(
+    id="id1",
+    text="comment",
+    username="username",
+    userpic="userpic",
+)
+
+COMMENT_WITH_MENTION = instagram.Comment(
+    id="id2",
+    text="comment with @mention",
+    username="username2",
+    userpic="userpic2",
+)
+
+COMMENT_WITH_MENTION2 = instagram.Comment(
+    id="id3",
+    text="comment with @mention3",
+    username="username3",
+    userpic="userpic3",
+)
+
+
 class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
     maxDiff = None
     base_url = "instagram"
@@ -48,7 +70,9 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             ],
         }
 
-    def test_success_result_only_comments(self):
+    @patch("eas.api.instagram.get_comments")
+    def test_success_result_only_comments(self, instagram_mock):
+        instagram_mock.return_value = [COMMENT]
         draw = self.Factory(
             prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
         )
@@ -61,59 +85,51 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             }
         ]
 
-    def test_invalid_post_url(self):
-        with patch("eas.api.instagram.lamadava") as client:
-            client.fetch_comments.return_value = []
-            draw = self.Factory(
-                prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
-            )
-            url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
-            response = self.client.post(url, {})
-            self.assertEqual(
-                response.status_code, status.HTTP_400_BAD_REQUEST, response.content
-            )
-
-    def test_timeout_on_post_fetch(self):
-        with patch("eas.api.instagram.lamadava") as client:
-            client.fetch_comments.side_effect = instagram.InstagramTimeoutError
-            draw = self.Factory(
-                prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
-            )
-            url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
-            response = self.client.post(url, {})
-            self.assertEqual(
-                response.status_code,
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-                response.content,
-            )
-
-    def test_success_result_with_mentions(self):
+    @patch("eas.api.instagram.get_comments")
+    def test_toss_without_comments(self, instagram_mock):
+        instagram_mock.side_effect = instagram.NotFoundError
         draw = self.Factory(
-            prizes=[{"name": "cupcake"}],
-            use_likes=False,
-            min_mentions=4,
+            prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
         )
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
-        assert response.json()["value"] == [
-            {
-                "prize": {"id": ANY, "name": "cupcake", "url": None},
-                "comment": {
-                    "id": ANY,
-                    "username": "cristy_tarrias",
-                    "userpic": ANY,
-                    "text": "Para tí Miguel 🔥 @onenomimi @arooa91 @luciita1588 @sheiila.aliiehs",
-                },
-            }
-        ]
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
 
-    def test_create_invalid_no_prizes(self):
+    @patch("eas.api.instagram.get_comments")
+    def test_invalid_post_url(self, instagram_mock):
+        instagram_mock.side_effect = instagram.InvalidURL
+        draw = self.Factory(
+            prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
+        )
+        url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+        response = self.client.post(url, {})
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    @patch("eas.api.instagram.get_comments")
+    def test_instagram_timeout(self, instagram_mock):
+        instagram_mock.side_effect = instagram.InstagramTimeoutError
+        draw = self.Factory(
+            prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
+        )
+        url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @patch("eas.api.instagram.get_comments")
+    def test_create_invalid_no_prizes(self, instagram_mock):
+        instagram_mock.return_value = [COMMENT]
         response = self.create(prizes=[])
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
 
-    def test_retoss_without_toss_fails(self):
+    @patch("eas.api.instagram.get_comments")
+    def test_retoss_without_toss_fails(self, instagram_mock):
+        instagram_mock.return_value = [COMMENT]
         draw = self.Factory(
             prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
         )
@@ -123,7 +139,9 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
 
-    def test_retoss_invalid_prize_fails(self):
+    @patch("eas.api.instagram.get_comments")
+    def test_retoss_invalid_prize_fails(self, instagram_mock):
+        instagram_mock.return_value = [COMMENT]
         draw = self.Factory(
             prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
         )
@@ -137,7 +155,13 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
 
-    def test_retoss_success(self):
+    @patch("eas.api.instagram.get_comments")
+    def test_retoss_success(self, instagram_mock):
+        instagram_mock.return_value = [
+            COMMENT,
+            COMMENT_WITH_MENTION,
+            COMMENT_WITH_MENTION2,
+        ]
         draw = self.Factory(
             prizes=[{"name": "cupcake1"}, {"name": "cupcake2"}],
             use_likes=False,
@@ -166,20 +190,3 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
 
 class TestInstagramPurge(PurgeMixin, APILiveServerTestCase):
     FACTORY = factories.InstagramFactory
-
-
-def test_instagram_api_integration():
-    test_url = "https://www.instagram.com/p/CjvSI1HMQ6J/"
-
-    comments = list(instagram.get_comments(test_url))
-    users = {c.username for c in comments}
-    assert len(comments) >= 50
-    assert "alicia_garcia11" in users
-
-    comments = list(instagram.get_comments(test_url, min_mentions=2))
-    users = {c.username for c in comments}
-    assert {"cristy_tarrias"} == users
-
-    comments = list(instagram.get_comments(test_url, min_mentions=20))
-    users = {c.username for c in comments}
-    assert set() == users

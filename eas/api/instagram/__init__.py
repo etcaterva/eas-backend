@@ -11,11 +11,8 @@ LOG = logging.getLogger(__name__)
 MENTION_RE = re.compile(r"(^|[^\w])@([\w\_\.]+)")
 ONE_MINUTE = 60
 
-
-class NotFoundError(Exception):
-    pass
-
-
+NotFoundError = lamadava.NotFoundError
+InvalidURL = lamadava.InvalidURL
 InstagramTimeoutError = requests.exceptions.ConnectionError
 
 
