@@ -469,22 +469,15 @@ class InstagramViewSet(BaseDrawViewSet):
         # Check if a result is possible
         try:
             draw.generate_result()
+        except instagram.InvalidURL:
+            LOG.info("Invalid draw %s, cannot toss", draw.private_id, exc_info=True)
+            raise ValidationError(f"Invalid post URL: {draw.post_url}") from None
         except instagram.NotFoundError:
-            LOG.info(
-                "Invalid draw %s created, cannot generate result",
-                draw.private_id,
-                exc_info=True,
-            )
-            raise ValidationError("The instagram post does not exist") from None
+            LOG.info("Draw %s has no comments", draw.private_id, exc_info=True)
+            raise ValidationError("The post has no comments") from None
         except instagram.InstagramTimeoutError:
-            LOG.error(
-                "Timed out generating result for draw %s",
-                draw.private_id,
-                exc_info=True,
-            )
-            raise APIException(
-                "Timed out generating result. Try again later."
-            ) from None
+            LOG.error("Timed out tossing draw %s", draw.private_id, exc_info=True)
+            raise APIException("Timed-out tossing. Try again later.") from None
 
     @action(methods=["PATCH"], detail=True)
     def retoss(self, request, pk):

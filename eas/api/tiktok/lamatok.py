@@ -13,6 +13,14 @@ MAX_PAGE_LAMATOK = 100
 ONE_MINUTE = 60  # seconds
 
 
+class NotFoundError(Exception):
+    pass
+
+
+class InvalidURL(Exception):
+    pass
+
+
 @functools.lru_cache(None)
 def _session():  # pragma: no cover
     return requests.Session()
@@ -40,7 +48,7 @@ def fetch_comments(media_pk):  # pragma: no cover
     if not response.ok:
         LOG.warning("Failed lamatok request! %s", response.text)
         with contextlib.suppress(Exception):
-            if response.json()["exc_type"] == "NotFoundError":
+            if response.json()["exc_type"] == "CommentsNotFoundError":
                 return []
     response.raise_for_status()
     return response.json()["comments"]

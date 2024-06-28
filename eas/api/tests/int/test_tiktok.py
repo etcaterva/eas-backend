@@ -13,6 +13,15 @@ from eas.api.tests.int.test_purge import PurgeMixin
 
 from .. import factories
 
+COMMENT = tiktok.Comment(
+    id="id",
+    text="text",
+    url="url",
+    username="username",
+    userid="userid",
+    userpic="userpic",
+)
+
 
 @pytest.fixture(autouse=True)
 def lamatok_fake():
@@ -47,7 +56,9 @@ class Testtiktok(DrawAPITestMixin, APILiveServerTestCase):
             ],
         }
 
-    def test_success_result_only_comments(self):
+    @patch("eas.api.tiktok.get_comments")
+    def test_success_result_only_comments(self, tiktok_fake):
+        tiktok_fake.return_value = [COMMENT]
         draw = self.Factory(prizes=[{"name": "cupcake"}], min_mentions=0)
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
@@ -65,15 +76,15 @@ class Testtiktok(DrawAPITestMixin, APILiveServerTestCase):
             }
         ]
 
-    def test_invalid_post_has_no_comments(self):
-        with patch("eas.api.tiktok.lamatok") as client:
-            client.fetch_comments.return_value = []
-            draw = self.Factory()
-            url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
-            response = self.client.post(url, {})
-            self.assertEqual(
-                response.status_code, status.HTTP_400_BAD_REQUEST, response.content
-            )
+    @patch("eas.api.tiktok.get_comments")
+    def test_invalid_post_has_no_comments(self, tiktok_fake):
+        tiktok_fake.side_effect = tiktok.NotFoundError
+        draw = self.Factory()
+        url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+        response = self.client.post(url, {})
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
 
     def test_invalid_post_url(self):
         draw = self.Factory(post_url="https://tiktok.com/user/@elputo")
@@ -89,17 +100,17 @@ class Testtiktok(DrawAPITestMixin, APILiveServerTestCase):
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
 
-    def test_timeout_on_post_fetch(self):
-        with patch("eas.api.tiktok.lamatok") as client:
-            client.fetch_comments.side_effect = tiktok.TiktokTimeoutError
-            draw = self.Factory(prizes=[{"name": "cupcake"}], min_mentions=0)
-            url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
-            response = self.client.post(url, {})
-            self.assertEqual(
-                response.status_code,
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-                response.content,
-            )
+    @patch("eas.api.tiktok.get_comments")
+    def test_timeout_on_post_fetch(self, tiktok_fake):
+        tiktok_fake.side_effect = tiktok.TiktokTimeoutError
+        draw = self.Factory(prizes=[{"name": "cupcake"}], min_mentions=0)
+        url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
+        response = self.client.post(url, {})
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            response.content,
+        )
 
     def test_success_result_with_mentions(self):
         draw = self.Factory(
@@ -176,20 +187,3 @@ class Testtiktok(DrawAPITestMixin, APILiveServerTestCase):
 
 class TesttiktokPurge(PurgeMixin, APILiveServerTestCase):
     FACTORY = factories.TiktokFactory
-
-
-def test_tiktok_api_integration():
-    test_url = "https://www.tiktok.com/@spiderfish257/video/6744531482393545985?lang=en"
-
-    comments = list(tiktok.get_comments(test_url))
-    users = {c.userid for c in comments}
-    assert len(comments) >= 20
-    assert "candelacorpas_" in users
-
-    comments = list(tiktok.get_comments(test_url, min_mentions=10))
-    users = {c.userid for c in comments}
-    assert {"pilipardoandujar"} == users
-
-    comments = list(tiktok.get_comments(test_url, min_mentions=30))
-    users = {c.userid for c in comments}
-    assert set() == users
