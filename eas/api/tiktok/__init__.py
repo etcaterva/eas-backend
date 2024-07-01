@@ -11,11 +11,8 @@ MENTION_RE = re.compile(r"(^|[^\w])@([\w\_\.]+)")
 TIKTOK_RE = re.compile(r"/video/([^?/&]*)")
 ONE_MINUTE = 60
 
-
-class NotFoundError(Exception):
-    pass
-
-
+NotFoundError = lamatok.NotFoundError
+InvalidURL = lamatok.InvalidURL
 TiktokTimeoutError = requests.exceptions.ConnectionError
 
 
