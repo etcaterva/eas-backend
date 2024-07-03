@@ -392,131 +392,76 @@ def paypal_accept(request):
     return redirect(payment.draw_url)
 
 
-class TiktokViewSet(BaseDrawViewSet):
+class SocialNetworkCommentRaffleMixin:
+    """Mixin for raffles on social network that use comments for the draw"""
+
+    def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
+        # Check if a result is possible
+        try:
+            draw.generate_result()
+        except (tiktok.InvalidURL, instagram.InvalidURL):
+            LOG.info("Invalid draw %s, cannot toss", draw.private_id, exc_info=True)
+            raise ValidationError(f"Invalid post URL: {draw.post_url}") from None
+        except (tiktok.NotFoundError, instagram.NotFoundError):
+            LOG.info("Draw %s has no comments", draw.private_id, exc_info=True)
+            raise ValidationError("The post has no comments") from None
+        except (tiktok.TiktokTimeoutError, instagram.InstagramTimeoutError):
+            LOG.error("Timed out tossing draw %s", draw.private_id, exc_info=True)
+            raise APIException("Timed-out tossing. Try again later.") from None
+
+
+    @action(methods=["PATCH"], detail=True)
+    def retoss(self, request, pk):
+        LOG.info("Retossing draw with id: %s", pk)
+        draw = get_object_or_404(self.MODEL, private_id=pk)
+        serializer = serializers.DrawRetossPayloadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        prize_id = serializer.validated_data.get("prize_id")
+
+        result = draw.results.order_by("created_at").last()
+        if result is None:
+            raise ValidationError(f"{draw} does not have any result")
+        self._ready_to_toss_check(draw)
+
+        result.id = None
+        result.created_at = None
+        new_comments = draw.fetch_comments()
+
+        referenced_result_item = None
+        for result_content in result.value:
+            if result_content["prize"]["id"] == prize_id:
+                referenced_result_item = result_content
+        if referenced_result_item is None:
+            raise ValidationError(
+                f"{draw} does not have a result with prize {prize_id}"
+            )
+
+        for new_comment in new_comments:  # attempt finding a new comment
+            if new_comment != referenced_result_item["comment"]:
+                LOG.info("Replacing %s by %s", referenced_result_item, new_comment)
+                referenced_result_item["comment"] = new_comment
+                break
+
+        result.save()
+
+        result_serializer = serializers.ResultSerializer(result)
+        LOG.info("Regenerated result %s", result_serializer.data)
+        draw.save()  # Updates updated_at
+        return Response(result_serializer.data)
+
+
+class TiktokViewSet(SocialNetworkCommentRaffleMixin, BaseDrawViewSet):
     MODEL = models.Tiktok
     serializer_class = serializers.TiktokSerializer
 
     queryset = MODEL.objects.all()
 
-    def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
-        # Check if a result is possible
-        try:
-            draw.generate_result()
-        except tiktok.NotFoundError:
-            LOG.info(
-                "Invalid draw %s created, cannot generate result",
-                draw.private_id,
-                exc_info=True,
-            )
-            raise ValidationError("The tiktok post does not exist") from None
-        except tiktok.TiktokTimeoutError:
-            LOG.error(
-                "Timed out generating result for draw %s",
-                draw.private_id,
-                exc_info=True,
-            )
-            raise APIException(
-                "Timed out generating result. Try again later."
-            ) from None
 
-    @action(methods=["PATCH"], detail=True)
-    def retoss(self, request, pk):
-        LOG.info("Retossing draw with id: %s", pk)
-        draw = get_object_or_404(self.MODEL, private_id=pk)
-        serializer = serializers.DrawRetossPayloadSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        prize_id = serializer.validated_data.get("prize_id")
-
-        result = draw.results.order_by("created_at").last()
-        if result is None:
-            raise ValidationError(f"{draw} does not have any result")
-        self._ready_to_toss_check(draw)
-
-        result.id = None
-        result.created_at = None
-        new_comments = draw.fetch_comments()
-
-        referenced_result_item = None
-        for result_content in result.value:
-            if result_content["prize"]["id"] == prize_id:
-                referenced_result_item = result_content
-        if referenced_result_item is None:
-            raise ValidationError(
-                f"{draw} does not have a result with prize {prize_id}"
-            )
-
-        for new_comment in new_comments:  # attempt finding a new comment
-            if new_comment != referenced_result_item["comment"]:
-                LOG.info("Replacing %s by %s", referenced_result_item, new_comment)
-                referenced_result_item["comment"] = new_comment
-                break
-
-        result.save()
-
-        result_serializer = serializers.ResultSerializer(result)
-        LOG.info("Regenerated result %s", result_serializer.data)
-        draw.save()  # Updates updated_at
-        return Response(result_serializer.data)
-
-
-class InstagramViewSet(BaseDrawViewSet):
+class InstagramViewSet(SocialNetworkCommentRaffleMixin, BaseDrawViewSet):
     MODEL = models.Instagram
     serializer_class = serializers.InstagramSerializer
 
     queryset = MODEL.objects.all()
-
-    def _ready_to_toss_check(self, draw):  # pylint: disable=no-self-use
-        # Check if a result is possible
-        try:
-            draw.generate_result()
-        except instagram.InvalidURL:
-            LOG.info("Invalid draw %s, cannot toss", draw.private_id, exc_info=True)
-            raise ValidationError(f"Invalid post URL: {draw.post_url}") from None
-        except instagram.NotFoundError:
-            LOG.info("Draw %s has no comments", draw.private_id, exc_info=True)
-            raise ValidationError("The post has no comments") from None
-        except instagram.InstagramTimeoutError:
-            LOG.error("Timed out tossing draw %s", draw.private_id, exc_info=True)
-            raise APIException("Timed-out tossing. Try again later.") from None
-
-    @action(methods=["PATCH"], detail=True)
-    def retoss(self, request, pk):
-        LOG.info("Retossing draw with id: %s", pk)
-        draw = get_object_or_404(self.MODEL, private_id=pk)
-        serializer = serializers.DrawRetossPayloadSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        prize_id = serializer.validated_data.get("prize_id")
-
-        result = draw.results.order_by("created_at").last()
-        if result is None:
-            raise ValidationError(f"{draw} does not have any result")
-        self._ready_to_toss_check(draw)
-
-        result.id = None
-        result.created_at = None
-        new_comments = draw.fetch_comments()
-
-        referenced_result_item = None
-        for result_content in result.value:
-            if result_content["prize"]["id"] == prize_id:
-                referenced_result_item = result_content
-        if referenced_result_item is None:
-            raise ValidationError(
-                f"{draw} does not have a result with prize {prize_id}"
-            )
-
-        for new_comment in new_comments:  # attempt finding a new comment
-            if new_comment != referenced_result_item["comment"]:
-                LOG.info("Replacing %s by %s", referenced_result_item, new_comment)
-                referenced_result_item["comment"] = new_comment
-                break
-
-        result.save()
-
-        result_serializer = serializers.ResultSerializer(result)
-        LOG.info("Regenerated result %s", result_serializer.data)
-        draw.save()  # Updates updated_at
-        return Response(result_serializer.data)
 
 
 class ShiftsViewSet(BaseDrawViewSet):
