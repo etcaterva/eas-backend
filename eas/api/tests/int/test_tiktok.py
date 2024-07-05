@@ -3,6 +3,7 @@ import pathlib
 from unittest.mock import ANY, patch
 
 import pytest
+import requests.exceptions
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APILiveServerTestCase
@@ -86,7 +87,9 @@ class Testtiktok(DrawAPITestMixin, APILiveServerTestCase):
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
 
-    def test_invalid_post_url(self):
+    @patch("eas.api.tiktok.get_comments")
+    def test_toss_fails_invalid_post_url(self, tiktok_fake):
+        tiktok_fake.side_effect = tiktok.InvalidURL
         draw = self.Factory(post_url="https://tiktok.com/user/@elputo")
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
@@ -102,7 +105,7 @@ class Testtiktok(DrawAPITestMixin, APILiveServerTestCase):
 
     @patch("eas.api.tiktok.get_comments")
     def test_timeout_on_post_fetch(self, tiktok_fake):
-        tiktok_fake.side_effect = tiktok.TiktokTimeoutError
+        tiktok_fake.side_effect = requests.exceptions.ConnectionError
         draw = self.Factory(prizes=[{"name": "cupcake"}], min_mentions=0)
         url = reverse(f"{self.base_url}-toss", kwargs=dict(pk=draw.private_id))
         response = self.client.post(url, {})
@@ -133,7 +136,31 @@ class Testtiktok(DrawAPITestMixin, APILiveServerTestCase):
             }
         ]
 
-    def test_create_invalid_no_prizes(self):
+    @patch("eas.api.tiktok.get_comments")
+    def test_create_invalid_no_prizes(self, tiktok_fake):
+        tiktok_fake.side_effect = tiktok.InvalidURL
+        response = self.create()
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    @patch("eas.api.tiktok.get_comments")
+    def test_create_fails_with_invalid_url(self, tiktok_fake):
+        tiktok_fake.side_effect = tiktok.InvalidURL
+        response = self.create()
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    @patch("eas.api.tiktok.get_comments")
+    def test_create_without_comments_works(self, tiktok_fake):
+        tiktok_fake.side_effect = tiktok.NotFoundError
+        response = self.create()
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.content
+        )
+
+    def test_create_fails_with_invalid_prizes(self):
         response = self.create(prizes=[])
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content

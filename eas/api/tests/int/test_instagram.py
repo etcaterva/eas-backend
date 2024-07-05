@@ -3,6 +3,7 @@ import pathlib
 from unittest.mock import ANY, patch
 
 import pytest
+import requests.exceptions
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APILiveServerTestCase
@@ -111,7 +112,7 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
 
     @patch("eas.api.instagram.get_comments")
     def test_instagram_timeout(self, instagram_mock):
-        instagram_mock.side_effect = instagram.InstagramTimeoutError
+        instagram_mock.side_effect = requests.exceptions.ConnectionError
         draw = self.Factory(
             prizes=[{"name": "cupcake"}], use_likes=False, min_mentions=0
         )
@@ -125,6 +126,28 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
         response = self.create(prizes=[])
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    def test_create_invalid_url(self):
+        response = self.create(post_url="blablabla")
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    @patch("eas.api.instagram.get_comments")
+    def test_create_insta_url(self, instagram_mock):
+        instagram_mock.side_effect = instagram.InvalidURL
+        response = self.create()
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+
+    @patch("eas.api.instagram.get_comments")
+    def test_create_without_comments_works(self, instagram_mock):
+        instagram_mock.side_effect = instagram.NotFoundError
+        response = self.create()
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.content
         )
 
     @patch("eas.api.instagram.get_comments")

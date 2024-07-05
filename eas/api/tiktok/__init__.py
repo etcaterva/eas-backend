@@ -13,7 +13,6 @@ ONE_MINUTE = 60
 
 NotFoundError = lamatok.NotFoundError
 InvalidURL = lamatok.InvalidURL
-TiktokTimeoutError = requests.exceptions.ConnectionError
 
 
 @dataclass

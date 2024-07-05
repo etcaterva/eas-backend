@@ -1,6 +1,7 @@
+import requests
 from rest_framework import serializers
 
-from . import models
+from . import instagram, models, tiktok
 
 # pylint: disable=abstract-method
 
@@ -305,6 +306,12 @@ class TiktokSerializer(BaseSerializer):
         prizes = data.pop("prizes")
         if not prizes:
             raise serializers.ValidationError("Prizes cannot be empty")
+        try:
+            tiktok.get_comments(data["post_url"])
+        except (requests.exceptions.ConnectionError, tiktok.NotFoundError):
+            pass
+        except tiktok.InvalidURL:
+            raise serializers.ValidationError("Invalid post URL") from None
         draw = super().create(data)
         prize_instances = [models.Prize(draw=draw, **prize) for prize in prizes]
         models.Prize.objects.bulk_create(prize_instances)
@@ -328,6 +335,12 @@ class InstagramSerializer(BaseSerializer):
         prizes = data.pop("prizes")
         if not prizes:
             raise serializers.ValidationError("Prizes cannot be empty")
+        try:
+            instagram.get_comments(data["post_url"])
+        except (requests.exceptions.ConnectionError, instagram.NotFoundError):
+            pass
+        except instagram.InvalidURL:
+            raise serializers.ValidationError("Invalid post URL") from None
         draw = super().create(data)
         prize_instances = [models.Prize(draw=draw, **prize) for prize in prizes]
         models.Prize.objects.bulk_create(prize_instances)
