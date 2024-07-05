@@ -6,7 +6,7 @@ import unittest.mock
 import pytest
 import requests_mock
 
-from eas.api.tiktok import NotFoundError, get_comments
+from eas.api.tiktok import InvalidURL, NotFoundError, get_comments
 
 RESPONSES_PATH = pathlib.Path(__file__, "..", "data").resolve()
 SUCCESS_RESPONSE = RESPONSES_PATH.joinpath("lamatok-success-response.json").read_text()
@@ -49,6 +49,13 @@ def test_fail_on_fake_url(requestsm):
         text='{"detail":"Comments (or media) Not found","exc_type":"CommentsNotFoundError","tt_status_code":0}',
     )
     with pytest.raises(NotFoundError):
+        get_comments(url)
+
+
+def test_fail_on_invalid_url(requestsm):
+    url = "http://totallyfakeurl"
+    requestsm.get(url)
+    with pytest.raises(InvalidURL):
         get_comments(url)
 
 
