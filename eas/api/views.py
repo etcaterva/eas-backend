@@ -2,6 +2,7 @@ import datetime as dt
 import logging
 import random
 
+import requests.exceptions
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls.base import reverse
@@ -405,10 +406,9 @@ class SocialNetworkCommentRaffleMixin:
         except (tiktok.NotFoundError, instagram.NotFoundError):
             LOG.info("Draw %s has no comments", draw.private_id, exc_info=True)
             raise ValidationError("The post has no comments") from None
-        except (tiktok.TiktokTimeoutError, instagram.InstagramTimeoutError):
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             LOG.error("Timed out tossing draw %s", draw.private_id, exc_info=True)
             raise APIException("Timed-out tossing. Try again later.") from None
-
 
     @action(methods=["PATCH"], detail=True)
     def retoss(self, request, pk):
