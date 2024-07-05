@@ -42,6 +42,17 @@ def test_post_no_comments(requestsm):
         get_comments(url)
 
 
+def test_fail_on_private_post(requestsm):
+    url = "https://www.tiktok.com/@echaloasuerte/video/7382573284749102369"
+    requestsm.get(
+        "https://api.lamatok.com/v1/media/comments/by/id",
+        status_code=403,
+        text='{"detail": "This Media Private Media","exc_type": "PrivateMedia","tt_status_code": 0}',
+    )
+    with pytest.raises(InvalidURL):
+        get_comments(url)
+
+
 def test_fail_on_fake_url(requestsm):
     url = "https://www.tiktok.com/@echaloasuerte/video/7382573284749102369"
     requestsm.get(
