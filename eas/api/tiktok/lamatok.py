@@ -59,6 +59,8 @@ def fetch_comments(media_pk):  # pragma: no cover
         exc_type = None
         with contextlib.suppress(Exception):
             exc_type = response.json()["exc_type"]
+        if exc_type == "PrivateMedia":
+            raise InvalidURL("Private post")
         if exc_type == "CommentsNotFoundError":
             if _is_a_tiktok_post(media_pk):
                 return []
