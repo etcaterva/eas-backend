@@ -26,6 +26,15 @@ def _session():  # pragma: no cover
     return requests.Session()
 
 
+def _is_a_tiktok_post(media_pk):
+    response = _session().get(
+        "https://api.lamatok.com/v1/media/by/id",
+        params={"id": media_pk, "access_key": LAMATOK_APIK},
+        timeout=ONE_MINUTE * 2,
+    )
+    return response.ok
+
+
 @cachetools.cached(
     cachetools.TTLCache(
         maxsize=500,
@@ -47,8 +56,12 @@ def fetch_comments(media_pk):  # pragma: no cover
     )
     if not response.ok:
         LOG.warning("Failed lamatok request! %s", response.text)
+        exc_type = None
         with contextlib.suppress(Exception):
-            if response.json()["exc_type"] == "CommentsNotFoundError":
+            exc_type = response.json()["exc_type"]
+        if exc_type == "CommentsNotFoundError":
+            if _is_a_tiktok_post(media_pk):
                 return []
+            raise InvalidURL("Invalid post URL")
     response.raise_for_status()
     return response.json()["comments"]

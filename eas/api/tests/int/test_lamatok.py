@@ -37,6 +37,7 @@ def test_post_no_comments(requestsm):
         status_code=404,
         text='{"detail":"Comments (or media) Not found","exc_type":"CommentsNotFoundError","tt_status_code":0}',
     )
+    requestsm.get("https://api.lamatok.com/v1/media/by/id", status_code=200)
     with pytest.raises(NotFoundError):
         get_comments(url)
 
@@ -48,7 +49,8 @@ def test_fail_on_fake_url(requestsm):
         status_code=404,
         text='{"detail":"Comments (or media) Not found","exc_type":"CommentsNotFoundError","tt_status_code":0}',
     )
-    with pytest.raises(NotFoundError):
+    requestsm.get("https://api.lamatok.com/v1/media/by/id", status_code=422)
+    with pytest.raises(InvalidURL):
         get_comments(url)
 
 
