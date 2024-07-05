@@ -31,7 +31,7 @@ def _extract_media_pk(url):
     response = requests.get(url, allow_redirects=False)
     if response.status_code in (301, 308):
         return _extract_media_pk(response.headers["Location"])
-    raise NotFoundError(f"Invalid tiktok URL {url}")
+    raise InvalidURL(f"Invalid tiktok URL {url}")
 
 
 def _fetch_comments(url):
