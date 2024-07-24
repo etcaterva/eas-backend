@@ -55,11 +55,6 @@ def test_post_no_comments(requestsm):
         status_code=404,
         text='{"detail":"Entries not found","exc_type":"NotFoundError"}',
     )
-    requestsm.get(
-        "https://api.lamadava.com/gql/comments",
-        status_code=404,
-        text='{"detail":"Entries not found","exc_type":"NotFoundError"}',
-    )
     with pytest.raises(NotFoundError):
         get_comments(url)
 
@@ -71,11 +66,6 @@ def test_fail_on_private_account(requestsm):
         status_code=404,
         text='{"detail":"Media is unavailable","exc_type":"MediaUnavailable"}',
     )
-    requestsm.get(
-        "https://api.lamadava.com/gql/comments",
-        status_code=404,
-        text='{"detail":"Entries not found","exc_type":"NotFoundError"}',
-    )
     with pytest.raises(InvalidURL):
         get_comments(url)
 
@@ -86,11 +76,6 @@ def test_fail_on_fake_url(requestsm):
         "https://api.lamadava.com/v2/media/comments",
         status_code=404,
         text='{"detail":"Media is unavailable","exc_type":"MediaUnavailable"}',
-    )
-    requestsm.get(
-        "https://api.lamadava.com/gql/comments",
-        status_code=404,
-        text='{"detail":"Entries not found","exc_type":"NotFoundError"}',
     )
     with pytest.raises(InvalidURL):
         get_comments(url)
@@ -106,3 +91,14 @@ def test_min_mentions_filter(requestsm):
     assert len(comments) == 5
     comments = get_comments(url, min_mentions=2)
     assert len(comments) == 0
+
+
+def test_fail_on_disabled_comments(requestsm):
+    url = "https://www.instagram.com/p/X/"
+    requestsm.get(
+        "https://api.lamadava.com/v2/media/comments",
+        status_code=403,
+        text='{"detail":"Comments disabled by author","exc_type":"CommentsDisabled"}',
+    )
+    with pytest.raises(InvalidURL):
+        get_comments(url)
