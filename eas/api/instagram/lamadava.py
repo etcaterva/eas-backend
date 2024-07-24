@@ -60,6 +60,8 @@ def _fetch_comments_v2(media_pk):  # pragma: no cover
                 return []
             if response.json()["exc_type"] == "MediaUnavailable":
                 raise InvalidURL(f"Invalid id for instagram: {media_pk}")
+            if response.json()["exc_type"] == "CommentsDisabled":
+                raise InvalidURL(f"Invalid id for instagram: {media_pk}")
     response.raise_for_status()
     try:
         return response.json()["response"]["comments"]
