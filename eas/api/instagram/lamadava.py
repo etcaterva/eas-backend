@@ -6,6 +6,7 @@ import logging
 
 import cachetools
 import requests
+import requests.adapters
 from django.conf import settings
 
 LAMADAVA_APIK = settings.LAMADAVA_APIK
@@ -23,7 +24,14 @@ class InvalidURL(Exception):
 
 @functools.lru_cache(None)
 def _session():  # pragma: no cover
-    return requests.Session()
+    retry = requests.adapters.Retry(
+        total=2,
+        backoff_factor=0.5,
+        status_forcelist=[500, 503, 504, 520, 521, 522, 524],
+    )
+    s = requests.Session()
+    s.mount("https://", requests.adapters.HTTPAdapter(max_retries=retry))
+    return s
 
 
 @cachetools.cached(
