@@ -45,16 +45,16 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "standard",
             "filename": os.path.join(BASE_LOG_PATH, "echaloasuerte_log.txt"),
-            "maxBytes": 1024 * 1024 * 200,  # 200 MB
-            "backupCount": 10,
+            "maxBytes": 1024 * 1024 * 100,  # 100 MB
+            "backupCount": 5,
         },
         "error_log_file": {
             "level": "ERROR",
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "standard",
             "filename": os.path.join(BASE_LOG_PATH, "echaloasuerte_err.txt"),
-            "maxBytes": 1024 * 1024 * 30,  # 30 MB
-            "backupCount": 5,
+            "maxBytes": 1024 * 1024 * 30,  # 50 MB
+            "backupCount": 2,
         },
     },
     "loggers": {

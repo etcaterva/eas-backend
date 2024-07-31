@@ -65,7 +65,7 @@ class BaseDrawViewSet(
         result_data = serializer.data
         if pk != result_data["private_id"]:
             self.remove_private_fields(result_data)
-        LOG.info("Returning draw %s", result_data)
+        LOG.info("Returning draw with id: %s", pk)
         return Response(result_data)
 
     @action(methods=["post"], detail=True)
