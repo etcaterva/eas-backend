@@ -102,3 +102,9 @@ def test_fail_on_disabled_comments(requestsm):
     )
     with pytest.raises(InvalidURL):
         get_comments(url)
+
+
+def test_fail_on_invalid_url_decode():
+    url = "https://www.instagram.com/tintin.personal.shopper/?next=%2Fajinomai%2F"
+    with pytest.raises(InvalidURL):
+        get_comments(url)
