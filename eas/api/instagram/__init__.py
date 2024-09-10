@@ -30,7 +30,7 @@ _CLIENT = instagrapi.Client()
 def _extract_media_pk(url):
     try:
         return _CLIENT.media_pk_from_url(url)
-    except ValueError as e:
+    except (ValueError, IndexError) as e:
         LOG.info("Invalid instagram URL %r: %s", url, e)
         raise InvalidURL(f"Invalid URL: {url}") from e
 
