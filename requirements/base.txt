@@ -5,7 +5,7 @@
 #    pip-compile --no-annotate --output-file=requirements/base.txt requirements/base.orig.txt requirements/base.txt
 #
 appdirs==1.4.4
-asgiref==3.5.2
+asgiref==3.8.1
 attrs==22.1.0
 backports-zoneinfo==0.2.1
 boto3==1.26.32
@@ -18,7 +18,7 @@ charset-normalizer==2.1.1
 coreapi==2.3.3
 coreschema==0.0.4
 cryptography==43.0.1
-django==4.1.13
+django==4.2.16
 djangorestframework==3.14.0
 drf-yasg[validation]==1.21.4
 exceptiongroup==1.0.4
