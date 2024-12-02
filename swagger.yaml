@@ -21,7 +21,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Tournament'
+              $ref: '#/components/schemas/CreateTournamentPayload'
         required: true
     parameters: []
   '/tournament/{id}/':
@@ -100,7 +100,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Groups'
+              $ref: '#/components/schemas/CreateGroupsPayload'
         required: true
     parameters: []
   '/groups/{id}/':
@@ -179,7 +179,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Lottery'
+              $ref: '#/components/schemas/CreateLotteryPayload'
         required: true
     parameters: []
   '/lottery/{id}/':
@@ -258,7 +258,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Raffle'
+              $ref: '#/components/schemas/CreateRafflePayload'
         required: true
     parameters: []
   '/raffle/{id}/':
@@ -337,7 +337,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Letter'
+              $ref: '#/components/schemas/CreateLetterPayload'
         required: true
     parameters: []
   '/letter/{id}/':
@@ -394,7 +394,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RandomNumber'
+              $ref: '#/components/schemas/CreateRandomNumberPayload'
         required: true
     parameters: []
   '/random_number/{id}/':
@@ -565,7 +565,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Link'
+              $ref: '#/components/schemas/CreateLinkPayload'
         required: true
     parameters: []
   '/link/{id}/':
@@ -622,7 +622,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SecretSanta'
+              $ref: '#/components/schemas/CreateSecretSantaPayload'
         required: true
     parameters: []
   '/secret-santa/{id}/':
@@ -635,6 +635,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SecretSantaResult'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretSantaErrorResponse'
       tags:
         - secret_santa
     parameters:
@@ -737,7 +743,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Instagram'
+              $ref: '#/components/schemas/CreateInstagramPayload'
         required: true
     parameters: []
   '/instagram/{id}/':
@@ -814,7 +820,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Tiktok'
+              $ref: '#/components/schemas/CreateTiktokPayload'
         required: true
     parameters: []
   '/tiktok/{id}/':
@@ -891,7 +897,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Shifts'
+              $ref: '#/components/schemas/CreateShiftsPayload'
         required: true
     parameters: []
   '/shifts/{id}/':
@@ -946,290 +952,31 @@ components:
           schema:
             $ref: '#/components/schemas/DrawReTossPayload'
   schemas:
-    DrawMetadata:
-      required:
-        - client
-        - key
-        - value
-      type: object
-      properties:
-        client:
-          type: string
-          maxLength: 100
-          minLength: 1
-        key:
-          type: string
-          maxLength: 100
-          minLength: 1
-        value:
-          type: string
-          minLength: 1
-    BaseObject:
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          minLength: 1
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-    Prize:
-      allOf:
-        - $ref: '#/components/schemas/BaseObject'
-        - type: object
-          required:
-            - name
-          properties:
-            name:
-              type: string
-              minLength: 1
-            url:
-              type: string
-              format: uri
-              maxLength: 200
-              minLength: 1
-    Participant:
-      allOf:
-        - $ref: '#/components/schemas/BaseObject'
-        - type: object
-          required:
-            - name
-          properties:
-            name:
-              type: string
-              minLength: 1
-            facebook_id:
-              type: string
-              maxLength: 100
-              minLength: 1
-    DrawTossPayload:
-      type: object
-      properties:
-        schedule_date:
-          type: string
-          format: date-time
-    DrawReTossPayload:
-      type: object
-      properties:
-        prize_id:
-          type: string
-          minLength: 1
-    BaseDraw:
-      allOf:
-        - $ref: '#/components/schemas/BaseObject'
-        - type: object
-          properties:
-            updated_at:
-              type: string
-              format: date-time
-              readOnly: true
-            title:
-              type: string
-              minLength: 1
-            description:
-              type: string
-              minLength: 1
-            private_id:
-              type: string
-              readOnly: true
-              minLength: 1
-            metadata:
-              type: array
-              items:
-                $ref: '#/components/schemas/DrawMetadata'
-            payments:
-              type: array
-              items:
-                type: string
-                enum:
-                  - CERTIFIED
-                  - ADFREE
-                  - SUPPORT
-    Raffle:
-      allOf:
-        - $ref: '#/components/schemas/BaseDraw'
-        - type: object
-          required:
-            - prizes
-            - participants
-          properties:
-            prizes:
-              type: array
-              items:
-                $ref: '#/components/schemas/Prize'
-            participants:
-              type: array
-              items:
-                $ref: '#/components/schemas/Participant'
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/RaffleResult'
-              readOnly: true
-    Lottery:
-      allOf:
-        - $ref: '#/components/schemas/BaseDraw'
-        - type: object
-          required:
-            - participants
-          properties:
-            number_of_results:
-              type: integer
-              default: 1
-            participants:
-              type: array
-              items:
-                $ref: '#/components/schemas/Participant'
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/LotteryResult'
-              readOnly: true
-    Instagram:
-      allOf:
-        - $ref: '#/components/schemas/BaseDraw'
-        - type: object
-          required:
-            - post_url
-            - prizes
-            - use_likes
-            - min_mentions
-          properties:
-            prizes:
-              type: array
-              items:
-                $ref: '#/components/schemas/Prize'
-            use_likes:
-              type: boolean
-              default: false
-            min_mentions:
-              type: integer
-              default: 0
-            post_url:
-              type: string
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/InstagramResult'
-              readOnly: true
-    Tiktok:
-      allOf:
-        - $ref: '#/components/schemas/BaseDraw'
-        - type: object
-          required:
-            - post_url
-            - prizes
-            - min_mentions
-          properties:
-            prizes:
-              type: array
-              items:
-                $ref: '#/components/schemas/Prize'
-            min_mentions:
-              type: integer
-              default: 0
-            post_url:
-              type: string
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/TiktokResult'
-              readOnly: true
-    Link:
-      allOf:
-        - $ref: '#/components/schemas/BaseDraw'
-        - type: object
-          required:
-            - items
-          properties:
-            items_set1:
-              type: array
-              items:
-                type: string
-            items_set2:
-              type: array
-              items:
-                type: string
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/LinkResult'
-              readOnly: true
-    Shifts:
-      allOf:
-        - $ref: '#/components/schemas/BaseDraw'
-        - type: object
-          required:
-            - intervals
-            - participants
-          properties:
-            intervals:
-              type: array
-              items:
-                type: object
-                required:
-                  - start_time
-                  - end_time
-                properties:
-                  start_time:
-                    type: string
-                    format: date-time
-                  end_time:
-                    type: string
-                    format: date-time
-            participants:
-              type: array
-              items:
-                $ref: '#/components/schemas/Participant'
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/ShiftsResult'
-              readOnly: true
-    Tournament:
-      allOf:
-        - $ref: '#/components/schemas/BaseDraw'
-        - type: object
-          required:
-            - participants
-          properties:
-            participants:
-              type: array
-              items:
-                $ref: '#/components/schemas/Participant'
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/TournamentResult'
-              readOnly: true
-    Groups:
-      allOf:
-        - $ref: '#/components/schemas/BaseDraw'
-        - type: object
-          required:
-            - participants
-            - number_of_groups
-          properties:
-            participants:
-              type: array
-              items:
-                $ref: '#/components/schemas/Participant'
-            number_of_groups:
-              type: integer
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/GroupsResult'
-              readOnly: true
     RandomNumber:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/RandomNumberFields'
+        - type: object
+          required:
+            - results
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/RandomNumberResult'
+              readOnly: true
+    CreateRandomNumberPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/RandomNumberFields'
+    RandomNumberFields:
+      allOf:
         - type: object
           required:
             - range_min
             - range_max
+            - number_of_results
+            - allow_repeated_results
           properties:
             range_min:
               type: integer
@@ -1241,15 +988,40 @@ components:
             allow_repeated_results:
               type: boolean
               default: true
-            results:
+    RandomNumberResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
               type: array
               items:
-                $ref: '#/components/schemas/RandomNumberResult'
-              readOnly: true
+                type: integer
+
     Letter:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/LetterFields'
         - type: object
+          required:
+            - results
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/LetterResult'
+              readOnly: true
+    CreateLetterPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/LetterFields'
+    LetterFields:
+      allOf:
+        - type: object
+          required:
+            - number_of_results
+            - allow_repeated_results
           properties:
             number_of_results:
               type: integer
@@ -1257,39 +1029,140 @@ components:
             allow_repeated_results:
               type: boolean
               default: true
-            results:
+    LetterResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
               type: array
               items:
-                $ref: '#/components/schemas/LetterResult'
-              readOnly: true
-    Coin:
+                type: string
+
+    Groups:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/GroupsFields'
         - type: object
+          required:
+            - results
           properties:
             results:
               type: array
               items:
-                $ref: '#/components/schemas/CoinResult'
+                $ref: '#/components/schemas/GroupsResult'
               readOnly: true
-    Spinner:
+    CreateGroupsPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/GroupsFields'
+    GroupsFields:
+      allOf:
+        - type: object
+          required:
+            - participants
+            - number_of_groups
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ParticipantField'
+            number_of_groups:
+              type: integer
+    GroupsResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
+
+    Link:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/LinkFields'
         - type: object
+          required:
+            - results
           properties:
             results:
               type: array
               items:
-                $ref: '#/components/schemas/SpinnerResult'
+                $ref: '#/components/schemas/LinkResult'
               readOnly: true
-    BaseResult:
+    CreateLinkPayload:
       allOf:
-        - $ref: '#/components/schemas/BaseObject'
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/LinkFields'
+    LinkFields:
+      allOf:
+        - type: object
+          required:
+            - items_set1
+            - items_set2
+          properties:
+            items_set1:
+              type: array
+              items:
+                type: string
+            items_set2:
+              type: array
+              items:
+                type: string
+    LinkResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
         - type: object
           properties:
-            schedule_date:
-              type: string
-              format: date-time
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  element1:
+                    type: string
+                  element2:
+                    type: string
+
+    Raffle:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/RaffleFields'
+        - type: object
+          required:
+            - results
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/RaffleResult'
+              readOnly: true
+    CreateRafflePayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/RaffleFields'
+    RaffleFields:
+      allOf:
+        - type: object
+          required:
+            - prizes
+            - participants
+          properties:
+            prizes:
+              type: array
+              items:
+                $ref: '#/components/schemas/PrizeField'
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ParticipantField'
     RaffleResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
@@ -1305,6 +1178,206 @@ components:
                     $ref: '#/components/schemas/Participant'
                   prize:
                     $ref: '#/components/schemas/Prize'
+
+    Lottery:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/LotteryFields'
+        - type: object
+          required:
+            - results
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/LotteryResult'
+              readOnly: true
+    CreateLotteryPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/LotteryFields'
+    LotteryFields:
+      allOf:
+        - type: object
+          required:
+            - participants
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ParticipantField'
+            number_of_results:
+              type: integer
+              default: 1
+    LotteryResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                $ref: '#/components/schemas/Participant'
+
+    Shifts:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/ShiftsFields'
+        - type: object
+          required:
+            - results
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ShiftsResult'
+              readOnly: true
+    CreateShiftsPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/ShiftsFields'
+    ShiftsFields:
+      allOf:
+        - type: object
+          required:
+            - intervals
+            - participants
+          properties:
+            intervals:
+              type: array
+              items:
+                $ref: '#/components/schemas/ShiftsInterval'
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ParticipantField'
+    ShiftsResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  interval:
+                    type: object
+                    properties:
+                      start_time:
+                        type: string
+                        format: date-time
+                      end_time:
+                        type: string
+                        format: date-time
+                  participants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Participant'
+    ShiftsInterval:
+      type: object
+      required:
+        - start_time
+        - end_time
+      properties:
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+
+    Tournament:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/TournamentFields'
+        - type: object
+          required:
+            - results
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/TournamentResult'
+              readOnly: true
+    CreateTournamentPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/TournamentFields'
+    TournamentFields:
+      allOf:
+        - type: object
+          required:
+            - participants
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ParticipantField'
+    TournamentResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  participants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Participant'
+                  score:
+                    type: string
+                  winner_id:
+                    type: string
+                  next_match_id:
+                    type: string
+
+    Instagram:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/InstagramFields'
+        - type: object
+          required:
+            - results
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/InstagramResult'
+              readOnly: true
+    CreateInstagramPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/InstagramFields'
+    InstagramFields:
+      allOf:
+        - type: object
+          required:
+            - post_url
+            - prizes
+            - use_likes
+            - min_mentions
+          properties:
+            prizes:
+              type: array
+              items:
+                $ref: '#/components/schemas/PrizeField'
+            use_likes:
+              type: boolean
+              default: false
+            min_mentions:
+              type: integer
+              default: 0
+            post_url:
+              type: string
     InstagramResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
@@ -1329,6 +1402,41 @@ components:
                         type: string
                   prize:
                     $ref: '#/components/schemas/Prize'
+
+    Tiktok:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - $ref: '#/components/schemas/TiktokFields'
+        - type: object
+          required:
+            - results
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/TiktokResult'
+              readOnly: true
+    CreateTiktokPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseFieldsCreate'
+        - $ref: '#/components/schemas/TiktokFields'
+    TiktokFields:
+      allOf:
+        - type: object
+          required:
+            - post_url
+            - prizes
+            - min_mentions
+          properties:
+            prizes:
+              type: array
+              items:
+                $ref: '#/components/schemas/PrizeField'
+            min_mentions:
+              type: integer
+              default: 0
+            post_url:
+              type: string
     TiktokResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
@@ -1357,118 +1465,17 @@ components:
                         type: string
                   prize:
                     $ref: '#/components/schemas/Prize'
-    ShiftsResult:
+
+    Coin:
       allOf:
-        - $ref: '#/components/schemas/BaseResult'
+        - $ref: '#/components/schemas/BaseDraw'
         - type: object
           properties:
-            value:
-              nullable: true
+            results:
               type: array
               items:
-                type: object
-                properties:
-                  interval:
-                    type: object
-                    properties:
-                      start_time:
-                        type: string
-                        format: date-time
-                      end_time:
-                        type: string
-                        format: date-time
-                  participants:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Participant'
-    LinkResult:
-      allOf:
-        - $ref: '#/components/schemas/BaseResult'
-        - type: object
-          properties:
-            value:
-              nullable: true
-              type: array
-              items:
-                type: object
-                properties:
-                  element1:
-                    type: string
-                  element2:
-                    type: string
-    LotteryResult:
-      allOf:
-        - $ref: '#/components/schemas/BaseResult'
-        - type: object
-          properties:
-            value:
-              nullable: true
-              type: array
-              items:
-                $ref: '#/components/schemas/Participant'
-    TournamentResult:
-      allOf:
-        - $ref: '#/components/schemas/BaseResult'
-        - type: object
-          properties:
-            value:
-              nullable: true
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  participants:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Participant'
-                  score:
-                    type: string
-                  winner_id:
-                    type: string
-                  next_match_id:
-                    type: string
-    GroupsResult:
-      allOf:
-        - $ref: '#/components/schemas/BaseResult'
-        - type: object
-          properties:
-            value:
-              nullable: true
-              type: array
-              items:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Participant'
-    RandomNumberResult:
-      allOf:
-        - $ref: '#/components/schemas/BaseResult'
-        - type: object
-          properties:
-            value:
-              nullable: true
-              type: array
-              items:
-                type: integer
-    LetterResult:
-      allOf:
-        - $ref: '#/components/schemas/BaseResult'
-        - type: object
-          properties:
-            value:
-              nullable: true
-              type: array
-              items:
-                type: string
-    SpinnerResult:
-      allOf:
-        - $ref: '#/components/schemas/BaseResult'
-        - type: object
-          properties:
-            value:
-              nullable: true
-              type: integer
+                $ref: '#/components/schemas/CoinResult'
+              readOnly: true
     CoinResult:
       allOf:
         - $ref: '#/components/schemas/BaseResult'
@@ -1484,8 +1491,67 @@ components:
                 enum:
                   - HEAD
                   - TAIL
-    SecretSanta:
+
+    Spinner:
+      allOf:
+        - $ref: '#/components/schemas/BaseDraw'
+        - type: object
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/SpinnerResult'
+              readOnly: true
+    SpinnerResult:
+      allOf:
+        - $ref: '#/components/schemas/BaseResult'
+        - type: object
+          properties:
+            value:
+              nullable: true
+              type: integer
+
+    PrizeField:
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              minLength: 1
+            url:
+              type: string
+              format: uri
+              maxLength: 200
+              minLength: 1
+    Prize:
+      allOf:
+        - $ref: '#/components/schemas/BaseObject'
+        - $ref: '#/components/schemas/PrizeField'
+    ParticipantField:
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              minLength: 1
+            facebook_id:
+              type: string
+              maxLength: 100
+              minLength: 1
+    Participant:
+      allOf:
+        - $ref: '#/components/schemas/BaseObject'
+        - $ref: '#/components/schemas/ParticipantField'
+
+    CreateSecretSantaPayload:
       type: object
+      required:
+        - language
+        - participants
       properties:
         language:
           type: string
@@ -1498,6 +1564,10 @@ components:
             maxLength: 500
             minLength: 3
             type: object
+            required:
+              - name
+              - email
+              - exclusions
             properties:
               name:
                 type: string
@@ -1518,12 +1588,18 @@ components:
           type: string
     SecretSantaCreateResponse:
       type: object
+      required:
+        - id
       properties:
         id:
           type: string
           minLength: 1
     SecretSantaAdminResponse:
       type: object
+      required:
+        - id
+        - created_at
+        - participants
       properties:
         id:
           type: string
@@ -1535,6 +1611,10 @@ components:
           type: array
           items:
             type: object
+            required:
+              - id
+              - name
+              - revealed
             properties:
               id:
                 type: string
@@ -1542,6 +1622,40 @@ components:
                 type: string
               revealed:
                 type: boolean
+    SecretSantaResendEmail:
+      type: object
+      required:
+        - language
+        - email
+      properties:
+        language:
+          type: string
+          enum:
+            - es
+            - en
+        email:
+          type: string
+    SecretSantaResendEmailResponse:
+      type: object
+      properties:
+        new_result:
+          type: string
+    SecretSantaErrorResponse:
+      type: object
+      properties:
+        body:
+          type: object
+          properties:
+            general:
+              type: array
+              items:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+
     RedeemPromoCode:
       type: object
       required:
@@ -1577,18 +1691,121 @@ components:
       properties:
         redirect_url:
           type: string
-    SecretSantaResendEmail:
+
+    DrawMetadata:
+      required:
+        - client
+        - key
+        - value
       type: object
       properties:
-        language:
+        client:
           type: string
-          enum:
-            - es
-            - en
-        email:
+          maxLength: 100
+          minLength: 1
+        key:
           type: string
-    SecretSantaResendEmailResponse:
+          maxLength: 100
+          minLength: 1
+        value:
+          type: string
+          minLength: 1
+    BaseObject:
+      type: object
+      required:
+        - id
+        - created_at
+      properties:
+        id:
+          type: string
+          readOnly: true
+          minLength: 1
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    BaseFieldsCreate:
+      allOf:
+        - type: object
+          properties:
+            title:
+              type: string
+              minLength: 1
+            description:
+              type: string
+              minLength: 1
+            metadata:
+              type: array
+              items:
+                $ref: '#/components/schemas/DrawMetadata'
+    BaseDraw:
+      allOf:
+        - $ref: '#/components/schemas/BaseObject'
+        - $ref: '#/components/schemas/BaseFields'
+        - type: object
+          properties:
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+            private_id:
+              type: string
+              readOnly: true
+              minLength: 1
+    BaseResult:
+      allOf:
+        - type: object
+          required:
+            - created_at
+            - schedule_date
+          properties:
+            schedule_date:
+              type: string
+              format: date-time
+              nullable: true
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+    DrawTossPayload:
       type: object
       properties:
-        new_result:
+        schedule_date:
           type: string
+          format: date-time
+    DrawReTossPayload:
+      type: object
+      required:
+        - prize_id
+      properties:
+        prize_id:
+          type: string
+          minLength: 1
+    BaseFields:
+      allOf:
+        - type: object
+          required:
+            - payments
+            - description
+            - title
+          properties:
+            title:
+              type: string
+              minLength: 1
+              nullable: true
+            description:
+              type: string
+              minLength: 1
+              nullable: true
+            metadata:
+              type: array
+              items:
+                $ref: '#/components/schemas/DrawMetadata'
+            payments:
+              type: array
+              items:
+                type: string
+                enum:
+                  - CERTIFIED
+                  - ADFREE
+                  - SUPPORT
