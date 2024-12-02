@@ -272,6 +272,7 @@ class SecretSantaSerializer(serializers.Serializer):
         child=SecretSantaParticipantSerializer(), min_length=1, max_length=100
     )
     language = serializers.ChoiceField(choices=["es", "en"])
+    admin_email = serializers.EmailField(max_length=100, required=False)
 
 
 class PayPalCreateSerialzier(serializers.Serializer):
