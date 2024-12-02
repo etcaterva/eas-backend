@@ -253,6 +253,8 @@ class SecretSantaSet(
             {
                 "lang": data["language"],
                 "mails": emails,
+                "draw_id": draw.id,
+                "admin_email": data.get("admin_email"),
             }
         )
         LOG.info("Created secret santa results %s", results)
