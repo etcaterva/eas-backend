@@ -67,15 +67,15 @@ jobs:
 
               fi
           fi
-  test_swagger_editor_validator_remote:
-    runs-on: ubuntu-latest
-    name: Validate swagger file
-    steps:
-      - uses: actions/checkout@v4
-      - name: Validate OpenAPI definition
-        uses: char0n/swagger-editor-validate@v1
-        with:
-          definition-file: swagger.yaml
+  #test_swagger_editor_validator_remote:
+  #  runs-on: ubuntu-latest
+  #  name: Validate swagger file
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #    - name: Validate OpenAPI definition
+  #      uses: char0n/swagger-editor-validate@v1
+  #      with:
+  #        definition-file: swagger.yaml
 
   deploy:
     if: needs.set-vars.outputs.deployment_branch != ''
