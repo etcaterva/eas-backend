@@ -261,10 +261,18 @@ class CoinSerializer(BaseSerializer):
 
 class SecretSantaParticipantSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
-    email = serializers.EmailField(max_length=100)
+    email = serializers.EmailField(max_length=100, required=False)
+    phone_number = serializers.RegexField(
+        regex=r"^\+\d{1,3}\d{4,14}$", max_length=100, required=False
+    )
     exclusions = serializers.ListField(
         child=serializers.CharField(max_length=100), max_length=500, required=False
     )
+
+    def validate(self, data):  # pylint: disable=arguments-differ
+        if not data.get("email") and not data.get("phone_number"):
+            raise serializers.ValidationError("phone_or_email_required")
+        return data
 
 
 class SecretSantaSerializer(serializers.Serializer):
