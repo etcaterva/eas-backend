@@ -29,7 +29,7 @@ make runlocal
 
 The following env vars enable additional services:
 
-- `EAS_AWS_KEY_SECRET`: Send emails (Get from AWS portal).
+- `EAS_AWS_KEY_SECRET`: Send emails/whatsapp (Get from AWS portal).
 - `EAS_LAMADAVA_APIK`: Instagram (Get from hikerapi console).
 - `EAS_LAMATOK_APIK`: TikTok (Get from hikerapi console).
 
