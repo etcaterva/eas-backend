@@ -226,7 +226,14 @@ class SecretSantaSet(
         serializer = serializers.SecretSantaSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        emails_map = {p["name"]: p["email"] for p in data["participants"]}
+        emails_map = {
+            p["name"]: p["email"] for p in data["participants"] if p.get("email")
+        }
+        phones_map = {
+            p["name"]: p["phone_number"]
+            for p in data["participants"]
+            if p.get("phone_number")
+        }
         exclusions_map = {
             p["name"]: set(p.get("exclusions") or []) for p in data["participants"]
         }
@@ -244,15 +251,21 @@ class SecretSantaSet(
         draw = models.SecretSanta()
         draw.save()
         emails = []
+        phones = []
         for source, target in results:
             result = models.SecretSantaResult(source=source, target=target, draw=draw)
             result.save()
-            target = emails_map[source]
-            emails.append((target, result.id))
+            if source in emails_map:
+                target = emails_map[source]
+                emails.append((target, result.id))
+            else:
+                target = phones_map[source]
+                phones.append((target, result.id))
         amazonsqs.send_secret_santa_message(
             {
                 "lang": data["language"],
                 "mails": emails,
+                "phones": phones,
                 "draw_id": draw.id,
                 "admin_email": data.get("admin_email"),
             }
@@ -339,10 +352,18 @@ def secret_santa_resend_email(request, draw_pk, result_pk):
     result.draw = None
     result.save()
 
+    payload = {
+        "lang": request.data["language"],
+    }
+    if "email" in request.data:
+        payload["mails"] = [(request.data["email"], new_result.id)]
+    elif "phone_number" in request.data:
+        payload["phones"] = [(request.data["phone_number"], new_result.id)]
+    else:
+        raise ValidationError("email or phone_number missing") from None
     amazonsqs.send_secret_santa_message(
         {
             "lang": request.data["language"],
-            "mails": [(request.data["email"], new_result.id)],
         }
     )
     LOG.info("Returning result %s", new_result)

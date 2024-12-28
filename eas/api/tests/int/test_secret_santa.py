@@ -20,7 +20,7 @@ class SecretSantaTest(APILiveServerTestCase):
             "participants": [
                 {"name": "First Name", "email": "email@address1.com"},
                 {"name": "Second Name", "email": "email@address2.com"},
-                {"name": "Third Name", "email": "email@address2.com"},
+                {"name": "Third Name", "phone_number": "+34123456789"},
             ],
         }
         boto_patcher = mock.patch("eas.api.amazonsqs.boto3")
@@ -33,6 +33,9 @@ class SecretSantaTest(APILiveServerTestCase):
             response.status_code, status.HTTP_201_CREATED, response.content
         )
         assert response.json() == {"id": mock.ANY}
+        assert self.sqs.send_message.call_count == 1
+        assert "email@address1.com" in self.sqs.send_message.call_args[1]["MessageBody"]
+        assert "+34123456789" in self.sqs.send_message.call_args[1]["MessageBody"]
 
     def test_create_with_exclusions(self):
         self.secret_santa_data = {
@@ -110,8 +113,8 @@ class SecretSantaTest(APILiveServerTestCase):
         self.assertEqual(response.data, {"source": "From name", "target": "To Name"})
 
     def test_missing_fields(self):
-        secret_santa_data = {}
-        response = self.client.post(self.list_url, secret_santa_data)
+        self.secret_santa_data = {}
+        response = self.client.post(self.list_url, self.secret_santa_data)
         self.assertEqual(
             response.status_code, status.HTTP_400_BAD_REQUEST, response.content
         )
@@ -123,6 +126,39 @@ class SecretSantaTest(APILiveServerTestCase):
                 "language": [
                     {"message": "This field is required.", "code": "required"}
                 ],
+            }
+        }
+
+    def test_missing_target_create(self):
+        self.secret_santa_data = {
+            "language": "en",
+            "participants": [
+                {
+                    "name": "First Name",
+                },
+                {
+                    "name": "Second Name",
+                    "email": "email@address2.com",
+                },
+                {
+                    "name": "Third Name",
+                    "email": "email@address2.com",
+                },
+            ],
+        }
+        response = self.client.post(self.list_url, self.secret_santa_data)
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.content
+        )
+        assert response.json() == {
+            "schema": {
+                "participants": {
+                    "0": {
+                        "non_field_errors": [
+                            {"code": "invalid", "message": "phone_or_email_required"}
+                        ]
+                    }
+                }
             }
         }
 
@@ -190,6 +226,44 @@ class SecretSantaTest(APILiveServerTestCase):
             )
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         assert self.sqs.send_message.call_count == 1
+
+    def test_resend_whatsapp_success(self):
+        draw = models.SecretSanta()
+        draw.save()
+        result = models.SecretSantaResult(
+            source="From name", target="To Name", draw=draw
+        )
+        result.save()
+        assert self.sqs.send_message.call_count == 0
+
+        url = reverse(
+            "secret-santa-resend-email",
+            kwargs=dict(draw_pk=draw.id, result_pk=result.id),
+        )
+        with freezegun.freeze_time(NOW + dt.timedelta(days=1)):
+            response = self.client.post(
+                url, {"language": "en", "phone_number": "+34123456789"}
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert self.sqs.send_message.call_count == 1
+
+    def test_resend_missing_target(self):
+        draw = models.SecretSanta()
+        draw.save()
+        result = models.SecretSantaResult(
+            source="From name", target="To Name", draw=draw
+        )
+        result.save()
+        assert self.sqs.send_message.call_count == 0
+
+        url = reverse(
+            "secret-santa-resend-email",
+            kwargs=dict(draw_pk=draw.id, result_pk=result.id),
+        )
+        with freezegun.freeze_time(NOW + dt.timedelta(days=1)):
+            response = self.client.post(url, {"language": "en"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert self.sqs.send_message.call_count == 0
 
     def test_resend_email_unlinked_result_fails(self):
         draw = models.SecretSanta()
