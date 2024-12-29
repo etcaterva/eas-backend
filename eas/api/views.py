@@ -1,6 +1,5 @@
 import datetime as dt
 import logging
-import random
 
 import requests.exceptions
 from django.http import Http404
@@ -11,7 +10,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.response import Response
 
-from . import amazonsqs, instagram, models, paypal, serializers, tiktok
+from . import amazonsqs, instagram, models, paypal, secret_santa, serializers, tiktok
 
 LOG = logging.getLogger(__name__)
 
@@ -199,25 +198,6 @@ class LinkViewSet(BaseDrawViewSet):
     queryset = MODEL.objects.all()
 
 
-def _ss_find_target(targets, exclusions):
-    potential_targets = set(targets) - exclusions
-    if not potential_targets:
-        return
-    return random.choice(list(potential_targets))
-
-
-def _ss_build_results(participants, exclusions_map):
-    results = []
-    targets = list(participants)
-    for source in participants:
-        target = _ss_find_target(targets, exclusions_map[source])
-        if not target:
-            return
-        targets.remove(target)
-        results.append((source, target))
-    return results
-
-
 class SecretSantaSet(
     mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
 ):
@@ -226,28 +206,22 @@ class SecretSantaSet(
         serializer = serializers.SecretSantaSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        emails_map = {
-            p["name"]: p["email"] for p in data["participants"] if p.get("email")
-        }
-        phones_map = {
-            p["name"]: p["phone_number"]
-            for p in data["participants"]
-            if p.get("phone_number")
-        }
-        exclusions_map = {
-            p["name"]: set(p.get("exclusions") or []) for p in data["participants"]
-        }
-        LOG.info("Using exclusion map: %r", exclusions_map)
-        for participant, exclusions in exclusions_map.items():
-            exclusions.add(participant)
-        participants = {p["name"] for p in data["participants"]}
-        for _ in range(min(50, len(participants))):
-            results = _ss_build_results(participants, exclusions_map)
-            if results is not None:
-                break
-        else:
+        exclusions = []
+        participants = []
+        phones_map = {}
+        emails_map = {}
+        for p in data["participants"]:
+            participant = p["name"]
+            participants.append(participant)
+            if p.get("phone_number"):
+                phones_map[participant] = p["phone_number"]
+            if p.get("email"):
+                emails_map[participant] = p["email"]
+            for e in p.get("exclusions", []):
+                exclusions.append((participant, e))
+        results = secret_santa.resolve_secret_santa(participants, exclusions)
+        if not results:
             raise ValidationError("Unable to match participants")
-        LOG.info("Sending %s secret santa emails", len(results))
         draw = models.SecretSanta()
         draw.save()
         emails = []
