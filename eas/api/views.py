@@ -335,11 +335,7 @@ def secret_santa_resend_email(request, draw_pk, result_pk):
         payload["phones"] = [(request.data["phone_number"], new_result.id)]
     else:
         raise ValidationError("email or phone_number missing") from None
-    amazonsqs.send_secret_santa_message(
-        {
-            "lang": request.data["language"],
-        }
-    )
+    amazonsqs.send_secret_santa_message(payload)
     LOG.info("Returning result %s", new_result)
     return Response({"new_result": new_result.id})
 
