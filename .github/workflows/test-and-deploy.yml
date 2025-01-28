@@ -85,7 +85,7 @@ jobs:
       - set-vars
     steps:
       - name: Invoke deployment workflow
-        uses: benc-uk/workflow-dispatch@4c044c1613fabbe5250deadc65452d54c4ad4fc7
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc
         with:
           workflow: Manually triggered workflow for deployment
           repo: etcaterva/deployment
