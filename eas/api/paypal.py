@@ -57,6 +57,11 @@ def accept_payment(payment_id, payer_id):  # pragma: no cover
     payment = paypalrestsdk.Payment.find(payment_id)
     if payment.execute({"payer_id": payer_id}):
         LOG.info("Payment[%s] execute successfully", payment.id)
+    elif (
+        getattr(payment, "error") is not None
+        and payment.error.get("name") == "INSTRUMENT_DECLINED"
+    ):
+        LOG.info("Payment[%s] declined", payment.id)
     else:
-        LOG.error(payment.error)
+        LOG.error("Payment[%s] failed: %r", payment.id, payment.error)
         raise Exception("Failed to process PayPal Payment")
