@@ -67,7 +67,7 @@ class PayPalTestPublicDraw(APILiveServerTestCase):
         assert response.json()["redirect_url"] == "fake-url"
 
         response = self.client.get(
-            self.accept_url, {"paymentId": "paypal-id", "PayerID": "payer-id"}
+            self.accept_url, {"token": "paypal-id", "PayerID": "payer-id"}
         )
         self.assertEqual(response.status_code, status.HTTP_302_FOUND, response.content)
         assert response.url == "http://test.com"
@@ -114,7 +114,7 @@ class PayPalTestSecretSanta(APILiveServerTestCase):
         assert response.json()["redirect_url"] == "fake-url"
 
         response = self.client.get(
-            self.accept_url, {"paymentId": "paypal-id", "PayerID": "payer-id"}
+            self.accept_url, {"token": "paypal-id", "PayerID": "payer-id"}
         )
         self.assertEqual(response.status_code, status.HTTP_302_FOUND, response.content)
         assert response.url == "http://test.com"

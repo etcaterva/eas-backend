@@ -6,7 +6,6 @@ djangorestframework
 drf-yasg[validation]
 instagrapi
 jsonfield
-paypalrestsdk
 python-dateutil
 pytz
 raven

@@ -361,7 +361,7 @@ def paypal_create(request):
     paypal_id, paypal_url = paypal.create_payment(
         draw_url=data["draw_url"],
         accept_url=request.build_absolute_uri(reverse("paypal-accept")),
-        ammount=ammount,
+        amount=ammount,
     )
     payment = models.Payment(
         draw_url=data["draw_url"],
@@ -381,13 +381,13 @@ def paypal_create(request):
 
 @api_view(["GET"])
 def paypal_accept(request):
-    payment_id = request.GET["paymentId"]
+    payment_id = request.GET["token"]
     payer_id = request.GET["PayerID"]
     LOG.info("Accepting payment for id %r and payer %r", payment_id, payer_id)
+    paypal.accept_payment(payment_id, payer_id)
     payment = get_object_or_404(models.Payment, paypal_id=payment_id)
     payment.payed = True
     payment.save()
-    paypal.accept_payment(payment_id, payer_id)
     LOG.info("Payment %r accepted", payment)
     return redirect(payment.draw_url)
 

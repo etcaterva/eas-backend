@@ -1,67 +1,79 @@
 import logging
 
-import paypalrestsdk
+import requests
 from django.conf import settings
 
 LOG = logging.getLogger(__name__)
 
+PAYPAL_API_BASE_URL = (
+    "https://api-m.sandbox.paypal.com"
+    if settings.PAYPAL_MODE == "sandbox"
+    else "https://api-m.paypal.com"
+)
 
-def setup_paypal():
-    paypalrestsdk.configure(
-        {
-            "mode": settings.PAYPAL_MODE,  # sandbox or live
-            "client_id": settings.PAYPAL_ID,
-            "client_secret": settings.PAYPAL_SECRET,
-        }
+
+def get_paypal_access_token():
+    auth_response = requests.post(
+        f"{PAYPAL_API_BASE_URL}/v1/oauth2/token",
+        headers={"Accept": "application/json", "Accept-Language": "en_US"},
+        auth=(settings.PAYPAL_ID, settings.PAYPAL_SECRET),
+        data={"grant_type": "client_credentials"},
     )
-    setup_paypal.__code__ = (lambda: None).__code__  # run once
+    auth_response.raise_for_status()
+    return auth_response.json()["access_token"]
 
 
-def create_payment(
-    draw_url,
-    accept_url,
-    ammount,
-):
-    setup_paypal()
-    payment = paypalrestsdk.Payment(
-        {
-            "intent": "sale",
-            "payer": {"payment_method": "paypal"},
-            "redirect_urls": {
-                "return_url": accept_url,
-                "cancel_url": draw_url,
-            },
-            "transactions": [
-                {
-                    "amount": {"total": str(ammount), "currency": "EUR"},
-                    "description": draw_url,
-                }
-            ],
-        }
+def create_payment(draw_url, accept_url, amount):
+    access_token = get_paypal_access_token()
+    payment_data = {
+        "intent": "CAPTURE",
+        "purchase_units": [
+            {
+                "amount": {"currency_code": "EUR", "value": str(amount)},
+                "description": f"Payment for {draw_url}",
+            }
+        ],
+        "application_context": {
+            "return_url": accept_url,
+            "cancel_url": draw_url,
+            "brand_name": "EchaloASuerte (EtCaterva)",
+            "landing_page": "NO_PREFERENCE",
+            "user_action": "PAY_NOW",
+        },
+    }
+    response = requests.post(
+        f"{PAYPAL_API_BASE_URL}/v2/checkout/orders",
+        json=payment_data,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+        },
     )
-    try:
-        payment.create()
-        (redirect_url,) = [
-            link.href for link in payment.links if link.method == "REDIRECT"
-        ]
-    except Exception:  # pragma: no cover
-        LOG.info("Failed to create paypal payment", exc_info=True)
-        raise
-    else:
-        LOG.info("Created new payment with id %r and url %r", payment.id, redirect_url)
-    return payment.id, redirect_url
+    response.raise_for_status()
+    payment = response.json()
+    redirect_url = next(
+        link["href"] for link in payment["links"] if link["rel"] == "approve"
+    )
+    LOG.info("Created new payment with id %r and url %r", payment["id"], redirect_url)
+    return payment["id"], redirect_url
 
 
 def accept_payment(payment_id, payer_id):  # pragma: no cover
-    setup_paypal()
-    payment = paypalrestsdk.Payment.find(payment_id)
-    if payment.execute({"payer_id": payer_id}):
-        LOG.info("Payment[%s] execute successfully", payment.id)
-    elif (
-        getattr(payment, "error") is not None
-        and payment.error.get("name") == "INSTRUMENT_DECLINED"
-    ):
-        LOG.info("Payment[%s] declined", payment.id)
+    access_token = get_paypal_access_token()
+    response = requests.post(
+        f"{PAYPAL_API_BASE_URL}/v2/checkout/orders/{payment_id}/capture",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+        },
+        json={"payer_id": payer_id},
+    )
+    if response.status_code == 201:
+        LOG.info("Payment[%s] execute successfully", payment_id)
     else:
-        LOG.error("Payment[%s] failed: %r", payment.id, payment.error)
-        raise Exception("Failed to process PayPal Payment")
+        error = response.json()
+        if error.get("name") == "INSTRUMENT_DECLINED":
+            LOG.info("Payment[%s] declined", payment_id)
+        else:
+            LOG.error("Payment[%s] failed: %r", payment_id, error)
+            raise Exception("Failed to process PayPal Payment")
