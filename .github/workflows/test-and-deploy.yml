@@ -40,6 +40,7 @@ jobs:
         make test
       env:
         EAS_PAYPAL_SECRET: ${{ secrets.EAS_PAYPAL_SECRET }}
+        EAS_REVOLUT_SECRET: ${{ secrets.EAS_REVOLUT_SECRET }}
         EAS_DATALAMA_APIK: ${{ secrets.EAS_DATALAMA_APIK }}
 
     - name: Check pip frozen reqs

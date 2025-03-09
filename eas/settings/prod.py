@@ -74,6 +74,7 @@ LOGGING = {
 }
 
 PAYPAL_MODE = "live"
+REVOLUT_MODE = "live"
 PAYPAL_ID = (
     "AfcsuQa3-9RejIysZLXVsQewL6uMirZjPWORj5fYvV3OrQmEiTECsp0Ol4-R3D2YgU7EPIgEaaGKTC5H"
 )

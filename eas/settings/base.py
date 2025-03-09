@@ -210,3 +210,4 @@ AWS_KEY_ID = "AKIAQ337QRVCGGGT4UH6"
 AWS_KEY_SECRET = os.environ.get("EAS_AWS_KEY_SECRET")
 LAMADAVA_APIK = os.environ.get("EAS_LAMADAVA_APIK", "lamadava-apik")
 LAMATOK_APIK = os.environ.get("EAS_LAMATOK_APIK", "lamatok-apik")
+REVOLUT_SECRET = os.environ.get("EAS_REVOLUT_SECRET")

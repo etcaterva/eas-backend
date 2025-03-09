@@ -10,7 +10,16 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.response import Response
 
-from . import amazonsqs, instagram, models, paypal, secret_santa, serializers, tiktok
+from . import (
+    amazonsqs,
+    instagram,
+    models,
+    paypal,
+    revolut,
+    secret_santa,
+    serializers,
+    tiktok,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -341,14 +350,10 @@ def secret_santa_resend_email(request, draw_pk, result_pk):
     return Response({"new_result": new_result.id})
 
 
-@api_view(["POST"])
-def paypal_create(request):
-    payment_options = models.Payment.Options
-    LOG.info("Initiating paypal payment for request: %s", request.data)
-    serializer = serializers.PayPalCreateSerialzier(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    data = serializer.validated_data
-    options = data["options"]
+payment_options = models.Payment.Options
+
+
+def calculate_payment(options):
     ammount = 0
     if payment_options.CERTIFIED.value in options:
         ammount += 1
@@ -358,6 +363,17 @@ def paypal_create(request):
         ammount += 5
     assert ammount != 0
     ammount -= 0.01
+    return ammount
+
+
+@api_view(["POST"])
+def paypal_create(request):
+    LOG.info("Initiating paypal payment for request: %s", request.data)
+    serializer = serializers.PayPalCreateSerialzier(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    options = data["options"]
+    ammount = calculate_payment(options)
     paypal_id, paypal_url = paypal.create_payment(
         draw_url=data["draw_url"],
         accept_url=request.build_absolute_uri(reverse("paypal-accept")),
@@ -384,11 +400,57 @@ def paypal_accept(request):
     payment_id = request.GET["token"]
     payer_id = request.GET["PayerID"]
     LOG.info("Accepting payment for id %r and payer %r", payment_id, payer_id)
-    paypal.accept_payment(payment_id, payer_id)
     payment = get_object_or_404(models.Payment, paypal_id=payment_id)
-    payment.payed = True
+    if paypal.accept_payment(payment_id, payer_id):
+        payment.payed = True
+        payment.save()
+        LOG.info("Payment %r accepted", payment)
+    return redirect(payment.draw_url)
+
+
+@api_view(["POST"])
+def revolut_create(request):
+    LOG.info("Initiating revolut payment for request: %s", request.data)
+    serializer = serializers.RevolutCreateSerialzier(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    options = data["options"]
+    ammount = calculate_payment(options)
+    return_url = request.build_absolute_uri(
+        reverse("revolut-accept", kwargs={"draw_id": data["draw_id"]})
+    )
+    payment_id, payment_url = revolut.create_payment(
+        draw_url=data["draw_url"],
+        accept_url=return_url,
+        amount=ammount,
+    )
+    payment = models.Payment(
+        draw_url=data["draw_url"],
+        revolut_id=payment_id,
+        option_certified=payment_options.CERTIFIED.value in options,
+        option_support=payment_options.SUPPORT.value in options,
+        option_adfree=payment_options.ADFREE.value in options,
+    )
+    if models.SecretSanta.objects.filter(pk=data["draw_id"]).exists():
+        payment.secret_santa_id = data["draw_id"]
+    else:
+        payment.draw_id = data["draw_id"]
     payment.save()
-    LOG.info("Payment %r accepted", payment)
+    LOG.info("Payment creation succeeded: %s", payment)
+    return Response({"redirect_url": payment_url})
+
+
+@api_view(["GET"])
+def revolut_accept(_, draw_id):
+    try:
+        payment = get_object_or_404(models.Payment, secret_santa_id=draw_id)
+    except Http404:
+        payment = get_object_or_404(models.Payment, draw_id=draw_id)
+    LOG.info("Accepting payment for id %r", payment.revolut_id)
+    if revolut.accept_payment(payment.revolut_id):
+        payment.payed = True
+        payment.save()
+        LOG.info("Payment %r accepted", payment)
     return redirect(payment.draw_url)
 
 

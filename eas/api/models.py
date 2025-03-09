@@ -338,6 +338,7 @@ class Payment(BaseModel):
     payed = models.BooleanField(default=False)
     draw_url = models.URLField(null=True)
     paypal_id = models.CharField(max_length=500, db_index=True, null=True)
+    revolut_id = models.CharField(max_length=500, db_index=True, null=True)
 
     option_certified = models.BooleanField(default=False)
     option_support = models.BooleanField(default=False)

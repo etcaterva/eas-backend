@@ -709,6 +709,7 @@ paths:
           description: Certifies a draw with a promo code
       tags:
         - paypal
+        - revolut
   '/paypal/create/':
     post:
       operationId: paypal_create
@@ -727,6 +728,24 @@ paths:
                 $ref: '#/components/schemas/PaypalResponse'
       tags:
         - paypal
+  '/revolut/create/':
+    post:
+      operationId: revolut_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevolutCreatePayload'
+        required: true
+      responses:
+        '200':
+          description: Initiates a new Revolut Payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevolutResponse'
+      tags:
+        - revolut
   /instagram/:
     post:
       operationId: instagram_create
@@ -1698,6 +1717,33 @@ components:
         draw_id:
           type: string
     PaypalResponse:
+      type: object
+      required:
+        - redirect_url
+      properties:
+        redirect_url:
+          type: string
+    RevolutCreatePayload:
+      type: object
+      required:
+        - draw_url
+        - draw_id
+        - options
+      properties:
+        options:
+          type: array
+          items:
+            type: string
+            enum:
+              - CERTIFIED
+              - ADFREE
+              - SUPPORT
+          minItems: 1
+        draw_url:
+          type: string
+        draw_id:
+          type: string
+    RevolutResponse:
       type: object
       required:
         - redirect_url

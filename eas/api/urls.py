@@ -29,6 +29,12 @@ urlpatterns = [
     ),
     re_path(r"paypal/create/", views.paypal_create, name="paypal-create"),
     re_path(r"paypal/accept/", views.paypal_accept, name="paypal-accept"),
+    re_path(r"revolut/create/", views.revolut_create, name="revolut-create"),
+    re_path(
+        r"revolut/accept/(?P<draw_id>[^/]+)/$",
+        views.revolut_accept,
+        name="revolut-accept",
+    ),
     re_path(
         r"secret-santa-admin/(?P<pk>[^/]+)/$",
         views.secret_santa_admin,

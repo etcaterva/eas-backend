@@ -14,12 +14,12 @@ test:
 .PHONY: lint
 lint:
 	DJANGO_SETTINGS_MODULE=eas.settings.local $(PYTHON) -m pylint eas
-	$(PYTHON) -m isort eas --check --recursive
+	$(PYTHON) -m isort eas --check
 	$(PYTHON) -m black eas --check
 
 .PHONY: format
 format:
-	$(PYTHON) -m isort eas --recursive
+	$(PYTHON) -m isort eas
 	$(PYTHON) -m black eas
 
 .PHONY: runlocal

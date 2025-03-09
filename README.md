@@ -33,6 +33,7 @@ The following env vars enable additional services:
 - `EAS_LAMADAVA_APIK`: Instagram (Get from hikerapi console).
 - `EAS_LAMATOK_APIK`: TikTok (Get from hikerapi console).
 - `EAS_PAYPAL_SECRET`: Sandbox KEY for paypal payments.
+- `EAS_REVOLUT_SECRET`: Sandbox KEY for revolut payments.
 
 All keys are in lastpass.
 
