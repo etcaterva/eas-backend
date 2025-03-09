@@ -1601,6 +1601,7 @@ components:
         - id
         - created_at
         - participants
+        - payments
       properties:
         id:
           type: string
@@ -1608,6 +1609,14 @@ components:
         created_at:
           type: string
           format: date-time
+        payments:
+          type: array
+          items:
+            type: string
+            enum:
+              - CERTIFIED
+              - ADFREE
+              - SUPPORT
         participants:
           type: array
           items:

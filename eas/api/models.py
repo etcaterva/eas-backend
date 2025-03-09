@@ -29,7 +29,23 @@ class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
 
 
-class BaseDraw(BaseModel):
+class PayableMixin:
+    """If you have a _payments field from a Payment model, enables to return standard payment options"""
+
+    @property
+    def payments(self):
+        draw_payments = list(self._payments.all())
+        result = []
+        if any(payment.option_certified for payment in draw_payments if payment.payed):
+            result.append(Payment.Options.CERTIFIED.value)
+        if any(payment.option_adfree for payment in draw_payments if payment.payed):
+            result.append(Payment.Options.ADFREE.value)
+        if any(payment.option_support for payment in draw_payments if payment.payed):
+            result.append(Payment.Options.SUPPORT.value)
+        return result
+
+
+class BaseDraw(BaseModel, PayableMixin):
     """Base Model for all the draws"""
 
     RESULTS_LIMIT = 50  # Max number of results to keep
@@ -84,18 +100,6 @@ class BaseDraw(BaseModel):
 
     def __repr__(self):  # pragma: nocover
         return "<%s  %r>" % (self.__class__.__name__, self.id)
-
-    @property
-    def payments(self):
-        draw_payments = list(self._payments.all())
-        result = []
-        if any(payment.option_certified for payment in draw_payments if payment.payed):
-            result.append(Payment.Options.CERTIFIED.value)
-        if any(payment.option_adfree for payment in draw_payments if payment.payed):
-            result.append(Payment.Options.ADFREE.value)
-        if any(payment.option_support for payment in draw_payments if payment.payed):
-            result.append(Payment.Options.SUPPORT.value)
-        return result
 
 
 class ClientDrawMetaData(BaseModel):
@@ -282,7 +286,7 @@ class Coin(BaseDraw):
         return [random.choice(self.OPTIONS)]
 
 
-class SecretSanta(BaseModel):
+class SecretSanta(BaseModel, PayableMixin):
     """Links the different results generated from a secret santa toss"""
 
 
@@ -317,8 +321,20 @@ class Payment(BaseModel):
         ADFREE = "ADFREE"
 
     draw = models.ForeignKey(
-        BaseDraw, on_delete=models.CASCADE, related_name="_payments"
+        BaseDraw,
+        on_delete=models.CASCADE,
+        related_name="_payments",
+        null=True,
+        blank=True,
     )
+    secret_santa = models.ForeignKey(
+        SecretSanta,
+        on_delete=models.CASCADE,
+        related_name="_payments",
+        null=True,
+        blank=True,
+    )
+
     payed = models.BooleanField(default=False)
     draw_url = models.URLField(null=True)
     paypal_id = models.CharField(max_length=500, db_index=True, null=True)
