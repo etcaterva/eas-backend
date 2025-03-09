@@ -274,6 +274,7 @@ def secret_santa_admin(request, pk):
         "id": draw.id,
         "created_at": draw.created_at,
         "participants": [],
+        "payments": [str(p) for p in draw.payments],
     }
     for participant in models.SecretSantaResult.objects.filter(draw=draw).all():
         result["participants"].append(
@@ -363,13 +364,16 @@ def paypal_create(request):
         ammount=ammount,
     )
     payment = models.Payment(
-        draw_id=data["draw_id"],
         draw_url=data["draw_url"],
         paypal_id=paypal_id,
         option_certified=payment_options.CERTIFIED.value in options,
         option_support=payment_options.SUPPORT.value in options,
         option_adfree=payment_options.ADFREE.value in options,
     )
+    if models.SecretSanta.objects.filter(pk=data["draw_id"]).exists():
+        payment.secret_santa_id = data["draw_id"]
+    else:
+        payment.draw_id = data["draw_id"]
     payment.save()
     LOG.info("Paypal payment creation succeeded: %s", payment)
     return Response({"redirect_url": paypal_url})
