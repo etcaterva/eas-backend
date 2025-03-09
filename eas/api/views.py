@@ -351,10 +351,12 @@ def paypal_create(request):
     ammount = 0
     if payment_options.CERTIFIED.value in options:
         ammount += 1
-    if payment_options.SUPPORT.value in options:
-        ammount += 2
     if payment_options.ADFREE.value in options:
-        ammount += 2
+        ammount += 1
+    if payment_options.SUPPORT.value in options:
+        ammount += 5
+    assert ammount != 0
+    ammount -= 0.01
     paypal_id, paypal_url = paypal.create_payment(
         draw_url=data["draw_url"],
         accept_url=request.build_absolute_uri(reverse("paypal-accept")),
