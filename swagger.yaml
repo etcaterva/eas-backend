@@ -1699,6 +1699,8 @@ components:
           type: string
     PaypalResponse:
       type: object
+      required:
+        - redirect_url
       properties:
         redirect_url:
           type: string
