@@ -28,6 +28,7 @@ ALLOWED_HOSTS = ["*"]
 DEFAULT_RENDERER_CLASSES.append("rest_framework.renderers.BrowsableAPIRenderer")
 
 PAYPAL_MODE = "sandbox"
+REVOLUT_MODE = "sandbox"
 PAYPAL_ID = (
     "AUoNbxkShLicONf0kssMlkgUo91p2x-62izyrGc0YGpUDvrR2CtW0RjWAN0dX6qR2RTAkeWMIq2R0dYa"
 )

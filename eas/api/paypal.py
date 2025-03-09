@@ -70,6 +70,7 @@ def accept_payment(payment_id, payer_id):  # pragma: no cover
     )
     if response.status_code == 201:
         LOG.info("Payment[%s] execute successfully", payment_id)
+        return True
     else:
         error = response.json()
         if error.get("name") == "INSTRUMENT_DECLINED":
@@ -77,3 +78,4 @@ def accept_payment(payment_id, payer_id):  # pragma: no cover
         else:
             LOG.error("Payment[%s] failed: %r", payment_id, error)
             raise Exception("Failed to process PayPal Payment")
+    return False

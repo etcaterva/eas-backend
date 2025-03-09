@@ -294,6 +294,17 @@ class PayPalCreateSerialzier(serializers.Serializer):
     draw_url = serializers.URLField()
 
 
+class RevolutCreateSerialzier(serializers.Serializer):
+    options = serializers.ListField(
+        child=serializers.ChoiceField(
+            choices=[v.value for v in models.Payment.Options]
+        ),
+        min_length=1,
+    )
+    draw_id = serializers.CharField(max_length=100)
+    draw_url = serializers.URLField()
+
+
 class PromoCodeSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=8)
     draw_id = serializers.CharField(max_length=100)
