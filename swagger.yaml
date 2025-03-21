@@ -708,7 +708,6 @@ paths:
         '200':
           description: Certifies a draw with a promo code
       tags:
-        - paypal
         - revolut
   '/paypal/create/':
     post:
