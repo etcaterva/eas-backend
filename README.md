@@ -4,6 +4,7 @@
 EAS Backend services
 
 ## Working locally
+
 #### Set up local environment
 
 ```bash
@@ -31,7 +32,7 @@ The following env vars enable additional services:
 
 - `EAS_AWS_KEY_SECRET`: Send emails (Get from AWS portal).
 - `EAS_LAMADAVA_APIK`: Instagram (Get from hikerapi console).
-- `EAS_LAMATOK_APIK`: TikTok (Get from hikerapi console).
+- `EAS_LAMATOK_APIK`: TikTok (Get from lamatok console).
 - `EAS_PAYPAL_SECRET`: Sandbox KEY for paypal payments.
 - `EAS_REVOLUT_SECRET`: Sandbox KEY for revolut payments.
 
