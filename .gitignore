@@ -12,3 +12,4 @@ eas/.secret.txt
 ### Environment ###
 .*venv
 .coverage
+.envrc
