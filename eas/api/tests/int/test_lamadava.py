@@ -6,7 +6,7 @@ import unittest.mock
 import pytest
 import requests_mock
 
-from eas.api.instagram import InvalidURL, NotFoundError, get_comments
+from eas.api.instagram import InvalidURL, NotFoundError, get_comments, get_preview
 
 RESPONSES_PATH = pathlib.Path(__file__, "..", "data").resolve()
 SUCCESS_GQL_RESPONSE = RESPONSES_PATH.joinpath(
@@ -17,6 +17,12 @@ SUCCESS_V2_RESPONSE = RESPONSES_PATH.joinpath(
 ).read_text()
 SUCCESS_V2_WITH_MENTIONS_RESPONSE = RESPONSES_PATH.joinpath(
     "lamadava-success-v2-mentions-response.json"
+).read_text()
+SUCCESS_POST_PREVIEW_RESPONSE = RESPONSES_PATH.joinpath(
+    "lamadava-preview-post-success.json"
+).read_text()
+SUCCESS_REEL_PREVIEW_RESPONSE = RESPONSES_PATH.joinpath(
+    "lamadava-preview-reel-success.json"
 ).read_text()
 
 
@@ -108,3 +114,36 @@ def test_fail_on_invalid_url_decode():
     url = "https://www.instagram.com/tintin.personal.shopper/?next=%2Fajinomai%2F"
     with pytest.raises(InvalidURL):
         get_comments(url)
+
+
+def test_preview_post_success(requestsm):
+    url = "https://www.instagram.com/p/DK62NtpNAoM/"
+    requestsm.get(
+        "https://api.lamadava.com/v1/media/by/url",
+        text=SUCCESS_POST_PREVIEW_RESPONSE,
+    )
+    preview = get_preview(url)
+    assert preview.comment_count == 111
+    assert preview.user_name == "madridalpunto"
+
+
+def test_preview_reel_success(requestsm):
+    url = "https://www.instagram.com/reel/DKymWLqtXf_/"
+    requestsm.get(
+        "https://api.lamadava.com/v1/media/by/url",
+        text=SUCCESS_REEL_PREVIEW_RESPONSE,
+    )
+    preview = get_preview(url)
+    assert preview.comment_count == 106
+    assert preview.user_name == "madridalpunto"
+
+
+def test_preview_profile_url_fails(requestsm):
+    url = "https://www.instagram.com/madridalpunto"
+    requestsm.get(
+        "https://api.lamadava.com/v1/media/by/url",
+        status_code=404,
+        text='{"detail":"Invalid media_id 44287745794678102951","exc_type":"InvalidMediaId"}',
+    )
+    with pytest.raises(InvalidURL):
+        get_preview(url)
