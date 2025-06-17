@@ -52,6 +52,7 @@ PREVIEW = instagram.Preview(
     comment_count=109,
     user_name="madridalpunto",
     user_pic="user-pic-url",
+    caption_text="text",
 )
 
 
@@ -235,6 +236,7 @@ class TestPreview(APILiveServerTestCase):
             "post_pic": ANY,
             "user_name": "madridalpunto",
             "user_pic": ANY,
+            "caption_text": "text",
         }
 
     @patch("eas.api.instagram.get_preview")

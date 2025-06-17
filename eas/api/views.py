@@ -576,5 +576,6 @@ def instagram_preview(request):
             "user_name": preview.user_name,
             "user_pic": preview.user_pic,
             "comment_count": preview.comment_count,
+            "caption_text": preview.caption_text,
         }
     )

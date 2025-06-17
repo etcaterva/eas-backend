@@ -1453,6 +1453,7 @@ components:
         - post_pic
         - comment_count
         - user_name
+        - caption_text
         - user_pic
       properties:
         post_pic:
@@ -1463,6 +1464,8 @@ components:
         user_name:
           type: string
         user_pic:
+          type: string
+        caption_text:
           type: string
 
     Tiktok:

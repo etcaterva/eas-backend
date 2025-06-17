@@ -85,6 +85,7 @@ class Preview:
     comment_count: int
     user_name: str
     user_pic: str
+    caption_text: str
 
 
 def get_preview(url):  # pragma:  no cover
@@ -95,6 +96,7 @@ def get_preview(url):  # pragma:  no cover
             comment_count=preview_data["comment_count"],
             user_name=preview_data["user"]["username"],
             user_pic=preview_data["user"]["profile_pic_url"],
+            caption_text=preview_data["caption_text"],
             post_pic=preview_data["resources"][0]["thumbnail_url"]
             if preview_data["resources"]
             else preview_data["thumbnail_url"],

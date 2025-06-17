@@ -73,7 +73,11 @@ def fetch_preview(url):  # pragma: no cover
         with contextlib.suppress(KeyError, json.JSONDecodeError):
             if response.json()["exc_type"] in ("NotFoundError", "MediaNotFound"):
                 raise NotFoundError(f"Post not found for {url}")
-            if response.json()["exc_type"] == "MediaUnavailable":
+            if response.json()["exc_type"] in (
+                "MediaUnavailable",
+                "InvalidMediaId",
+                "ValidationError",
+            ):
                 raise InvalidURL(f"Invalid id for instagram: {url}")
     response.raise_for_status()
     return response.json()
