@@ -77,3 +77,26 @@ def get_comments(url, min_mentions=0, require_like=False):  # pragma: no cover
         ret.append(comment)
     LOG.info("%s comments match criteria for %s", len(ret), url)
     return ret
+
+
+@dataclass
+class Preview:
+    post_pic: str
+    comment_count: int
+    user_name: str
+    user_pic: str
+
+
+def get_preview(url):  # pragma:  no cover
+    """Fetch preview information for an Instagram post"""
+    preview_data = lamadava.fetch_preview(url)
+    try:
+        return Preview(
+            comment_count=preview_data["comment_count"],
+            user_name=preview_data["user"]["username"],
+            user_pic=preview_data["user"]["profile_pic_url"],
+            post_pic=preview_data["resources"][0]["thumbnail_url"],
+        )
+    except KeyError as e:
+        LOG.error("Preview data missing field %s: %s", e, preview_data, exc_info=True)
+        raise

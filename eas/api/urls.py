@@ -23,6 +23,11 @@ router.register(r"tiktok", views.TiktokViewSet, basename="tiktok")
 router.register(r"shifts", views.ShiftsViewSet, basename="shifts")
 urlpatterns = [
     re_path(
+        r"instagram-preview/$",
+        views.instagram_preview,
+        name="instagram-preview",
+    ),
+    re_path(
         r"promo-code/redeem/$",
         views.redeem_promo_code,
         name="redeem-promo-code",

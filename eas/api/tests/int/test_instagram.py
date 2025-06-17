@@ -47,6 +47,13 @@ COMMENT_WITH_MENTION2 = instagram.Comment(
     userpic="userpic3",
 )
 
+PREVIEW = instagram.Preview(
+    post_pic="post-pic-url",
+    comment_count=109,
+    user_name="madridalpunto",
+    user_pic="user-pic-url",
+)
+
 
 class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
     maxDiff = None
@@ -213,3 +220,43 @@ class TestInstagram(DrawAPITestMixin, APILiveServerTestCase):
 
 class TestInstagramPurge(PurgeMixin, APILiveServerTestCase):
     FACTORY = factories.InstagramFactory
+
+
+class TestPreview(APILiveServerTestCase):
+    @patch("eas.api.instagram.get_preview")
+    def test_preview_success(self, get_preview_mock):
+        get_preview_mock.return_value = PREVIEW
+        post_url = "https://www.instagram.com/p/DK62NtpNAoM/?img_index=1"
+        url = reverse("instagram-preview")
+        response = self.client.post(url, {"url": post_url})
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == {
+            "comment_count": 109,
+            "post_pic": ANY,
+            "user_name": "madridalpunto",
+            "user_pic": ANY,
+        }
+
+    @patch("eas.api.instagram.get_preview")
+    def test_preview_404(self, get_preview_mock):
+        get_preview_mock.side_effect = instagram.NotFoundError
+        post_url = "https://www.instagram.com/p/DK62NtpNAoM/?img_index=1"
+        url = reverse("instagram-preview")
+        response = self.client.post(url, {"url": post_url})
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @patch("eas.api.instagram.get_preview")
+    def test_preview_invalid(self, get_preview_mock):
+        get_preview_mock.side_effect = instagram.InvalidURL
+        post_url = "https://www.instagram.com/p/DK62NtpNAoM/?img_index=1"
+        url = reverse("instagram-preview")
+        response = self.client.post(url, {"url": post_url})
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @patch("eas.api.instagram.get_preview")
+    def test_preview_timeout(self, get_preview_mock):
+        get_preview_mock.side_effect = requests.exceptions.ConnectionError
+        post_url = "https://www.instagram.com/p/DK62NtpNAoM/?img_index=1"
+        url = reverse("instagram-preview")
+        response = self.client.post(url, {"url": post_url})
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)

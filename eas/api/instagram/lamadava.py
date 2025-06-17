@@ -51,6 +51,34 @@ def fetch_comments(media_pk):  # pragma: no cover
     return _fetch_comments_gql(media_pk)
 
 
+@cachetools.cached(
+    cachetools.TTLCache(
+        maxsize=500,
+        timer=dt.datetime.now,
+        ttl=dt.timedelta(hours=1),
+    )
+)
+def fetch_preview(url):  # pragma: no cover
+    LOG.info("Fetching Instagram post preview for %s", url)
+    response = _session().get(
+        "https://api.lamadava.com/v1/media/by/url",
+        params={
+            "access_key": LAMADAVA_APIK,
+            "url": url,
+        },
+        timeout=ONE_MINUTE * 2,
+    )
+    if not response.ok:
+        LOG.warning("Failed lamadava post preview request! %s", response.text)
+        with contextlib.suppress(KeyError, json.JSONDecodeError):
+            if response.json()["exc_type"] in ("NotFoundError", "MediaNotFound"):
+                raise NotFoundError(f"Post not found for {url}")
+            if response.json()["exc_type"] == "MediaUnavailable":
+                raise InvalidURL(f"Invalid id for instagram: {url}")
+    response.raise_for_status()
+    return response.json()
+
+
 def _fetch_comments_v2(media_pk):  # pragma: no cover
     LOG.info("Sending request to lamadava for %s", media_pk)
     response = _session().get(
