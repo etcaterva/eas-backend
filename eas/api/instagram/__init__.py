@@ -95,8 +95,10 @@ def get_preview(url):  # pragma:  no cover
             comment_count=preview_data["comment_count"],
             user_name=preview_data["user"]["username"],
             user_pic=preview_data["user"]["profile_pic_url"],
-            post_pic=preview_data["resources"][0]["thumbnail_url"],
+            post_pic=preview_data["resources"][0]["thumbnail_url"]
+            if preview_data["resources"]
+            else preview_data["thumbnail_url"],
         )
-    except KeyError as e:
-        LOG.error("Preview data missing field %s: %s", e, preview_data, exc_info=True)
+    except (KeyError, IndexError) as e:
+        LOG.error("Preview data invalid: %r. Data: %s", e, preview_data, exc_info=True)
         raise
