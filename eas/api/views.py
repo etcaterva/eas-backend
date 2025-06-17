@@ -553,3 +553,28 @@ def redeem_promo_code(request):
     code_object.delete()
     LOG.info("%s code redeemed on draw %s", code, draw_id)
     return Response()
+
+
+@api_view(["POST"])
+def instagram_preview(request):
+    LOG.info("Fetching instagram info for: %s", request.data)
+    serializer = serializers.InstagramPreviewSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    post_url = data["url"]
+    try:
+        preview = instagram.get_preview(post_url)
+    except instagram.InvalidURL:
+        raise ValidationError(f"Invalid post URL: {post_url}") from None
+    except instagram.NotFoundError:
+        raise ValidationError(f"Post not found: {post_url}") from None
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        raise APIException("Timed-out. Try again later.") from None
+    return Response(
+        {
+            "post_pic": preview.post_pic,
+            "user_name": preview.user_name,
+            "user_pic": preview.user_pic,
+            "comment_count": preview.comment_count,
+        }
+    )

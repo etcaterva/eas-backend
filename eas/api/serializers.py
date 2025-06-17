@@ -403,3 +403,7 @@ class ShiftsSerializer(BaseSerializer):
         ]
         models.Participant.objects.bulk_create(participant_instances)
         return draw
+
+
+class InstagramPreviewSerializer(serializers.Serializer):
+    url = serializers.URLField()

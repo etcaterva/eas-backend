@@ -822,6 +822,33 @@ paths:
         required: true
         schema:
           type: string
+  /instagram-preview/:
+    post:
+      operationId: instagram_preview
+      summary: Get Instagram post preview
+      tags:
+        - instagram
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+              properties:
+                url:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Instagram post preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstagramPreview'
+        '400':
+          description: Invalid input
   /tiktok/:
     post:
       operationId: tiktok_create
@@ -1420,6 +1447,23 @@ components:
                         type: string
                   prize:
                     $ref: '#/components/schemas/Prize'
+    InstagramPreview:
+      type: object
+      required:
+        - post_pic
+        - comment_count
+        - user_name
+        - user_pic
+      properties:
+        post_pic:
+          type: string
+          format: uri
+        comment_count:
+          type: integer
+        user_name:
+          type: string
+        user_pic:
+          type: string
 
     Tiktok:
       allOf:
