@@ -59,12 +59,14 @@ LOGGING = {
     },
     "loggers": {
         "django.request": {
-            "handlers": ["log_file"],
+            "handlers": ["log_file", "error_log_file"],
             "level": "INFO",
+            "propagate": False,
         },
         "eas": {
-            "handlers": ["log_file"],
+            "handlers": ["log_file", "error_log_file"],
             "level": "INFO",
+            "propagate": False,
         },
         "": {
             "handlers": ["log_file", "error_log_file"],
