@@ -80,6 +80,43 @@ class RevolutTestPublicDraw(APILiveServerTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         assert response.json()["payments"] == ["CERTIFIED", "ADFREE", "SUPPORT"]
 
+    @mock.patch("eas.api.revolut.accept_payment")
+    @mock.patch("eas.api.revolut.create_payment")
+    def test_two_payments_does_not_fail(self, create_payment, _):
+        assert self.draw.payments == []
+        url = reverse("raffle-detail", kwargs=dict(pk=self.draw.id))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert response.json()["payments"] == []
+
+        def _new_payment():
+            create_payment.return_value = "revolut-id", "fake-url"
+            response = self.client.post(
+                self.create_url,
+                {
+                    "options": ["CERTIFIED", "ADFREE", "SUPPORT"],
+                    "draw_id": self.draw.id,
+                    "draw_url": "http://test.com",
+                },
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+            assert response.json()["redirect_url"] == "fake-url"
+
+        _new_payment()
+        _new_payment()
+
+        response = self.client.get(
+            self.accept_url, {"token": "revolut-id", "PayerID": "payer-id"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND, response.content)
+        assert response.url == "http://test.com"
+        assert self.draw.payments == ["CERTIFIED", "ADFREE", "SUPPORT"]
+
+        url = reverse("raffle-detail", kwargs=dict(pk=self.draw.id))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        assert response.json()["payments"] == ["CERTIFIED", "ADFREE", "SUPPORT"]
+
 
 class RevolutTestSecretSanta(APILiveServerTestCase):
     def setUp(self):

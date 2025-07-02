@@ -344,6 +344,12 @@ class Payment(BaseModel):
     option_support = models.BooleanField(default=False)
     option_adfree = models.BooleanField(default=False)
 
+    @staticmethod
+    def fetch_payments(draw_id):
+        return Payment.objects.filter(
+            models.Q(draw_id=draw_id) | models.Q(secret_santa_id=draw_id)
+        ).order_by("-created_at")
+
     def __repr__(self):
         options_str = ""
         options_str += "Y" if self.option_certified else "N"
