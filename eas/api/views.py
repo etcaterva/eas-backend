@@ -442,10 +442,9 @@ def revolut_create(request):
 
 @api_view(["GET"])
 def revolut_accept(_, draw_id):
-    try:
-        payment = get_object_or_404(models.Payment, secret_santa_id=draw_id)
-    except Http404:
-        payment = get_object_or_404(models.Payment, draw_id=draw_id)
+    payment = models.Payment.fetch_payments(draw_id).first()
+    if payment is None:  # pragma: no cover
+        raise ValidationError("Draw ID has not payments!")
     LOG.info("Accepting payment for id %r", payment.revolut_id)
     if revolut.accept_payment(payment.revolut_id):
         payment.payed = True
