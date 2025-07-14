@@ -23,7 +23,14 @@ class InvalidURL(Exception):
 
 @functools.lru_cache(None)
 def _session():  # pragma: no cover
-    return requests.Session()
+    retry = requests.adapters.Retry(
+        total=3,
+        backoff_factor=0.5,
+        status_forcelist=[500, 503, 504, 520, 521, 522, 524],
+    )
+    s = requests.Session()
+    s.mount("https://", requests.adapters.HTTPAdapter(max_retries=retry))
+    return s
 
 
 def _is_a_tiktok_post(media_pk):
