@@ -25,7 +25,7 @@ class InvalidURL(Exception):
 @functools.lru_cache(None)
 def _session():  # pragma: no cover
     retry = requests.adapters.Retry(
-        total=2,
+        total=3,
         backoff_factor=0.5,
         status_forcelist=[500, 503, 504, 520, 521, 522, 524],
     )
