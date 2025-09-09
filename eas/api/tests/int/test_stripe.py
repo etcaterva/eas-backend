@@ -11,7 +11,7 @@ from eas.api import models
 from .. import factories
 
 
-class RevolutTestEnd2End(APILiveServerTestCase):
+class StripeTestEnd2End(APILiveServerTestCase):
     def setUp(self):
         self.client.default_format = "json"
         self.draw_id = factories.RaffleFactory().id
@@ -19,7 +19,7 @@ class RevolutTestEnd2End(APILiveServerTestCase):
         self.accept_url = reverse("revolut-accept", kwargs={"draw_id": self.draw_id})
 
     @pytest.mark.skipif(
-        "EAS_REVOLUT_SECRET" not in os.environ, reason="EAS_REVOLUT_SECRET unset"
+        "EAS_STRIPE_API_KEY" not in os.environ, reason="EAS_STRIPE_API_KEY unset"
     )
     def test_create_payment_end_to_end(self):
         response = self.client.post(
@@ -36,7 +36,7 @@ class RevolutTestEnd2End(APILiveServerTestCase):
         self.assertEqual(response.status_code, status.HTTP_302_FOUND, response.content)
 
 
-class RevolutTestPublicDraw(APILiveServerTestCase):
+class StripeTestPublicDraw(APILiveServerTestCase):
     def setUp(self):
         self.client.default_format = "json"
         self.draw_id = factories.RaffleFactory().id
@@ -47,8 +47,8 @@ class RevolutTestPublicDraw(APILiveServerTestCase):
     def draw(self):
         return models.Raffle.objects.get(id=self.draw_id)
 
-    @mock.patch("eas.api.revolut.accept_payment")
-    @mock.patch("eas.api.revolut.create_payment")
+    @mock.patch("eas.api.stripe.accept_payment")
+    @mock.patch("eas.api.stripe.create_payment")
     def test_full_payment_public_draw(self, create_payment, _):
         assert self.draw.payments == []
         url = reverse("raffle-detail", kwargs=dict(pk=self.draw.id))
@@ -80,8 +80,8 @@ class RevolutTestPublicDraw(APILiveServerTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         assert response.json()["payments"] == ["CERTIFIED", "ADFREE", "SUPPORT"]
 
-    @mock.patch("eas.api.revolut.accept_payment")
-    @mock.patch("eas.api.revolut.create_payment")
+    @mock.patch("eas.api.stripe.accept_payment")
+    @mock.patch("eas.api.stripe.create_payment")
     def test_two_payments_does_not_fail(self, create_payment, _):
         assert self.draw.payments == []
         url = reverse("raffle-detail", kwargs=dict(pk=self.draw.id))
@@ -118,7 +118,7 @@ class RevolutTestPublicDraw(APILiveServerTestCase):
         assert response.json()["payments"] == ["CERTIFIED", "ADFREE", "SUPPORT"]
 
 
-class RevolutTestSecretSanta(APILiveServerTestCase):
+class StripeTestSecretSanta(APILiveServerTestCase):
     def setUp(self):
         self.client.default_format = "json"
         self.draw = models.SecretSanta()
@@ -131,8 +131,8 @@ class RevolutTestSecretSanta(APILiveServerTestCase):
         self.create_url = reverse("revolut-create")
         self.accept_url = reverse("revolut-accept", kwargs={"draw_id": self.draw.id})
 
-    @mock.patch("eas.api.revolut.accept_payment")
-    @mock.patch("eas.api.revolut.create_payment")
+    @mock.patch("eas.api.stripe.accept_payment")
+    @mock.patch("eas.api.stripe.create_payment")
     def test_full_payment_secret_santa(self, create_payment, _):
         assert self.draw.payments == []
         url = reverse("secret-santa-admin", kwargs=dict(pk=self.draw.id))
