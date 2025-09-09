@@ -15,9 +15,9 @@ from . import (
     instagram,
     models,
     paypal,
-    revolut,
     secret_santa,
     serializers,
+    stripe,
     tiktok,
 )
 
@@ -410,7 +410,7 @@ def paypal_accept(request):
 
 @api_view(["POST"])
 def revolut_create(request):
-    LOG.info("Initiating revolut payment for request: %s", request.data)
+    LOG.info("Initiating card payment for request: %s", request.data)
     serializer = serializers.RevolutCreateSerialzier(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
@@ -419,7 +419,7 @@ def revolut_create(request):
     return_url = request.build_absolute_uri(
         reverse("revolut-accept", kwargs={"draw_id": data["draw_id"]})
     )
-    payment_id, payment_url = revolut.create_payment(
+    payment_id, payment_url = stripe.create_payment(
         draw_url=data["draw_url"],
         accept_url=return_url,
         amount=ammount,
@@ -446,7 +446,7 @@ def revolut_accept(_, draw_id):
     if payment is None:  # pragma: no cover
         raise ValidationError("Draw ID has not payments!")
     LOG.info("Accepting payment for id %r", payment.revolut_id)
-    if revolut.accept_payment(payment.revolut_id):
+    if stripe.accept_payment(payment.revolut_id):
         payment.payed = True
         payment.save()
         LOG.info("Payment %r accepted", payment)

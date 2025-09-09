@@ -10,3 +10,4 @@ python-dateutil
 pytz
 raven
 requests
+stripe
