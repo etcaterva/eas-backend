@@ -2,24 +2,19 @@ import datetime as dt
 import logging
 
 import requests.exceptions
+from django.conf import settings
+from django.contrib.auth import get_user_model, login, logout
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
-from django.urls.base import reverse
+from django.urls import reverse
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.response import Response
 
-from . import (
-    amazonsqs,
-    instagram,
-    models,
-    paypal,
-    secret_santa,
-    serializers,
-    stripe,
-    tiktok,
-)
+from . import amazonsqs
+from . import email as email_service
+from . import instagram, models, paypal, secret_santa, serializers, stripe, tiktok
 
 LOG = logging.getLogger(__name__)
 
@@ -578,3 +573,189 @@ def instagram_preview(request):
             "caption_text": preview.caption_text,
         }
     )
+
+
+@api_view(["POST"])
+def request_magic_link(request):
+    """Send magic link to user email for passwordless login"""
+    email = request.data.get("email")
+    if not email:  # pragma: no cover
+        return Response({"error": "Email is required"}, status=400)
+
+    return_url = request.data.get("return_url")
+    if not return_url:
+        return Response({"error": "Return URL is required"}, status=400)
+
+    User = get_user_model()
+    user, is_new = User.objects.get_or_create(email=email, defaults={"username": email})
+    if is_new:
+        LOG.info("Created new user %s", user)
+
+    login_token = models.LoginToken.create_for_user(user, return_url=return_url)
+
+    magic_link = request.build_absolute_uri(
+        f"/api/auth/verify/?token={login_token.token}"
+    )
+
+    if not email_service.send_magic_link(email, magic_link):
+        LOG.error("Failed to send magic link to %s", email)
+        return Response({"error": "Failed to send magic link"}, status=500)
+
+    LOG.info("Magic link sent successfully to %s", email)
+    return Response({"message": "Magic link sent successfully"}, status=200)
+
+
+@api_view(["GET"])
+def verify_magic_link(request):
+    """Verify magic link and log user in"""
+    token = request.GET.get("token")
+    if not token:  # pragma: no cover
+        return Response({"error": "Token is required"}, status=400)
+    try:
+        login_token = models.LoginToken.objects.get(
+            token=token, expires_at__gt=dt.datetime.now(dt.timezone.utc)
+        )
+        return_url = login_token.return_url
+        login(request, login_token.user)
+        login_token.delete()
+
+        return redirect(return_url)
+    except models.LoginToken.DoesNotExist:  # pragma: no cover
+        return Response({"error": "Invalid or expired token"}, status=400)
+
+
+@api_view(["GET"])
+def current_user(request):
+    """Get current logged in user info"""
+    if not request.user.is_authenticated:
+        return Response({"error": "Not authenticated"}, status=401)
+
+    profile, _ = models.UserProfile.objects.get_or_create(user=request.user)
+
+    # Get user's current tier from Stripe
+    user_tier = stripe.get_user_tier_from_profile(profile)
+
+    return Response(
+        {
+            "user": {
+                "email": request.user.email,
+                "tier": user_tier,
+            }
+        }
+    )
+
+
+@api_view(["POST"])
+def logout_user(request):  # pragma: no cover
+    """Log out current user"""
+    logout(request)
+    return Response(status=200)
+
+
+@api_view(["GET"])
+def subscription_tiers(request):
+    """Get available subscription tiers and their limits"""
+    return Response({"tiers": settings.SUBSCRIPTION_TIERS})
+
+
+@api_view(["POST"])
+def create_subscription(request):
+    """Create a Stripe subscription checkout session"""
+    try:
+        data = request.data
+        subscription_key = data.get("subscription_key")
+        draw_url = data.get("draw_url")
+
+        if not subscription_key:
+            return Response(
+                {"error": "subscription_key is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not draw_url:
+            return Response(
+                {"error": "draw_url is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate subscription_key exists in settings
+        valid_keys = []
+        for tier_config in settings.SUBSCRIPTION_TIERS.values():
+            valid_keys.extend(tier_config.get("lookup_keys", []))
+
+        if subscription_key not in valid_keys:
+            return Response(
+                {"error": f"Invalid subscription_key. Valid keys: {valid_keys}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Create absolute success URL
+        success_url = (
+            request.build_absolute_uri(reverse("accept-subscription"))
+            + "?session_id={CHECKOUT_SESSION_ID}"
+        )
+
+        # Create subscription via Stripe
+        session_id, checkout_url = stripe.create_subscription(
+            success_url=success_url, draw_url=draw_url, lookup_key=subscription_key
+        )
+
+        LOG.info(
+            "Created subscription session %s for key %s", session_id, subscription_key
+        )
+
+        return Response({"session_id": session_id, "checkout_url": checkout_url})
+
+    except ValueError as e:  # pragma: no cover
+        LOG.error("Subscription creation failed: %s", str(e))
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+def accept_subscription(request):
+    """Accept a Stripe subscription and log in the user"""
+    session_id = request.GET.get("session_id")
+
+    if not session_id:
+        return Response(
+            {"error": "session_id is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Validate subscription with Stripe
+    result = stripe.accept_subscription(session_id)
+
+    if not result:
+        LOG.warning("Subscription validation failed for session %s", session_id)
+        return Response(
+            {"error": "Subscription not active or invalid"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    draw_url, email = result
+
+    if not email:
+        LOG.error("No email found in subscription session %s", session_id)
+        return Response(
+            {"error": "No email found in subscription"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Create or get user
+    User = get_user_model()
+    user, created = User.objects.get_or_create(
+        email=email, defaults={"username": email}
+    )
+
+    if created:
+        LOG.info("Created new user for email %s", email)
+        # Create user profile
+        models.UserProfile.objects.create(user=user)
+
+    # Log in the user
+    login(request, user)
+    LOG.info("Logged in user %s via subscription", user.email)
+
+    # Redirect to draw_url
+    if draw_url:
+        return redirect(draw_url)
+    else:
+        return Response({"message": "Subscription accepted, user logged in"})

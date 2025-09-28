@@ -7,6 +7,7 @@ import random
 import string
 import uuid
 
+from django.conf import settings
 from django.db import models
 from jsonfield import JSONField
 
@@ -545,3 +546,43 @@ DRAW_TYPES = [
     Tiktok,
     Tournament,
 ]
+
+
+class UserProfile(BaseModel):
+    """Extended user profile"""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
+    )
+
+    def __str__(self):
+        return f"{self.user.email}"
+
+
+class LoginToken(BaseModel):
+    """Magic link tokens for passwordless login"""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    token = models.CharField(max_length=255, unique=True)
+    expires_at = models.DateTimeField()
+    return_url = models.URLField(
+        blank=True, null=True, help_text="URL to redirect to after login"
+    )
+
+    def __str__(self):  # pragma: no cover
+        return f"Token for {self.user.email}"
+
+    @classmethod
+    def create_for_user(cls, user, return_url=None):
+        """Create a new login token for user"""
+
+        from django.utils import timezone
+
+        token = str(uuid.uuid4())
+        expires_at = timezone.now() + dt.timedelta(
+            minutes=settings.MAGIC_LINK_EXPIRATION_MINUTES
+        )
+
+        return cls.objects.create(
+            user=user, token=token, expires_at=expires_at, return_url=return_url
+        )
