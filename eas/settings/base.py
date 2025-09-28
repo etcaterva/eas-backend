@@ -212,3 +212,40 @@ LAMADAVA_APIK = os.environ.get("EAS_LAMADAVA_APIK", "lamadava-apik")
 LAMATOK_APIK = os.environ.get("EAS_LAMATOK_APIK", "lamatok-apik")
 REVOLUT_SECRET = os.environ.get("EAS_REVOLUT_SECRET")
 STRIPE_API_KEY = os.environ.get("EAS_STRIPE_API_KEY")
+
+# User subscription tiers and Instagram comment limits
+# Lookup keys should match the payment lookup_key in Stripe
+SUBSCRIPTION_TIERS = {
+    "free": {
+        "max_instagram_comments": 300,
+        "name": "Free",
+        "lookup_keys": [],  # Free tier has no lookup_keys
+    },
+    "starter": {
+        "max_instagram_comments": 2000,
+        "name": "Starter",
+        "lookup_keys": [
+            "starter_monthly",
+            "starter_yearly",
+        ],
+    },
+    "creator": {
+        "max_instagram_comments": 5000,
+        "name": "Creator",
+        "lookup_keys": [
+            "creator_monthly",
+            "creator_yearly",
+        ],
+    },
+    "agency": {
+        "max_instagram_comments": 2147483647,  # MAX_INT
+        "name": "Agency",
+        "lookup_keys": [
+            "agency_monthly",
+            "agency_yearly",
+        ],
+    },
+}
+
+# Magic link token expiration in minutes
+MAGIC_LINK_EXPIRATION_MINUTES = 15

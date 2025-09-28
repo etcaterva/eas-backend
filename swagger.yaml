@@ -983,6 +983,273 @@ paths:
         required: true
         schema:
           type: string
+  /auth/login/:
+    post:
+      operationId: auth_request_magic_link
+      summary: Request magic link for passwordless login
+      description: Send a magic link to user's email for passwordless authentication
+      responses:
+        '200':
+          description: Magic link sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Magic link sent successfully"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Email is required"
+        '500':
+          description: Failed to send email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to send magic link"
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address
+                  example: "user@example.com"
+                return_url:
+                  type: string
+                  format: uri
+                  description: URL to redirect to after successful login
+                  example: "https://echaloasuerte.com/draw/123"
+              required:
+                - email
+                - return_url
+        required: true
+  /auth/verify/:
+    get:
+      operationId: auth_verify_magic_link
+      summary: Verify magic link and log user in
+      description: Verify the magic link token, authenticate the user, and redirect to return_url if provided
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Magic link token from email
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '302':
+          description: Login successful, redirecting to the provided return_url
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid or expired token"
+      tags:
+        - auth
+  /auth/user/:
+    get:
+      operationId: auth_current_user
+      summary: Get current user information
+      description: Get information about the currently authenticated user
+      responses:
+        '200':
+          description: Current user information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        format: email
+                      tier:
+                        type: string
+                        enum: ['free', 'starter', 'creator', 'agency']
+                        description: User's current subscription tier
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+      tags:
+        - auth
+  /auth/logout/:
+    post:
+      operationId: auth_logout
+      summary: Log out current user
+      description: Log out the currently authenticated user
+      responses:
+        '200':
+          description: Logout successful
+      tags:
+        - auth
+  /auth/tiers/:
+    get:
+      operationId: auth_subscription_tiers
+      summary: Get available subscription tiers
+      description: Get information about all available subscription tiers and their limits
+      responses:
+        '200':
+          description: Subscription tiers information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tiers:
+                    type: object
+                    properties:
+                      free:
+                        $ref: '#/components/schemas/SubscriptionTier'
+                      starter:
+                        $ref: '#/components/schemas/SubscriptionTier'
+                      creator:
+                        $ref: '#/components/schemas/SubscriptionTier'
+                      agency:
+                        $ref: '#/components/schemas/SubscriptionTier'
+      tags:
+        - auth
+  /auth/subscription/create/:
+    post:
+      operationId: auth_create_subscription
+      summary: Create a subscription checkout session
+      description: Create a Stripe subscription checkout session for the given subscription key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subscription_key
+                - draw_url
+              properties:
+                subscription_key:
+                  type: string
+                  description: The subscription lookup key (from subscription tiers)
+                  example: "starter_monthly"
+                draw_url:
+                  type: string
+                  format: uri
+                  description: URL to redirect back to after successful subscription
+                  example: "https://echaloasuerte.com/draw/instagram/123"
+      responses:
+        '200':
+          description: Subscription checkout session created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    description: Stripe checkout session ID
+                    example: "cs_test_1234567890"
+                  checkout_url:
+                    type: string
+                    format: uri
+                    description: URL to redirect user to Stripe checkout
+                    example: "https://checkout.stripe.com/pay/cs_test_1234567890"
+        '400':
+          description: Bad request (missing or invalid parameters)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid subscription_key. Valid keys: ['starter_monthly', 'creator_yearly']"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+      tags:
+        - auth
+  /auth/subscription/accept/:
+    get:
+      operationId: auth_accept_subscription
+      summary: Accept subscription and log in user
+      description: Validate Stripe subscription, log in the user, and redirect to draw URL
+      parameters:
+        - name: session_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Stripe checkout session ID from the success callback
+          example: "cs_test_1234567890"
+      responses:
+        '302':
+          description: Successful subscription validation, user logged in and redirected to draw URL
+        '200':
+          description: Successful subscription validation, user logged in (no redirect URL)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Subscription accepted, user logged in"
+        '400':
+          description: Bad request (invalid session or subscription not active)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Subscription not active or invalid"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+      tags:
+        - auth
 components:
   requestBodies:
     DrawTossPayload:
@@ -997,6 +1264,18 @@ components:
           schema:
             $ref: '#/components/schemas/DrawReTossPayload'
   schemas:
+    SubscriptionTier:
+      type: object
+      properties:
+        max_instagram_comments:
+          type: integer
+          description: Maximum number of Instagram comments allowed for this tier
+        name:
+          type: string
+          description: Display name of the subscription tier
+      required:
+        - max_instagram_comments
+        - name
     RandomNumber:
       allOf:
         - $ref: '#/components/schemas/BaseDraw'

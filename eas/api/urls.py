@@ -50,5 +50,21 @@ urlpatterns = [
         views.secret_santa_resend_email,
         name="secret-santa-resend-email",
     ),
+    # Authentication endpoints
+    re_path(r"auth/login/$", views.request_magic_link, name="request-magic-link"),
+    re_path(r"auth/verify/$", views.verify_magic_link, name="verify-magic-link"),
+    re_path(r"auth/user/$", views.current_user, name="current-user"),
+    re_path(r"auth/logout/$", views.logout_user, name="logout"),
+    re_path(r"auth/tiers/$", views.subscription_tiers, name="subscription-tiers"),
+    re_path(
+        r"auth/subscription/create/$",
+        views.create_subscription,
+        name="create-subscription",
+    ),
+    re_path(
+        r"auth/subscription/accept/$",
+        views.accept_subscription,
+        name="accept-subscription",
+    ),
     *router.urls,
 ]
