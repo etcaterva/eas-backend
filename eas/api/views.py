@@ -632,14 +632,15 @@ def current_user(request):
 
     profile, _ = models.UserProfile.objects.get_or_create(user=request.user)
 
-    # Get user's current tier from Stripe
     user_tier = stripe.get_user_tier_from_profile(profile)
+    customer_portal_url = stripe.create_customer_portal_session(request.user.email)
 
     return Response(
         {
             "user": {
                 "email": request.user.email,
                 "tier": user_tier,
+                "customer_portal_url": customer_portal_url,
             }
         }
     )

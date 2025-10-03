@@ -215,3 +215,29 @@ def accept_subscription(session_id):
     email = session.customer_details.email if session.customer_details else ""
 
     return draw_url, email
+
+
+def create_customer_portal_session(email):
+    """
+    Create a Stripe Customer Portal session for a customer.
+
+    Args:
+        email: Customer's email address to lookup their Stripe customer
+
+    Returns:
+        str: Customer portal URL, or None if customer not found
+    """
+    customers = stripe.Customer.list(email=email, limit=1)
+    if not customers or len(customers["data"]) == 0:
+        LOG.info("No Stripe customer found for email: %s", email)
+        return None
+    customer = customers["data"][0]
+    LOG.info("Found Stripe customer %s for email: %s", customer.id, email)
+    session_params = {
+        "customer": customer.id,
+    }
+    session = stripe.billing_portal.Session.create(**session_params)
+    LOG.info(
+        "Created customer portal session %s for customer %s", session.id, customer.id
+    )
+    return session.url

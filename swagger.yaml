@@ -1092,6 +1092,27 @@ paths:
                         type: string
                         enum: ['free', 'starter', 'creator', 'agency']
                         description: User's current subscription tier
+                      customer_portal_url:
+                        type: string
+                        format: uri
+                        nullable: true
+                        description: Stripe customer portal URL for subscription management. Will be null if user has no Stripe customer account.
+                        example: "https://billing.stripe.com/session/bps_1ABC123def456"
+              examples:
+                user_with_subscription:
+                  summary: User with active subscription
+                  value:
+                    user:
+                      email: "premium@example.com"
+                      tier: "creator"
+                      customer_portal_url: "https://billing.stripe.com/session/bps_1ABC123def456"
+                free_user:
+                  summary: Free tier user without Stripe customer
+                  value:
+                    user:
+                      email: "free@example.com"
+                      tier: "free"
+                      customer_portal_url: null
         '401':
           description: Not authenticated
           content:
