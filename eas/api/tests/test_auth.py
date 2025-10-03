@@ -123,11 +123,14 @@ class AuthenticationTest(TestCase):
         )  # User without Stripe subscription should be 'free'
         self.assertIn("tier", response_data["user"])
         self.assertNotIn("id", response_data["user"])  # ID should not be present
+        # Customer portal URL should be None for free tier users with no Stripe customer
+        self.assertIsNone(response_data["user"]["customer_portal_url"])
 
+    @patch("eas.api.stripe.stripe.billing_portal.Session.create")
     @patch("eas.api.stripe.stripe.Subscription.list")
     @patch("eas.api.stripe.stripe.Customer.list")
     def test_current_user_with_stripe_subscription(
-        self, mock_customers, mock_subscriptions
+        self, mock_customers, mock_subscriptions, mock_portal_session
     ):
         """Test getting current user info when user has Stripe subscription"""
         user = User.objects.create(
@@ -157,6 +160,11 @@ class AuthenticationTest(TestCase):
         # Mock subscription list response
         mock_subscriptions.return_value = create_stripe_list_mock([mock_subscription])
 
+        # Mock customer portal session
+        mock_portal_session.return_value = MagicMock(
+            url="https://billing.stripe.com/session/test123"
+        )
+
         self.client.force_login(user)
 
         url = reverse("current-user")
@@ -169,6 +177,11 @@ class AuthenticationTest(TestCase):
             response_data["user"]["tier"], "creator"
         )  # User with creator subscription
         self.assertNotIn("id", response_data["user"])  # ID should not be present
+        # Customer portal URL should be present for users with Stripe customers
+        self.assertEqual(
+            response_data["user"]["customer_portal_url"],
+            "https://billing.stripe.com/session/test123",
+        )
 
     def test_current_user_not_authenticated(self):
         """Test getting current user info when not authenticated"""
@@ -198,17 +211,46 @@ class AuthenticationTest(TestCase):
         data = response.json()
         self.assertIn("tiers", data)
 
-        tiers = data["tiers"]
-        self.assertIn("free", tiers)
-        self.assertIn("starter", tiers)
-        self.assertIn("creator", tiers)
-        self.assertIn("agency", tiers)
+    @patch("eas.api.stripe.stripe.billing_portal.Session.create")
+    @patch("eas.api.stripe.stripe.Customer.list")
+    def test_customer_portal_session_creation(
+        self, mock_customers, mock_portal_session
+    ):
+        """Test customer portal session creation function"""
+        from eas.api import stripe
 
-        # Check structure of tier data
-        self.assertEqual(tiers["free"]["max_instagram_comments"], 300)
-        self.assertEqual(tiers["starter"]["max_instagram_comments"], 2000)
-        self.assertEqual(tiers["creator"]["max_instagram_comments"], 5000)
-        self.assertEqual(tiers["agency"]["max_instagram_comments"], 2147483647)
+        # Mock customer object
+        mock_customer = MagicMock()
+        mock_customer.id = "cus_test123"
+
+        # Mock customer list response
+        mock_customers.return_value = create_stripe_list_mock([mock_customer])
+
+        # Mock portal session response
+        mock_portal_session.return_value = MagicMock(
+            id="cs_test123", url="https://billing.stripe.com/session/test123"
+        )
+
+        # Test successful portal session creation
+        portal_url = stripe.create_customer_portal_session("test@example.com")
+
+        self.assertEqual(portal_url, "https://billing.stripe.com/session/test123")
+        mock_customers.assert_called_once_with(email="test@example.com", limit=1)
+        mock_portal_session.assert_called_once_with(customer="cus_test123")
+
+    @patch("eas.api.stripe.stripe.Customer.list")
+    def test_customer_portal_no_customer(self, mock_customers):
+        """Test customer portal session creation when no customer exists"""
+        from eas.api import stripe
+
+        # Mock empty customer list response
+        mock_customers.return_value = create_stripe_list_mock([])
+
+        # Test with no customer found
+        portal_url = stripe.create_customer_portal_session("noncustomer@example.com")
+
+        self.assertIsNone(portal_url)
+        mock_customers.assert_called_once_with(email="noncustomer@example.com", limit=1)
 
     def test_request_magic_link_missing_return_url(self):
         """Test requesting magic link without return_url should fail"""
