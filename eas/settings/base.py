@@ -39,6 +39,19 @@ ALLOWED_HOSTS = [
     *_local_ips,
 ]
 
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SAMESITE = "None"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [
+    "https://echaloasuerte.com",
+    "https://dev.echaloasuerte.com",
+    "https://chooserandom.com",
+    "https://dev.chooserandom.com",
+]
+
+
 # Application definition
 
 DJANGO_APPS = [
