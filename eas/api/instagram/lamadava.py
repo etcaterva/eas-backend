@@ -61,7 +61,7 @@ def fetch_comments(media_pk):  # pragma: no cover
 def fetch_preview(url):  # pragma: no cover
     LOG.info("Fetching Instagram post preview for %s", url)
     response = _session().get(
-        "https://api.lamadava.com/v1/media/by/url",
+        "https://api.hikerapi.com/v1/media/by/url",
         params={
             "access_key": LAMADAVA_APIK,
             "url": url,
@@ -86,7 +86,7 @@ def fetch_preview(url):  # pragma: no cover
 def _fetch_comments_v2(media_pk):  # pragma: no cover
     LOG.info("Sending request to lamadava for %s", media_pk)
     response = _session().get(
-        "https://api.lamadava.com/v2/media/comments",
+        "https://api.hikerapi.com/v2/media/comments",
         params={
             "id": media_pk,
             "access_key": LAMADAVA_APIK,
@@ -113,7 +113,7 @@ def _fetch_comments_v2(media_pk):  # pragma: no cover
 def _fetch_comments_gql(media_pk):  # pragma: no cover
     LOG.info("Sending request to lamadava for %s", media_pk)
     response = _session().get(
-        "https://api.lamadava.com/gql/comments",
+        "https://api.hikerapi.com/gql/comments",
         params={
             "media_id": media_pk,
             "amount": 50,
