@@ -8,6 +8,7 @@ omit =
     eas/wsgi.py
     eas/settings/*py
     celery-task.py
+    eas/api/instagram/lamadava.py
 
 [report]
 show_missing = True
