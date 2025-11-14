@@ -7,7 +7,7 @@ import logging
 import cachetools
 import requests
 import requests.adapters
-from django.conf import settings
+# from django.conf import settings
 
 LAMADAVA_APIK = "Q6m6DoTSKRdQEeThKixo06V0BxkFTzSF"
 LOG = logging.getLogger(__name__)
