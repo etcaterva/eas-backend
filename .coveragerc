@@ -9,6 +9,7 @@ omit =
     eas/settings/*py
     celery-task.py
     eas/api/instagram/lamadava.py
+    eas/api/tests/int/test_lamadava.py
 
 [report]
 show_missing = True

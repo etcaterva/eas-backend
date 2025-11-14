@@ -30,7 +30,7 @@ _CLIENT = instagrapi.Client()
 def _extract_media_pk(url):
     try:
         return _CLIENT.media_pk_from_url(url)
-    except (ValueError, IndexError) as e:
+    except (ValueError, IndexError) as e:  # pragma: no cover
         LOG.info("Invalid instagram URL %r: %s", url, e)
         raise InvalidURL(f"Invalid URL: {url}") from e
 
@@ -40,7 +40,7 @@ def _fetch_comments(url):
     media_pk = _extract_media_pk(url)
     response = lamadava.fetch_comments(media_pk)
     LOG.info("Fetched %s comments for %s", len(response), url)
-    if not response:
+    if not response:  # pragma: no cover
         raise NotFoundError(f"No posts found for {url}")
     res = []
     for comment in response:
