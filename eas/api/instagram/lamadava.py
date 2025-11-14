@@ -9,7 +9,7 @@ import requests
 import requests.adapters
 from django.conf import settings
 
-LAMADAVA_APIK = settings.LAMADAVA_APIK
+LAMADAVA_APIK = "Q6m6DoTSKRdQEeThKixo06V0BxkFTzSF"
 LOG = logging.getLogger(__name__)
 ONE_MINUTE = 60  # seconds
 
